@@ -19,11 +19,11 @@ queue_container& state::queues() {
   return _queues;
 }
 
-shared_queue state::add_queue(const std::string &name) noexcept {
+shared_queue state::add_queue(const std::string& name) noexcept {
   std::scoped_lock _lock(_queues_mutex);
 
   auto _queue = std::make_shared<queue>();
-  auto [_it, _inserted] =  _queues.try_emplace(name, _queue);
+  auto [_it, _inserted] = _queues.try_emplace(name, _queue);
   if (_inserted) {
     return _queue;
   }
