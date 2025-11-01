@@ -14,6 +14,6 @@
 
 #include <queue/version.hpp>
 
-std::string queue::get_version() {
+std::string queue::get_version() noexcept {
   return "1.0.0";
 }
