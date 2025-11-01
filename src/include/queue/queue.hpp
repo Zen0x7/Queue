@@ -21,9 +21,9 @@
 namespace queue {
 class queue : public std::enable_shared_from_this<queue> {};
 
-typedef std::shared_ptr<queue> shared_queue;
+using shared_queue = std::shared_ptr<queue>;
 
-typedef std::map<std::string, shared_queue> queue_container;
+using queue_container = std::map<std::string, shared_queue, std::less<>>;
 }  // namespace queue
 
 #endif  // QUEUE_QUEUE_HPP
