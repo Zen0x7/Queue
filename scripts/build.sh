@@ -9,4 +9,4 @@ ctest --output-on-failure --verbose
 
 cd ..
 gcovr --filter='src/' --print-summary --sort-percentage --gcov-ignore-parse-errors=negative_hits.warn
-gcovr --sonarqube > coverage.xml
+gcovr --filter='src/' --sonarqube > coverage.xml
