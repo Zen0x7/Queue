@@ -19,6 +19,7 @@ jobs:
 
       - name: Check format
         run: |
+          apt install -y -q clang-format
           bash scripts/check-format.sh
 
       - name: Build and test
