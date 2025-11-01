@@ -16,6 +16,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check format
+        run: |
+          bash scripts/check-format.sh
+
       - name: Build and test
         run: |
           mkdir -p build
@@ -28,5 +33,6 @@ jobs:
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7
+        if: matrix.type == 'debug'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

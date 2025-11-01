@@ -15,5 +15,5 @@
 #include <queue/version.hpp>
 
 std::string queue::get_version() {
-    return "1.0.0";
+  return "1.0.0";
 }

@@ -21,7 +21,7 @@
 
 namespace queue {
 
-    std::string get_version();
+std::string get_version();
 }
 
-#endif // QUEUE_VERSION_HPP
+#endif  // QUEUE_VERSION_HPP
