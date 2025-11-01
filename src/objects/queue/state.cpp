@@ -15,15 +15,20 @@
 #include <queue/state.hpp>
 
 namespace queue {
-queue_container& state::queues() {
-  return _queues;
+state::~state() {
+  std::scoped_lock _lock(queues_mutex_);
+  queues_.clear();
+}
+
+queue_container& state::queues() noexcept {
+  return queues_;
 }
 
 shared_queue state::add_queue(const std::string& name) noexcept {
-  std::scoped_lock _lock(_queues_mutex);
+  std::scoped_lock _lock(queues_mutex_);
 
-  auto _queue = std::make_shared<queue>();
-  auto [_it, _inserted] = _queues.try_emplace(name, _queue);
+  auto _queue = std::make_shared<queue>(make_strand(ioc_));
+  auto [_it, _inserted] = queues_.try_emplace(name, _queue);
   if (_inserted) {
     return _queue;
   }
@@ -32,18 +37,18 @@ shared_queue state::add_queue(const std::string& name) noexcept {
 
 shared_queue state::get_queue(const std::string& name) noexcept {
   if (queue_exists(name)) {
-    return _queues[name];
+    return queues_[name];
   }
   return add_queue(name);
 }
 
 bool state::remove_queue(const std::string& name) noexcept {
-  std::scoped_lock _lock(_queues_mutex);
-  return _queues.erase(name) == 1;
+  std::scoped_lock _lock(queues_mutex_);
+  return queues_.erase(name) == 1;
 }
 
 bool state::queue_exists(const std::string& name) noexcept {
-  std::scoped_lock _lock(_queues_mutex);
-  return _queues.contains(name);
+  std::scoped_lock _lock(queues_mutex_);
+  return queues_.contains(name);
 }
 }  // namespace queue

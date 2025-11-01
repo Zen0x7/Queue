@@ -15,6 +15,7 @@
 #ifndef QUEUE_STATE_HPP
 #define QUEUE_STATE_HPP
 
+#include <boost/asio/io_context.hpp>
 #include <memory>
 #include <mutex>
 
@@ -22,11 +23,13 @@
 
 namespace queue {
 class state : public std::enable_shared_from_this<state> {
-  queue_container _queues;
-  std::mutex _queues_mutex;
+  queue_container queues_;
+  std::mutex queues_mutex_;
+  boost::asio::io_context ioc_;
 
  public:
-  queue_container& queues();
+  ~state();
+  queue_container& queues() noexcept;
   shared_queue add_queue(const std::string& name) noexcept;
   shared_queue get_queue(const std::string& name) noexcept;
   bool remove_queue(const std::string& name) noexcept;
