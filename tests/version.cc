@@ -13,9 +13,9 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <gtest/gtest.h>
+
 #include <queue/version.hpp>
 
-TEST(queue, version)
-{
-    ASSERT_EQ(queue::get_version(), "1.0.0");
+TEST(queue, version) {
+  ASSERT_EQ(queue::get_version(), "1.0.0");
 }
