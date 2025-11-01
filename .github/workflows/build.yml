@@ -27,6 +27,6 @@ jobs:
           gcovr --filter='src/' --print-summary --sort=uncovered-percent --gcov-ignore-parse-errors=negative_hits.warn
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
