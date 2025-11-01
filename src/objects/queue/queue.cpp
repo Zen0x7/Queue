@@ -12,27 +12,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef QUEUE_QUEUE_HPP
-#define QUEUE_QUEUE_HPP
-
-#include <map>
-#include <memory>
-
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/strand.hpp>
+#include <queue/queue.hpp>
 
 namespace queue {
-class queue : public std::enable_shared_from_this<queue> {
-  boost::asio::strand<boost::asio::io_context::executor_type> strand_;
-
- public:
-  explicit queue(
-      boost::asio::strand<boost::asio::io_context::executor_type> strand);
-};
-
-using shared_queue = std::shared_ptr<queue>;
-
-using queue_container = std::map<std::string, shared_queue, std::less<>>;
+queue::queue(boost::asio::strand<boost::asio::io_context::executor_type> strand)
+    : strand_(std::move(strand)) {}
 }  // namespace queue
-
-#endif  // QUEUE_QUEUE_HPP
