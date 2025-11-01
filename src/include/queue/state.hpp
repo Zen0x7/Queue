@@ -27,13 +27,13 @@ class state : public std::enable_shared_from_this<state> {
 
  public:
   queue_container& queues();
-  shared_queue add_queue(std::string name) noexcept;
+  shared_queue add_queue(const std::string &name) noexcept;
   shared_queue get_queue(const std::string& name) noexcept;
   bool remove_queue(const std::string& name) noexcept;
   bool queue_exists(const std::string& name) noexcept;
 };
 
-typedef std::shared_ptr<state> shared_state;
+using shared_state = std::shared_ptr<state>;
 }  // namespace queue
 
 #endif  // QUEUE_STATE_HPP
