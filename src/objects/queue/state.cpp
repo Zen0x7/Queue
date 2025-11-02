@@ -12,6 +12,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <boost/core/ignore_unused.hpp>
 #include <queue/state.hpp>
 
 namespace queue {
@@ -26,12 +27,9 @@ queue_container& state::queues() noexcept {
 
 shared_queue state::add_queue(const std::string& name) noexcept {
   std::scoped_lock _lock(queues_mutex_);
-
-  auto _queue = std::make_shared<queue>(make_strand(ioc_));
-  auto [_it, _inserted] = queues_.try_emplace(name, _queue);
-  if (_inserted) {
-    return _queue;
-  }
+  auto [_it, _ignored] =
+      queues_.try_emplace(name, std::make_shared<queue>(make_strand(ioc_)));
+  boost::ignore_unused(_ignored);
   return _it->second;
 }
 
