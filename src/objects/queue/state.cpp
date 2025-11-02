@@ -27,7 +27,8 @@ queue_container& state::queues() noexcept {
 
 shared_queue state::add_queue(const std::string& name) noexcept {
   std::scoped_lock _lock(queues_mutex_);
-  auto [_it, _ignored] = queues_.try_emplace(name, std::make_shared<queue>(make_strand(ioc_)));
+  auto [_it, _ignored] =
+      queues_.try_emplace(name, std::make_shared<queue>(make_strand(ioc_)));
   boost::ignore_unused(_ignored);
   return _it->second;
 }
