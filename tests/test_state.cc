@@ -25,6 +25,7 @@ TEST(state, can_manage_queues) {
   const auto _state = std::make_shared<queue::state>();
   std::string _channel = "notifications";
 
+  // State persists queue after scope exit.
   {
     const auto _queue = _state->add_queue(_channel);
     ASSERT_EQ(_state->queues().size(), 1);
@@ -33,12 +34,15 @@ TEST(state, can_manage_queues) {
   }
   ASSERT_TRUE(_state->queue_exists(_channel));
 
+  // State can remove queue after scope exit.
   {
+    ASSERT_EQ(_state->queues().size(), 1);
     _state->remove_queue(_channel);
     ASSERT_EQ(_state->queues().size(), 0);
     ASSERT_FALSE(_state->queue_exists(_channel));
   }
 
+  // State can remove a local scoped queue
   {
     const auto _queue = _state->add_queue(_channel);
     ASSERT_EQ(_state->queues().size(), 1);
@@ -47,8 +51,10 @@ TEST(state, can_manage_queues) {
     _state->remove_queue(_channel);
     ASSERT_EQ(_state->queues().size(), 0);
     ASSERT_FALSE(_state->queue_exists(_channel));
+    ASSERT_NE(_queue.get(), nullptr);
   }
 
+  // State creates queue on get.
   {
     const std::string _on_missing_create = "ops";
     ASSERT_FALSE(_state->queue_exists(_on_missing_create));
@@ -58,6 +64,7 @@ TEST(state, can_manage_queues) {
     ASSERT_EQ(_state->queues().size(), 0);
   }
 
+  // State handles unique queues.
   {
     const auto _queue = _state->add_queue(_channel);
     ASSERT_EQ(_state->queues().size(), 1);
@@ -68,6 +75,7 @@ TEST(state, can_manage_queues) {
     _state->remove_queue(_channel);
   }
 
+  // State returns existing queue on add.
   {
     const auto _queue = _state->add_queue(_channel);
     ASSERT_EQ(_state->queues().size(), 1);
@@ -76,5 +84,15 @@ TEST(state, can_manage_queues) {
     const auto _same_queue = _state->add_queue(_channel);
     ASSERT_EQ(_state->queues().size(), 1);
     ASSERT_EQ(_same_queue.get(), _queue.get());
+    _state->remove_queue(_channel);
   }
+
+  // State copies the name of queues.
+  {
+    std::string _channel_name = "developers";
+    const auto _queue = _state->add_queue(_channel_name);
+    ASSERT_EQ(_state->queues().size(), 1);
+    ASSERT_NE(_queue.get(), nullptr);
+  }
+  ASSERT_TRUE(_state->queue_exists("developers"));
 }
