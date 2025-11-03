@@ -13,6 +13,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <boost/core/ignore_unused.hpp>
+#include <thread>
 
 #include <engine/queue.hpp>
 #include <engine/state.hpp>
@@ -54,6 +55,13 @@ bool state::queue_exists(const std::string& name) noexcept {
 }
 
 void state::run() noexcept {
+  std::vector<std::jthread> _threads_container;
+  const auto _threads = std::thread::hardware_concurrency();
+  _threads_container.reserve(_threads);
+  for (auto _i = _threads - 1; _i > 0; --_i)
+    _threads_container.emplace_back([this] { this->ioc_.run(); });
   ioc_.run();
+  for (auto& _thead : _threads_container)
+    _thead.join();
 }
 }  // namespace engine
