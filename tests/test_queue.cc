@@ -81,7 +81,7 @@ TEST(queue, can_handle_multiple_jobs) {
 TEST(queue, can_handle_multiple_jobs_on_multiple_workers) {
   const auto _state = std::make_shared<engine::state>();
   const auto _queue = _state->add_queue("notifications");
-  _queue->scale_to(16);
+  _queue->set_workers_to(16);
 
   std::atomic<std::uint64_t> _tasks_executed{0};
 
@@ -93,4 +93,21 @@ TEST(queue, can_handle_multiple_jobs_on_multiple_workers) {
 
   _state->run();
   ASSERT_EQ(_tasks_executed.load(), 2048);
+}
+
+TEST(queue, can_upscale_and_downscale_workers) {
+  const auto _state = std::make_shared<engine::state>();
+  const auto _queue = _state->add_queue("notifications");
+  _queue->set_workers_to(16);
+  ASSERT_EQ(16, _queue->number_of_workers());
+  _queue->set_workers_to(32);
+  ASSERT_EQ(32, _queue->number_of_workers());
+  _queue->set_workers_to(64);
+  ASSERT_EQ(64, _queue->number_of_workers());
+  _queue->set_workers_to(32);
+  ASSERT_EQ(32, _queue->number_of_workers());
+  _queue->set_workers_to(16);
+  ASSERT_EQ(16, _queue->number_of_workers());
+  _queue->set_workers_to(16);
+  ASSERT_EQ(16, _queue->number_of_workers());
 }

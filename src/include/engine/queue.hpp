@@ -37,6 +37,8 @@ class queue : public std::enable_shared_from_this<queue> {
   explicit queue(
       boost::asio::strand<boost::asio::io_context::executor_type> strand);
 
+  std::size_t number_of_workers() const;
+
   template <typename Handler>
   std::shared_ptr<job> push(Handler&& handler) {
     auto _available_worker_iterator = std::min_element(
@@ -48,7 +50,7 @@ class queue : public std::enable_shared_from_this<queue> {
     return _job;
   }
 
-  void scale_to(std::size_t number_of_workers);
+  void set_workers_to(std::size_t number_of_workers);
 };
 }  // namespace engine
 
