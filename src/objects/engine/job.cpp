@@ -25,8 +25,16 @@ bool job::started() const noexcept {
   return started_.load(std::memory_order_acquire);
 }
 
+bool job::failed() const noexcept {
+  return failed_.load(std::memory_order_acquire);
+}
+
 bool job::finished() const noexcept {
   return finished_.load(std::memory_order_acquire);
+}
+
+std::exception_ptr job::exception() const noexcept {
+  return exception_;
 }
 
 std::chrono::system_clock::time_point job::started_at() const noexcept {
@@ -42,7 +50,14 @@ boost::asio::awaitable<void> job::run() {
   started_at_ = std::chrono::system_clock::now();
   if (cancelled_.load(std::memory_order_acquire))
     co_return;
-  co_await handler_(cancelled_);
+
+  try {
+    co_await handler_(cancelled_);
+  } catch (...) {
+    failed_.store(true, std::memory_order_release);
+    exception_ = std::current_exception();
+  }
+
   finished_.store(true, std::memory_order_release);
   finished_at_ = std::chrono::system_clock::now();
 }

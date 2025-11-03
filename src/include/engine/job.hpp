@@ -35,6 +35,8 @@ class job : public std::enable_shared_from_this<job> {
   std::atomic<bool> started_{false};
   std::atomic<bool> cancelled_{false};
   std::atomic<bool> finished_{false};
+  std::atomic<bool> failed_{false};
+  std::exception_ptr exception_;
   std::chrono::system_clock::time_point started_at_;
   std::chrono::system_clock::time_point cancelled_at_;
   std::chrono::system_clock::time_point finished_at_;
@@ -43,7 +45,9 @@ class job : public std::enable_shared_from_this<job> {
   explicit job(handler_type handler);
   const boost::uuids::uuid& id() const noexcept;
   bool started() const noexcept;
+  bool failed() const noexcept;
   bool finished() const noexcept;
+  std::exception_ptr exception() const noexcept;
   std::chrono::system_clock::time_point started_at() const noexcept;
   std::chrono::system_clock::time_point finished_at() const noexcept;
 

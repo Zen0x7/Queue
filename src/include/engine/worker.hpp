@@ -49,7 +49,6 @@ class worker : public std::enable_shared_from_this<worker> {
         strand_,
         [_job]() -> boost::asio::awaitable<void> { co_await _job->run(); },
         boost::asio::detached);
-    // boost::asio::post(strand_, [_job, this] { _job->run(); });
     return _job;
   }
 };
