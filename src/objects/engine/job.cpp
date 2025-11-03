@@ -40,8 +40,13 @@ std::chrono::system_clock::time_point job::finished_at() const noexcept {
 void job::run() noexcept {
   started_.store(true, std::memory_order_release);
   started_at_ = std::chrono::system_clock::now();
-  handler_();
+  handler_(cancelled_);
   finished_.store(true, std::memory_order_release);
   finished_at_ = std::chrono::system_clock::now();
+}
+
+void job::cancel() noexcept {
+  cancelled_.store(true, std::memory_order_release);
+  cancelled_at_ = std::chrono::system_clock::now();
 }
 }  // namespace engine

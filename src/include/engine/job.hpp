@@ -24,14 +24,16 @@
 #include <boost/uuid/uuid.hpp>
 
 namespace engine {
-using handler_type = std::function<void()>;
+using handler_type = std::function<void(std::atomic<bool>&)>;
 
 class job : public std::enable_shared_from_this<job> {
   boost::uuids::uuid id_ = boost::uuids::random_generator()();
   handler_type handler_;
   std::atomic<bool> started_{false};
+  std::atomic<bool> cancelled_{false};
   std::atomic<bool> finished_{false};
   std::chrono::system_clock::time_point started_at_;
+  std::chrono::system_clock::time_point cancelled_at_;
   std::chrono::system_clock::time_point finished_at_;
 
  public:
@@ -42,6 +44,7 @@ class job : public std::enable_shared_from_this<job> {
   std::chrono::system_clock::time_point started_at() const noexcept;
   std::chrono::system_clock::time_point finished_at() const noexcept;
   void run() noexcept;
+  void cancel() noexcept;
 };
 }  // namespace engine
 

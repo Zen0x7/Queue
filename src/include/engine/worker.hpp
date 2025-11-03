@@ -40,7 +40,7 @@ class worker : public std::enable_shared_from_this<worker> {
   std::uint64_t number_of_tasks() const noexcept;
 
   template <typename Handler>
-  std::shared_ptr<job> push(Handler&& handler) {
+  std::shared_ptr<job> dispatch(Handler&& handler) {
     auto _job = std::make_shared<job>(std::forward<Handler>(handler));
     number_of_tasks_.fetch_add(1, std::memory_order_release);
     boost::asio::post(strand_, [_job, this] { _job->run(); });

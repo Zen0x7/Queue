@@ -34,26 +34,35 @@ class job;
 class queue : public std::enable_shared_from_this<queue> {
   boost::asio::strand<boost::asio::io_context::executor_type> strand_;
   std::map<boost::uuids::uuid, std::shared_ptr<worker>> workers_;
+  std::map<boost::uuids::uuid, std::shared_ptr<job>> jobs_;
+  std::mutex jobs_mutex_;
 
  public:
   explicit queue(
       boost::asio::strand<boost::asio::io_context::executor_type> strand);
 
   std::size_t number_of_workers() const;
+  std::size_t number_of_jobs() const;
 
   template <typename Handler>
-  std::shared_ptr<job> push(Handler&& handler) {
+  std::shared_ptr<job> dispatch(Handler&& handler) {
     auto _comparator = [](const auto& a, const auto& b) {
       return a.second->number_of_tasks() < b.second->number_of_tasks();
     };
     auto _worker_iterator = std::ranges::min_element(workers_, _comparator);
     auto& [_, _worker] = *_worker_iterator;
     boost::ignore_unused(_);
-    auto _job = _worker->push(std::forward<Handler>(handler));
+    auto _job = _worker->dispatch(std::forward<Handler>(handler));
+    {
+      std::scoped_lock _lock(jobs_mutex_);
+      jobs_.try_emplace(_job->id(), _job);
+    }
     return _job;
   }
 
   void set_workers_to(std::size_t number_of_workers);
+
+  void cancel();
 };
 }  // namespace engine
 
