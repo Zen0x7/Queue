@@ -14,8 +14,8 @@
 
 #include <gtest/gtest.h>
 
-#include <queue/version.hpp>
+#include <engine/version.hpp>
 
 TEST(queue, version) {
-  ASSERT_EQ(queue::get_version(), "1.0.0");
+  ASSERT_EQ(engine::get_version(), "1.0.0");
 }

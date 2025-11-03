@@ -14,14 +14,14 @@
 
 #pragma once
 
-#ifndef QUEUE_VERSION_HPP
-#define QUEUE_VERSION_HPP
+#ifndef ENGINE_VERSION_HPP
+#define ENGINE_VERSION_HPP
 
 #include <string>
 
-namespace queue {
+namespace engine {
 
 std::string get_version() noexcept;
 }
 
-#endif  // QUEUE_VERSION_HPP
+#endif  // ENGINE_VERSION_HPP

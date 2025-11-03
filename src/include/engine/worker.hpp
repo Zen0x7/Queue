@@ -12,39 +12,41 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef QUEUE_JOB_HPP
-#define QUEUE_JOB_HPP
+#ifndef ENGINE_WORKER_HPP
+#define ENGINE_WORKER_HPP
 
-#include <atomic>
-#include <chrono>
-#include <functional>
 #include <memory>
+
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/strand.hpp>
 
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 
-namespace queue {
-using handler_type = std::function<void()>;
+namespace engine {
+class job;
 
-class job : public std::enable_shared_from_this<job> {
+class worker : public std::enable_shared_from_this<worker> {
   boost::uuids::uuid id_ = boost::uuids::random_generator()();
-  handler_type handler_;
-  std::atomic<bool> started_{false};
-  std::atomic<bool> finished_{false};
-  std::chrono::system_clock::time_point started_at_;
-  std::chrono::system_clock::time_point finished_at_;
+  boost::asio::strand<boost::asio::io_context::executor_type> strand_;
+  std::atomic<std::uint64_t> number_of_tasks_;
 
  public:
-  explicit job(handler_type handler);
+  explicit worker(
+      boost::asio::strand<boost::asio::io_context::executor_type> strand);
+
   const boost::uuids::uuid& id() const noexcept;
-  bool started() const noexcept;
-  bool finished() const noexcept;
-  std::chrono::system_clock::time_point started_at() const noexcept;
-  std::chrono::system_clock::time_point finished_at() const noexcept;
-  void run() noexcept;
+
+  std::uint64_t number_of_tasks() const noexcept;
+
+  template <typename Handler>
+  std::shared_ptr<job> push(Handler&& handler) {
+    auto _job = std::make_shared<job>(std::forward<Handler>(handler));
+    number_of_tasks_.fetch_add(1, std::memory_order_release);
+    boost::asio::post(strand_, [_job, this] { _job->run(); });
+    return _job;
+  }
 };
+}  // namespace engine
 
-using shared_job = std::shared_ptr<job>;
-}  // namespace queue
-
-#endif  // QUEUE_JOB_HPP
+#endif  // ENGINE_WORKER_HPP
