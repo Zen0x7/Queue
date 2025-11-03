@@ -49,4 +49,8 @@ bool state::queue_exists(const std::string& name) noexcept {
   std::scoped_lock _lock(queues_mutex_);
   return queues_.contains(name);
 }
+
+void state::run() noexcept {
+  ioc_.run();
+}
 }  // namespace queue
