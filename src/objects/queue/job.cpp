@@ -14,11 +14,8 @@
 
 #include <queue/job.hpp>
 
-#include <boost/uuid/random_generator.hpp>
-
 namespace queue {
-job::job(handler_type handler)
-    : id_(boost::uuids::random_generator()()), handler_(std::move(handler)) {}
+job::job(handler_type handler) : handler_(std::move(handler)) {}
 
 const boost::uuids::uuid& job::id() const noexcept {
   return id_;

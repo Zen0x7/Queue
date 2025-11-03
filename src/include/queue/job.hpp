@@ -20,13 +20,14 @@
 #include <functional>
 #include <memory>
 
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 
 namespace queue {
 using handler_type = std::function<void()>;
 
 class job : public std::enable_shared_from_this<job> {
-  boost::uuids::uuid id_;
+  boost::uuids::uuid id_ = boost::uuids::random_generator()();
   handler_type handler_;
   std::atomic<bool> started_{false};
   std::atomic<bool> finished_{false};
