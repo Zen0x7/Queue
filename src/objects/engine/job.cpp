@@ -16,8 +16,7 @@
 #include <engine/job.hpp>
 
 namespace engine {
-job::job(handler_type handler, boost::json::object data)
-    : handler_(std::move(handler)), data_(std::move(data)) {}
+job::job(handler_type handler, boost::json::object data) : handler_(std::move(handler)), data_(std::move(data)) {}
 
 const boost::uuids::uuid& job::id() const noexcept {
   return id_;

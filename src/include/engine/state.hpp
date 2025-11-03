@@ -15,11 +15,10 @@
 #ifndef ENGINE_STATE_HPP
 #define ENGINE_STATE_HPP
 
+#include <boost/asio/io_context.hpp>
 #include <map>
 #include <memory>
 #include <mutex>
-
-#include <boost/asio/io_context.hpp>
 
 namespace engine {
 class queue;

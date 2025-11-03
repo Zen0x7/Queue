@@ -15,9 +15,7 @@
 #include <engine/worker.hpp>
 
 namespace engine {
-worker::worker(
-    boost::asio::strand<boost::asio::io_context::executor_type> strand)
-    : strand_(std::move(strand)) {}
+worker::worker(boost::asio::strand<boost::asio::io_context::executor_type> strand) : strand_(std::move(strand)) {}
 
 const boost::uuids::uuid& worker::id() const noexcept {
   return id_;

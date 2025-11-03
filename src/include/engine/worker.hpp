@@ -15,19 +15,15 @@
 #ifndef ENGINE_WORKER_HPP
 #define ENGINE_WORKER_HPP
 
-#include <memory>
-
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/strand.hpp>
-
+#include <boost/json.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
-
-#include <boost/json.hpp>
-
 #include <engine/job.hpp>
+#include <memory>
 
 namespace engine {
 class job;
@@ -38,8 +34,7 @@ class worker : public std::enable_shared_from_this<worker> {
   std::atomic<std::uint64_t> number_of_tasks_;
 
  public:
-  explicit worker(
-      boost::asio::strand<boost::asio::io_context::executor_type> strand);
+  explicit worker(boost::asio::strand<boost::asio::io_context::executor_type> strand);
 
   const boost::uuids::uuid& id() const noexcept;
 
@@ -47,13 +42,9 @@ class worker : public std::enable_shared_from_this<worker> {
 
   template <typename Handler>
   std::shared_ptr<job> dispatch(Handler&& handler, boost::json::object data) {
-    auto _job =
-        std::make_shared<job>(std::forward<Handler>(handler), std::move(data));
+    auto _job = std::make_shared<job>(std::forward<Handler>(handler), std::move(data));
     number_of_tasks_.fetch_add(1, std::memory_order_release);
-    boost::asio::co_spawn(
-        strand_,
-        [_job]() -> boost::asio::awaitable<void> { co_await _job->run(); },
-        boost::asio::detached);
+    boost::asio::co_spawn(strand_, [_job]() -> boost::asio::awaitable<void> { co_await _job->run(); }, boost::asio::detached);
     return _job;
   }
 };

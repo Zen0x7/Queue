@@ -17,28 +17,21 @@
 
 #include <algorithm>
 #include <atomic>
-#include <map>
-#include <memory>
-
-#include <boost/json/object.hpp>
-
 #include <boost/asio/strand.hpp>
 #include <boost/core/ignore_unused.hpp>
-
+#include <boost/json/object.hpp>
 #include <boost/uuid/uuid.hpp>
-
-#include <engine/worker.hpp>
-
 #include <engine/errors/task_not_found.hpp>
+#include <engine/worker.hpp>
+#include <map>
+#include <memory>
 
 namespace engine {
 class worker;
 
 class job;
 
-using task_handler =
-    std::function<boost::asio::awaitable<void>(std::atomic<bool>&,
-                                               boost::json::object const&)>;
+using task_handler = std::function<boost::asio::awaitable<void>(std::atomic<bool>&, boost::json::object const&)>;
 
 using tasks_container = std::map<std::string, task_handler>;
 
@@ -51,21 +44,17 @@ class queue : public std::enable_shared_from_this<queue> {
   std::mutex jobs_mutex_;
 
  public:
-  explicit queue(
-      boost::asio::strand<boost::asio::io_context::executor_type> strand);
+  explicit queue(boost::asio::strand<boost::asio::io_context::executor_type> strand);
 
   std::size_t number_of_workers() const;
   std::size_t number_of_jobs() const;
 
-  std::shared_ptr<job> dispatch(std::string const& name,
-                                boost::json::object data) {
+  std::shared_ptr<job> dispatch(std::string const& name, boost::json::object data) {
     const auto it = tasks_.find(name);
     if (it == tasks_.end())
       throw errors::task_not_found();
     auto handler = it->second;
-    auto _comparator = [](const auto& a, const auto& b) {
-      return a.second->number_of_tasks() < b.second->number_of_tasks();
-    };
+    auto _comparator = [](const auto& a, const auto& b) { return a.second->number_of_tasks() < b.second->number_of_tasks(); };
     auto _worker_iterator = std::ranges::min_element(workers_, _comparator);
     auto& [_, _worker] = *_worker_iterator;
     boost::ignore_unused(_);
