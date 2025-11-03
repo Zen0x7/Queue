@@ -16,21 +16,16 @@
 #define ENGINE_JOB_HPP
 
 #include <atomic>
+#include <boost/asio/awaitable.hpp>
+#include <boost/json/object.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <functional>
 #include <memory>
 
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid.hpp>
-
-#include <boost/asio/awaitable.hpp>
-
-#include <boost/json/object.hpp>
-
 namespace engine {
-using handler_type =
-    std::function<boost::asio::awaitable<void>(std::atomic<bool>&,
-                                               boost::json::object const&)>;
+using handler_type = std::function<boost::asio::awaitable<void>(std::atomic<bool>&, boost::json::object const&)>;
 
 class job : public std::enable_shared_from_this<job> {
   boost::uuids::uuid id_ = boost::uuids::random_generator()();

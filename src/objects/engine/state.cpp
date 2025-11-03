@@ -13,10 +13,9 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <boost/core/ignore_unused.hpp>
-#include <thread>
-
 #include <engine/queue.hpp>
 #include <engine/state.hpp>
+#include <thread>
 
 namespace engine {
 state::~state() {
@@ -24,15 +23,13 @@ state::~state() {
   queues_.clear();
 }
 
-std::map<std::string, std::shared_ptr<queue>, std::less<>>&
-state::queues() noexcept {
+std::map<std::string, std::shared_ptr<queue>, std::less<>>& state::queues() noexcept {
   return queues_;
 }
 
 std::shared_ptr<queue> state::add_queue(const std::string& name) noexcept {
   std::scoped_lock _lock(queues_mutex_);
-  auto [_it, _ignored] =
-      queues_.try_emplace(name, std::make_shared<queue>(make_strand(ioc_)));
+  auto [_it, _ignored] = queues_.try_emplace(name, std::make_shared<queue>(make_strand(ioc_)));
   boost::ignore_unused(_ignored);
   return _it->second;
 }

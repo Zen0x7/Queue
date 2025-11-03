@@ -17,10 +17,8 @@
 #include <engine/worker.hpp>
 
 namespace engine {
-queue::queue(boost::asio::strand<boost::asio::io_context::executor_type> strand)
-    : strand_(std::move(strand)) {
-  auto _worker =
-      std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
+queue::queue(boost::asio::strand<boost::asio::io_context::executor_type> strand) : strand_(std::move(strand)) {
+  auto _worker = std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
   workers_.try_emplace(_worker->id(), _worker);
 }
 
@@ -36,8 +34,7 @@ void queue::set_workers_to(const std::size_t number_of_workers) {
   if (workers_.size() < number_of_workers) {
     const std::size_t _needed = number_of_workers - workers_.size();
     for (std::size_t _index = 0; _index < _needed; _index++) {
-      auto _worker =
-          std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
+      auto _worker = std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
       workers_.try_emplace(_worker->id(), _worker);
     }
   } else if (workers_.size() > number_of_workers) {
@@ -50,6 +47,7 @@ void queue::set_workers_to(const std::size_t number_of_workers) {
 }
 
 void queue::cancel() {
+  std::scoped_lock _lock(jobs_mutex_);
   std::ranges::for_each(jobs_, [&](auto& job) { job.second->cancel(); });
 }
 }  // namespace engine
