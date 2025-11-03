@@ -13,6 +13,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <engine/job.hpp>
+#include <engine/job_cancelled.hpp>
 
 namespace engine {
 job::job(handler_type handler) : handler_(std::move(handler)) {}
@@ -33,6 +34,10 @@ bool job::finished() const noexcept {
   return finished_.load(std::memory_order_acquire);
 }
 
+bool job::cancelled() const noexcept {
+  return cancelled_.load(std::memory_order_acquire);
+}
+
 std::exception_ptr job::exception() const noexcept {
   return exception_;
 }
@@ -48,11 +53,15 @@ std::chrono::system_clock::time_point job::finished_at() const noexcept {
 boost::asio::awaitable<void> job::run() {
   started_.store(true, std::memory_order_release);
   started_at_ = std::chrono::system_clock::now();
-  if (cancelled_.load(std::memory_order_acquire))
-    co_return;
 
   try {
+    if (cancelled_.load(std::memory_order_acquire)) {
+      throw job_cancelled();
+    }
     co_await handler_(cancelled_);
+  } catch (job_cancelled&) {
+    cancelled_.store(true, std::memory_order_release);
+    cancelled_at_ = std::chrono::system_clock::now();
   } catch (...) {
     failed_.store(true, std::memory_order_release);
     exception_ = std::current_exception();
@@ -60,10 +69,10 @@ boost::asio::awaitable<void> job::run() {
 
   finished_.store(true, std::memory_order_release);
   finished_at_ = std::chrono::system_clock::now();
+  co_return;
 }
 
 void job::cancel() noexcept {
   cancelled_.store(true, std::memory_order_release);
-  cancelled_at_ = std::chrono::system_clock::now();
 }
 }  // namespace engine

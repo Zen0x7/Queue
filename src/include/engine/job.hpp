@@ -47,6 +47,7 @@ class job : public std::enable_shared_from_this<job> {
   bool started() const noexcept;
   bool failed() const noexcept;
   bool finished() const noexcept;
+  bool cancelled() const noexcept;
   std::exception_ptr exception() const noexcept;
   std::chrono::system_clock::time_point started_at() const noexcept;
   std::chrono::system_clock::time_point finished_at() const noexcept;
