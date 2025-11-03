@@ -12,13 +12,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ENGINE_JOB_CANCELLED_HPP
-#define ENGINE_JOB_CANCELLED_HPP
+#ifndef ENGINE_ERRORS_JOB_CANCELLED_HPP
+#define ENGINE_ERRORS_JOB_CANCELLED_HPP
 
 #include <exception>
 
-namespace engine {
+namespace engine::errors {
 class job_cancelled final : public std::exception {};
-}  // namespace engine
+}  // namespace engine::errors
 
-#endif  // ENGINE_JOB_CANCELLED_HPP
+#endif  // ENGINE_ERRORS_JOB_CANCELLED_HPP

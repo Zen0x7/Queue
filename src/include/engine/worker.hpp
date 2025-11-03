@@ -25,6 +25,10 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 
+#include <boost/json.hpp>
+
+#include <engine/job.hpp>
+
 namespace engine {
 class job;
 
@@ -42,8 +46,9 @@ class worker : public std::enable_shared_from_this<worker> {
   std::uint64_t number_of_tasks() const noexcept;
 
   template <typename Handler>
-  std::shared_ptr<job> dispatch(Handler&& handler) {
-    auto _job = std::make_shared<job>(std::forward<Handler>(handler));
+  std::shared_ptr<job> dispatch(Handler&& handler, boost::json::object data) {
+    auto _job =
+        std::make_shared<job>(std::forward<Handler>(handler), std::move(data));
     number_of_tasks_.fetch_add(1, std::memory_order_release);
     boost::asio::co_spawn(
         strand_,

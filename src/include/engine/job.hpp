@@ -25,9 +25,12 @@
 
 #include <boost/asio/awaitable.hpp>
 
+#include <boost/json/object.hpp>
+
 namespace engine {
 using handler_type =
-    std::function<boost::asio::awaitable<void>(std::atomic<bool>&)>;
+    std::function<boost::asio::awaitable<void>(std::atomic<bool>&,
+                                               boost::json::object const&)>;
 
 class job : public std::enable_shared_from_this<job> {
   boost::uuids::uuid id_ = boost::uuids::random_generator()();
@@ -40,9 +43,10 @@ class job : public std::enable_shared_from_this<job> {
   std::chrono::system_clock::time_point started_at_;
   std::chrono::system_clock::time_point cancelled_at_;
   std::chrono::system_clock::time_point finished_at_;
+  boost::json::object data_;
 
  public:
-  explicit job(handler_type handler);
+  explicit job(handler_type handler, boost::json::object data);
   const boost::uuids::uuid& id() const noexcept;
   bool started() const noexcept;
   bool failed() const noexcept;
@@ -52,7 +56,7 @@ class job : public std::enable_shared_from_this<job> {
   std::chrono::system_clock::time_point started_at() const noexcept;
   std::chrono::system_clock::time_point finished_at() const noexcept;
 
-  boost::asio::awaitable<void> run();
+  boost::asio::awaitable<void> run() noexcept;
   void cancel() noexcept;
 };
 }  // namespace engine
