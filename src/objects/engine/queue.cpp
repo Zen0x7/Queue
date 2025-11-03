@@ -29,16 +29,19 @@ std::size_t queue::number_of_workers() const {
 
 void queue::set_workers_to(const std::size_t number_of_workers) {
   if (workers_.size() < number_of_workers) {
-    const std::size_t _required = number_of_workers - workers_.size();
-    for (std::size_t i = 0; i < _required; i++) {
+    const std::size_t _needed = number_of_workers - workers_.size();
+    for (std::size_t _index = 0; _index < _needed; _index++) {
       auto _worker =
           std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
       workers_.try_emplace(_worker->id(), _worker);
     }
   } else if (workers_.size() > number_of_workers) {
-    auto it = workers_.begin();
-    while (workers_.size() > number_of_workers && it != workers_.end()) {
-      it = workers_.erase(it);
+    if (workers_.size() > number_of_workers) {
+      const std::size_t _remove = workers_.size() - number_of_workers;
+      auto _iterator = workers_.begin();
+      for (std::size_t _index = 0; _index < _remove; ++_index) {
+        _iterator = workers_.erase(_iterator);
+      }
     }
   }
 }
