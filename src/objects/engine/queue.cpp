@@ -36,12 +36,10 @@ void queue::set_workers_to(const std::size_t number_of_workers) {
       workers_.try_emplace(_worker->id(), _worker);
     }
   } else if (workers_.size() > number_of_workers) {
-    if (workers_.size() > number_of_workers) {
-      const std::size_t _remove = workers_.size() - number_of_workers;
-      auto _iterator = workers_.begin();
-      for (std::size_t _index = 0; _index < _remove; ++_index) {
-        _iterator = workers_.erase(_iterator);
-      }
+    const std::size_t _remove = workers_.size() - number_of_workers;
+    auto _iterator = workers_.begin();
+    for (std::size_t _index = 0; _index < _remove; ++_index) {
+      _iterator = workers_.erase(_iterator);
     }
   }
 }
