@@ -15,17 +15,13 @@
 #ifndef ENGINE_WORKER_HPP
 #define ENGINE_WORKER_HPP
 
-#include <iostream>
 #include <memory>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/strand.hpp>
 
-#include <boost/functional/hash.hpp>
-
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace engine {
 class job;
