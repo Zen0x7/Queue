@@ -61,7 +61,7 @@ void state::run() noexcept {
   for (auto _i = _threads - 1; _i > 0; --_i)
     _threads_container.emplace_back([this] { this->ioc_.run(); });
   ioc_.run();
-  for (auto& _thead : _threads_container)
-    _thead.join();
+  for (auto& _thread : _threads_container)
+    _thread.join();
 }
 }  // namespace engine
