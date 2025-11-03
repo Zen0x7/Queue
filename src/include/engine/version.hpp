@@ -12,10 +12,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <gtest/gtest.h>
+#pragma once
 
-#include <engine/version.hpp>
+#ifndef ENGINE_VERSION_HPP
+#define ENGINE_VERSION_HPP
 
-TEST(queue, version) {
-  ASSERT_EQ(engine::get_version(), "1.0.0");
+#include <string>
+
+namespace engine {
+
+std::string get_version() noexcept;
 }
+
+#endif  // ENGINE_VERSION_HPP

@@ -12,8 +12,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <queue/version.hpp>
+#include <engine/version.hpp>
 
-std::string queue::get_version() noexcept {
+std::string engine::get_version() noexcept {
   return "1.0.0";
 }

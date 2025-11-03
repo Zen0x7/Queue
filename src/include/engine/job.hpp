@@ -12,8 +12,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef QUEUE_JOB_HPP
-#define QUEUE_JOB_HPP
+#ifndef ENGINE_JOB_HPP
+#define ENGINE_JOB_HPP
 
 #include <atomic>
 #include <chrono>
@@ -23,7 +23,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 
-namespace queue {
+namespace engine {
 using handler_type = std::function<void()>;
 
 class job : public std::enable_shared_from_this<job> {
@@ -43,8 +43,6 @@ class job : public std::enable_shared_from_this<job> {
   std::chrono::system_clock::time_point finished_at() const noexcept;
   void run() noexcept;
 };
+}  // namespace engine
 
-using shared_job = std::shared_ptr<job>;
-}  // namespace queue
-
-#endif  // QUEUE_JOB_HPP
+#endif  // ENGINE_JOB_HPP

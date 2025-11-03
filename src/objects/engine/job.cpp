@@ -12,9 +12,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <queue/job.hpp>
+#include <engine/job.hpp>
 
-namespace queue {
+namespace engine {
 job::job(handler_type handler) : handler_(std::move(handler)) {}
 
 const boost::uuids::uuid& job::id() const noexcept {
@@ -44,4 +44,4 @@ void job::run() noexcept {
   finished_.store(true, std::memory_order_release);
   finished_at_ = std::chrono::system_clock::now();
 }
-}  // namespace queue
+}  // namespace engine

@@ -12,32 +12,32 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef QUEUE_STATE_HPP
-#define QUEUE_STATE_HPP
+#ifndef ENGINE_STATE_HPP
+#define ENGINE_STATE_HPP
 
-#include <boost/asio/io_context.hpp>
+#include <map>
 #include <memory>
 #include <mutex>
 
-#include <queue/queue.hpp>
+#include <boost/asio/io_context.hpp>
 
-namespace queue {
+namespace engine {
+class queue;
+
 class state : public std::enable_shared_from_this<state> {
-  queue_container queues_;
+  std::map<std::string, std::shared_ptr<queue>, std::less<>> queues_;
   std::mutex queues_mutex_;
   boost::asio::io_context ioc_;
 
  public:
   ~state();
-  queue_container& queues() noexcept;
-  shared_queue add_queue(const std::string& name) noexcept;
-  shared_queue get_queue(const std::string& name) noexcept;
+  std::map<std::string, std::shared_ptr<queue>, std::less<>>& queues() noexcept;
+  std::shared_ptr<queue> add_queue(const std::string& name) noexcept;
+  std::shared_ptr<queue> get_queue(const std::string& name) noexcept;
   bool remove_queue(const std::string& name) noexcept;
   bool queue_exists(const std::string& name) noexcept;
   void run() noexcept;
 };
+}  // namespace engine
 
-using shared_state = std::shared_ptr<state>;
-}  // namespace queue
-
-#endif  // QUEUE_STATE_HPP
+#endif  // ENGINE_STATE_HPP

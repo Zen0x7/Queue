@@ -12,9 +12,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <queue/queue.hpp>
+#include <engine/worker.hpp>
 
-namespace queue {
-queue::queue(boost::asio::strand<boost::asio::io_context::executor_type> strand)
+namespace engine {
+worker::worker(
+    boost::asio::strand<boost::asio::io_context::executor_type> strand)
     : strand_(std::move(strand)) {}
-}  // namespace queue
+
+const boost::uuids::uuid& worker::id() const noexcept {
+  return id_;
+}
+
+std::uint64_t worker::number_of_tasks() const noexcept {
+  return number_of_tasks_.load(std::memory_order_acquire);
+}
+}  // namespace engine

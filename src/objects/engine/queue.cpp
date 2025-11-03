@@ -12,16 +12,23 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+#include <boost/uuid/random_generator.hpp>
+#include <engine/queue.hpp>
+#include <engine/worker.hpp>
 
-#ifndef QUEUE_VERSION_HPP
-#define QUEUE_VERSION_HPP
-
-#include <string>
-
-namespace queue {
-
-std::string get_version() noexcept;
+namespace engine {
+queue::queue(boost::asio::strand<boost::asio::io_context::executor_type> strand)
+    : strand_(std::move(strand)) {
+  auto _worker =
+      std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
+  workers_.try_emplace(_worker->id(), _worker);
 }
 
-#endif  // QUEUE_VERSION_HPP
+void queue::scale_to(const std::size_t number_of_workers) {
+  while (workers_.size() != number_of_workers) {
+    auto _worker =
+        std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
+    workers_.try_emplace(_worker->id(), _worker);
+  }
+}
+}  // namespace engine

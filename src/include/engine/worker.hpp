@@ -12,36 +12,45 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef QUEUE_QUEUE_HPP
-#define QUEUE_QUEUE_HPP
+#ifndef ENGINE_WORKER_HPP
+#define ENGINE_WORKER_HPP
 
-#include <map>
+#include <iostream>
 #include <memory>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/strand.hpp>
 
-#include <queue/job.hpp>
+#include <boost/functional/hash.hpp>
 
-namespace queue {
-class queue : public std::enable_shared_from_this<queue> {
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
+namespace engine {
+class job;
+
+class worker : public std::enable_shared_from_this<worker> {
+  boost::uuids::uuid id_ = boost::uuids::random_generator()();
   boost::asio::strand<boost::asio::io_context::executor_type> strand_;
+  std::atomic<std::uint64_t> number_of_tasks_;
 
  public:
-  explicit queue(
+  explicit worker(
       boost::asio::strand<boost::asio::io_context::executor_type> strand);
 
+  const boost::uuids::uuid& id() const noexcept;
+
+  std::uint64_t number_of_tasks() const noexcept;
+
   template <typename Handler>
-  shared_job push(Handler&& handler) {
+  std::shared_ptr<job> push(Handler&& handler) {
     auto _job = std::make_shared<job>(std::forward<Handler>(handler));
-    boost::asio::post(strand_, [_job] { _job->run(); });
+    number_of_tasks_.fetch_add(1, std::memory_order_release);
+    boost::asio::post(strand_, [_job, this] { _job->run(); });
     return _job;
   }
 };
+}  // namespace engine
 
-using shared_queue = std::shared_ptr<queue>;
-
-using queue_container = std::map<std::string, shared_queue, std::less<>>;
-}  // namespace queue
-
-#endif  // QUEUE_QUEUE_HPP
+#endif  // ENGINE_WORKER_HPP

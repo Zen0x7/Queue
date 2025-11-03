@@ -14,10 +14,13 @@
 
 #include <gtest/gtest.h>
 
-#include <queue/state.hpp>
+#include <engine/job.hpp>
+#include <engine/queue.hpp>
+#include <engine/state.hpp>
+#include <engine/worker.hpp>
 
 TEST(queue, can_handle_jobs) {
-  const auto _state = std::make_shared<queue::state>();
+  const auto _state = std::make_shared<engine::state>();
   const auto _queue = _state->add_queue("notifications");
 
   std::atomic _task_executed{false};
@@ -45,7 +48,7 @@ TEST(queue, can_handle_jobs) {
 }
 
 TEST(queue, can_handle_multiple_jobs) {
-  const auto _state = std::make_shared<queue::state>();
+  const auto _state = std::make_shared<engine::state>();
   const auto _queue = _state->add_queue("notifications");
 
   std::atomic _first_task_executed{false};
@@ -73,4 +76,21 @@ TEST(queue, can_handle_multiple_jobs) {
 
   ASSERT_TRUE(_first_job->finished_at() <= _second_job->finished_at());
   ASSERT_TRUE(_second_job->finished_at() <= _third_job->finished_at());
+}
+
+TEST(queue, can_handle_multiple_jobs_on_multiple_workers) {
+  const auto _state = std::make_shared<engine::state>();
+  const auto _queue = _state->add_queue("notifications");
+  _queue->scale_to(16);
+
+  std::atomic<std::uint64_t> _tasks_executed{0};
+
+  for (std::uint32_t i = 0; i < 2048; ++i) {
+    _queue->push([&_tasks_executed] {
+      _tasks_executed.fetch_add(1, std::memory_order_relaxed);
+    });
+  }
+
+  _state->run();
+  ASSERT_EQ(_tasks_executed.load(), 2048);
 }

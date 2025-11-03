@@ -13,19 +13,22 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <boost/core/ignore_unused.hpp>
-#include <queue/state.hpp>
 
-namespace queue {
+#include <engine/queue.hpp>
+#include <engine/state.hpp>
+
+namespace engine {
 state::~state() {
   std::scoped_lock _lock(queues_mutex_);
   queues_.clear();
 }
 
-queue_container& state::queues() noexcept {
+std::map<std::string, std::shared_ptr<queue>, std::less<>>&
+state::queues() noexcept {
   return queues_;
 }
 
-shared_queue state::add_queue(const std::string& name) noexcept {
+std::shared_ptr<queue> state::add_queue(const std::string& name) noexcept {
   std::scoped_lock _lock(queues_mutex_);
   auto [_it, _ignored] =
       queues_.try_emplace(name, std::make_shared<queue>(make_strand(ioc_)));
@@ -33,7 +36,7 @@ shared_queue state::add_queue(const std::string& name) noexcept {
   return _it->second;
 }
 
-shared_queue state::get_queue(const std::string& name) noexcept {
+std::shared_ptr<queue> state::get_queue(const std::string& name) noexcept {
   if (queue_exists(name)) {
     return queues_[name];
   }
@@ -53,4 +56,4 @@ bool state::queue_exists(const std::string& name) noexcept {
 void state::run() noexcept {
   ioc_.run();
 }
-}  // namespace queue
+}  // namespace engine
