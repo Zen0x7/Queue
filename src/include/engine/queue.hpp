@@ -15,10 +15,12 @@
 #ifndef ENGINE_QUEUE_HPP
 #define ENGINE_QUEUE_HPP
 
+#include <algorithm>
 #include <map>
 #include <memory>
 
 #include <boost/asio/strand.hpp>
+#include <boost/core/ignore_unused.hpp>
 
 #include <boost/uuid/uuid.hpp>
 
@@ -41,12 +43,13 @@ class queue : public std::enable_shared_from_this<queue> {
 
   template <typename Handler>
   std::shared_ptr<job> push(Handler&& handler) {
-    auto _available_worker_iterator = std::min_element(
-        workers_.begin(), workers_.end(), [](const auto& a, const auto& b) {
-          return a.second->number_of_tasks() < b.second->number_of_tasks();
-        });
-    auto _available_worker = _available_worker_iterator->second;
-    auto _job = _available_worker->push(handler);
+    auto _comparator = [](const auto& a, const auto& b) {
+      return a.second->number_of_tasks() < b.second->number_of_tasks();
+    };
+    auto _worker_iterator = std::ranges::min_element(workers_, _comparator);
+    auto& [_, _worker] = *_worker_iterator;
+    boost::ignore_unused(_);
+    auto _job = _worker->push(std::forward<Handler>(handler));
     return _job;
   }
 
