@@ -12,11 +12,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <engine/errors/job_cancelled.hpp>
 #include <engine/job.hpp>
-#include <engine/job_cancelled.hpp>
 
 namespace engine {
-job::job(handler_type handler) : handler_(std::move(handler)) {}
+job::job(handler_type handler, boost::json::object data)
+    : handler_(std::move(handler)), data_(std::move(data)) {}
 
 const boost::uuids::uuid& job::id() const noexcept {
   return id_;
@@ -50,16 +51,16 @@ std::chrono::system_clock::time_point job::finished_at() const noexcept {
   return finished_at_;
 }
 
-boost::asio::awaitable<void> job::run() {
+boost::asio::awaitable<void> job::run() noexcept {
   started_.store(true, std::memory_order_release);
   started_at_ = std::chrono::system_clock::now();
 
   try {
     if (cancelled_.load(std::memory_order_acquire)) {
-      throw job_cancelled();
+      throw errors::job_cancelled();
     }
-    co_await handler_(cancelled_);
-  } catch (job_cancelled&) {
+    co_await handler_(cancelled_, data_);
+  } catch (errors::job_cancelled&) {
     cancelled_.store(true, std::memory_order_release);
     cancelled_at_ = std::chrono::system_clock::now();
   } catch (...) {

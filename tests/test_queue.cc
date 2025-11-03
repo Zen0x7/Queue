@@ -14,8 +14,8 @@
 
 #include <gtest/gtest.h>
 
+#include <engine/errors/job_cancelled.hpp>
 #include <engine/job.hpp>
-#include <engine/job_cancelled.hpp>
 #include <engine/queue.hpp>
 #include <engine/state.hpp>
 #include <engine/worker.hpp>
@@ -28,12 +28,17 @@ TEST(queue, can_handle_jobs) {
 
   std::atomic _task_executed{false};
 
-  const auto _job = _queue->dispatch(
-      [&_task_executed](auto& cancelled) -> boost::asio::awaitable<void> {
-        boost::ignore_unused(cancelled);
+  _queue->add_task(
+      "purchase_order_created",
+      [&_task_executed](auto& cancelled,
+                        auto& data) -> boost::asio::awaitable<void> {
+        boost::ignore_unused(cancelled, data);
         _task_executed.store(true, std::memory_order_release);
         co_return;
       });
+
+  const auto _job =
+      _queue->dispatch("purchase_order_created", boost::json::object());
 
   ASSERT_FALSE(_job->started());
   ASSERT_FALSE(_job->finished());
@@ -61,25 +66,37 @@ TEST(queue, can_handle_multiple_jobs) {
   std::atomic _second_task_executed{false};
   std::atomic _third_task_executed{false};
 
-  const auto _first_job = _queue->dispatch(
-      [&_first_task_executed](auto& cancelled) -> boost::asio::awaitable<void> {
-        boost::ignore_unused(cancelled);
+  _queue->add_task(
+      "first_task",
+      [&_first_task_executed](auto& cancelled,
+                              auto& data) -> boost::asio::awaitable<void> {
+        boost::ignore_unused(cancelled, data);
         _first_task_executed.store(true, std::memory_order_release);
         co_return;
       });
-  const auto _second_job =
-      _queue->dispatch([&_second_task_executed](
-                           auto& cancelled) -> boost::asio::awaitable<void> {
-        boost::ignore_unused(cancelled);
+
+  _queue->add_task(
+      "second_task",
+      [&_second_task_executed](auto& cancelled,
+                               auto& data) -> boost::asio::awaitable<void> {
+        boost::ignore_unused(cancelled, data);
         _second_task_executed.store(true, std::memory_order_release);
         co_return;
       });
-  const auto _third_job = _queue->dispatch(
-      [&_third_task_executed](auto& cancelled) -> boost::asio::awaitable<void> {
-        boost::ignore_unused(cancelled);
+
+  _queue->add_task(
+      "third_task",
+      [&_third_task_executed](auto& cancelled,
+                              auto& data) -> boost::asio::awaitable<void> {
+        boost::ignore_unused(cancelled, data);
         _third_task_executed.store(true, std::memory_order_release);
         co_return;
       });
+
+  const auto _first_job = _queue->dispatch("first_task", boost::json::object());
+  const auto _second_job =
+      _queue->dispatch("second_task", boost::json::object());
+  const auto _third_job = _queue->dispatch("third_task", boost::json::object());
 
   _state->run();
 
@@ -101,13 +118,17 @@ TEST(queue, can_handle_multiple_jobs_on_multiple_workers) {
 
   std::atomic<std::uint64_t> _tasks_executed{0};
 
+  _queue->add_task(
+      "item",
+      [&_tasks_executed](auto& cancelled,
+                         auto& data) -> boost::asio::awaitable<void> {
+        boost::ignore_unused(cancelled, data);
+        _tasks_executed.fetch_add(1, std::memory_order_relaxed);
+        co_return;
+      });
+
   for (std::uint32_t i = 0; i < 2048; ++i) {
-    _queue->dispatch(
-        [&_tasks_executed](auto& cancelled) -> boost::asio::awaitable<void> {
-          boost::ignore_unused(cancelled);
-          _tasks_executed.fetch_add(1, std::memory_order_relaxed);
-          co_return;
-        });
+    _queue->dispatch("item", boost::json::object());
   }
 
   _state->run();
@@ -130,7 +151,7 @@ TEST(queue, can_upscale_and_downscale_workers) {
   _queue->set_workers_to(16);
   ASSERT_EQ(16, _queue->number_of_workers());
 }
-
+//
 TEST(queue, can_be_cancelled) {
   const auto _state = std::make_shared<engine::state>();
   const auto _queue = _state->add_queue("notifications");
@@ -138,20 +159,27 @@ TEST(queue, can_be_cancelled) {
 
   std::atomic<std::size_t> _jobs_executed;
 
-  _queue->dispatch(
-      [&_queue](std::atomic<bool>& cancelled) -> boost::asio::awaitable<void> {
-        boost::ignore_unused(cancelled);
+  _queue->add_task(
+      "cancel",
+      [&_queue](auto& cancelled, auto& data) -> boost::asio::awaitable<void> {
+        boost::ignore_unused(cancelled, data);
         _queue->cancel();
         co_return;
       });
 
+  _queue->add_task(
+      "item",
+      [&_jobs_executed](auto& cancelled,
+                        auto& data) -> boost::asio::awaitable<void> {
+        boost::ignore_unused(cancelled, data);
+        _jobs_executed.fetch_add(1, std::memory_order_relaxed);
+        co_return;
+      });
+
+  _queue->dispatch("cancel", boost::json::object());
+
   for (std::uint32_t i = 0; i < 256; ++i) {
-    _queue->dispatch([&_jobs_executed](std::atomic<bool> const& cancelled)
-                         -> boost::asio::awaitable<void> {
-      boost::ignore_unused(cancelled);
-      _jobs_executed.fetch_add(1, std::memory_order_relaxed);
-      co_return;
-    });
+    _queue->dispatch("item", boost::json::object());
   }
 
   _state->run();
@@ -162,7 +190,7 @@ TEST(queue, can_be_cancelled) {
   std::cout << _jobs_executed.load(std::memory_order_relaxed)
             << " jobs has been processed before cancellation" << std::endl;
 }
-
+//
 class custom_exception final : public std::exception {};
 
 TEST(queue, can_handle_exceptions) {
@@ -170,11 +198,14 @@ TEST(queue, can_handle_exceptions) {
   const auto _queue = _state->add_queue("notifications");
   _queue->set_workers_to(4);
 
-  const auto _job = _queue->dispatch(
-      [](std::atomic<bool> const&) -> boost::asio::awaitable<void> {
+  _queue->add_task(
+      "error", [](auto& cancelled, auto& data) -> boost::asio::awaitable<void> {
+        boost::ignore_unused(cancelled, data);
         throw custom_exception();
         co_return;
       });
+
+  const auto _job = _queue->dispatch("error", boost::json::object());
 
   _state->run();
 
@@ -193,14 +224,34 @@ TEST(queue, can_handle_cancellations) {
   const auto _queue = _state->add_queue("notifications");
   _queue->set_workers_to(4);
 
-  const auto _job = _queue->dispatch(
-      [](std::atomic<bool> const&) -> boost::asio::awaitable<void> {
-        throw engine::job_cancelled();
+  _queue->add_task(
+      "cancel",
+      [](auto& cancelled, auto& data) -> boost::asio::awaitable<void> {
+        boost::ignore_unused(cancelled, data);
+        throw engine::errors::job_cancelled();
         co_return;
       });
+
+  const auto _job = _queue->dispatch("cancel", boost::json::object());
 
   _state->run();
 
   ASSERT_FALSE(_job->failed());
   ASSERT_TRUE(_job->cancelled());
+}
+
+TEST(queue, throw_error_on_undefined_task) {
+  const auto _state = std::make_shared<engine::state>();
+  const auto _queue = _state->add_queue("notifications");
+  _queue->set_workers_to(4);
+
+  bool _throws = false;
+
+  try {
+    const auto _job = _queue->dispatch("cancel", boost::json::object());
+  } catch (...) {
+    _throws = true;
+  }
+
+  ASSERT_TRUE(_throws);
 }
