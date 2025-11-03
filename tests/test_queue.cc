@@ -43,3 +43,34 @@ TEST(queue, can_handle_jobs) {
   const auto _duration = _job->finished_at() - _job->started_at();
   ASSERT_GE(_duration.count(), 0);
 }
+
+TEST(queue, can_handle_multiple_jobs) {
+  const auto _state = std::make_shared<queue::state>();
+  const auto _queue = _state->add_queue("notifications");
+
+  std::atomic _first_task_executed{false};
+  std::atomic _second_task_executed{false};
+  std::atomic _third_task_executed{false};
+
+  const auto _first_job = _queue->push([&_first_task_executed] {
+    _first_task_executed.store(true, std::memory_order_release);
+  });
+  const auto _second_job = _queue->push([&_second_task_executed] {
+    _second_task_executed.store(true, std::memory_order_release);
+  });
+  const auto _third_job = _queue->push([&_third_task_executed] {
+    _third_task_executed.store(true, std::memory_order_release);
+  });
+
+  _state->run();
+
+  ASSERT_TRUE(_first_job->finished());
+  ASSERT_TRUE(_first_task_executed.load(std::memory_order_acquire));
+  ASSERT_TRUE(_second_job->finished());
+  ASSERT_TRUE(_second_task_executed.load(std::memory_order_acquire));
+  ASSERT_TRUE(_third_job->finished());
+  ASSERT_TRUE(_third_task_executed.load(std::memory_order_acquire));
+
+  ASSERT_TRUE(_first_job->finished_at() <= _second_job->finished_at());
+  ASSERT_TRUE(_second_job->finished_at() <= _third_job->finished_at());
+}
