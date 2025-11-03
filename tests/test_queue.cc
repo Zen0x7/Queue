@@ -161,3 +161,28 @@ TEST(queue, can_be_cancelled) {
   std::cout << _jobs_executed.load(std::memory_order_relaxed)
             << " jobs has been processed before cancellation" << std::endl;
 }
+
+class custom_exception final : public std::exception {};
+
+TEST(queue, can_handle_exceptions) {
+  const auto _state = std::make_shared<engine::state>();
+  const auto _queue = _state->add_queue("notifications");
+  _queue->set_workers_to(4);
+
+  auto _job = _queue->dispatch(
+      [](std::atomic<bool> const&) -> boost::asio::awaitable<void> {
+        throw custom_exception();
+        co_return;
+      });
+
+  _state->run();
+
+  ASSERT_TRUE(_job->failed());
+  bool _logic_error = false;
+  try {
+    std::rethrow_exception(_job->exception());
+  } catch (const custom_exception&) {
+    _logic_error = true;
+  }
+  ASSERT_TRUE(_logic_error);
+}
