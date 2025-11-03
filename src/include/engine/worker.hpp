@@ -17,6 +17,8 @@
 
 #include <memory>
 
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/strand.hpp>
 
@@ -43,7 +45,11 @@ class worker : public std::enable_shared_from_this<worker> {
   std::shared_ptr<job> dispatch(Handler&& handler) {
     auto _job = std::make_shared<job>(std::forward<Handler>(handler));
     number_of_tasks_.fetch_add(1, std::memory_order_release);
-    boost::asio::post(strand_, [_job, this] { _job->run(); });
+    boost::asio::co_spawn(
+        strand_,
+        [_job]() -> boost::asio::awaitable<void> { co_await _job->run(); },
+        boost::asio::detached);
+    // boost::asio::post(strand_, [_job, this] { _job->run(); });
     return _job;
   }
 };

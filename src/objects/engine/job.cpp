@@ -37,10 +37,12 @@ std::chrono::system_clock::time_point job::finished_at() const noexcept {
   return finished_at_;
 }
 
-void job::run() noexcept {
+boost::asio::awaitable<void> job::run() {
   started_.store(true, std::memory_order_release);
   started_at_ = std::chrono::system_clock::now();
-  handler_(cancelled_);
+  if (cancelled_.load(std::memory_order_acquire))
+    co_return;
+  co_await handler_(cancelled_);
   finished_.store(true, std::memory_order_release);
   finished_at_ = std::chrono::system_clock::now();
 }

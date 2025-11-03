@@ -27,10 +27,12 @@ TEST(queue, can_handle_jobs) {
 
   std::atomic _task_executed{false};
 
-  const auto _job = _queue->dispatch([&_task_executed](auto& cancelled) {
-    boost::ignore_unused(cancelled);
-    _task_executed.store(true, std::memory_order_release);
-  });
+  const auto _job = _queue->dispatch(
+      [&_task_executed](auto& cancelled) -> boost::asio::awaitable<void> {
+        boost::ignore_unused(cancelled);
+        _task_executed.store(true, std::memory_order_release);
+        co_return;
+      });
 
   ASSERT_FALSE(_job->started());
   ASSERT_FALSE(_job->finished());
@@ -58,20 +60,24 @@ TEST(queue, can_handle_multiple_jobs) {
   std::atomic _second_task_executed{false};
   std::atomic _third_task_executed{false};
 
-  const auto _first_job =
-      _queue->dispatch([&_first_task_executed](auto& cancelled) {
+  const auto _first_job = _queue->dispatch(
+      [&_first_task_executed](auto& cancelled) -> boost::asio::awaitable<void> {
         boost::ignore_unused(cancelled);
         _first_task_executed.store(true, std::memory_order_release);
+        co_return;
       });
   const auto _second_job =
-      _queue->dispatch([&_second_task_executed](auto& cancelled) {
+      _queue->dispatch([&_second_task_executed](
+                           auto& cancelled) -> boost::asio::awaitable<void> {
         boost::ignore_unused(cancelled);
         _second_task_executed.store(true, std::memory_order_release);
+        co_return;
       });
-  const auto _third_job =
-      _queue->dispatch([&_third_task_executed](auto& cancelled) {
+  const auto _third_job = _queue->dispatch(
+      [&_third_task_executed](auto& cancelled) -> boost::asio::awaitable<void> {
         boost::ignore_unused(cancelled);
         _third_task_executed.store(true, std::memory_order_release);
+        co_return;
       });
 
   _state->run();
@@ -95,10 +101,12 @@ TEST(queue, can_handle_multiple_jobs_on_multiple_workers) {
   std::atomic<std::uint64_t> _tasks_executed{0};
 
   for (std::uint32_t i = 0; i < 2048; ++i) {
-    _queue->dispatch([&_tasks_executed](auto& cancelled) {
-      boost::ignore_unused(cancelled);
-      _tasks_executed.fetch_add(1, std::memory_order_relaxed);
-    });
+    _queue->dispatch(
+        [&_tasks_executed](auto& cancelled) -> boost::asio::awaitable<void> {
+          boost::ignore_unused(cancelled);
+          _tasks_executed.fetch_add(1, std::memory_order_relaxed);
+          co_return;
+        });
   }
 
   _state->run();
@@ -127,30 +135,29 @@ TEST(queue, can_be_cancelled) {
   const auto _queue = _state->add_queue("notifications");
   _queue->set_workers_to(4);
 
-  std::vector<std::size_t> _times_container;
-  _times_container.reserve(256);
+  std::atomic<std::size_t> _jobs_executed;
 
-  _queue->dispatch([&_queue](std::atomic<bool>& cancelled) {
-    boost::ignore_unused(cancelled);
-    _queue->cancel();
-  });
+  _queue->dispatch(
+      [&_queue](std::atomic<bool>& cancelled) -> boost::asio::awaitable<void> {
+        boost::ignore_unused(cancelled);
+        _queue->cancel();
+        co_return;
+      });
 
   for (std::uint32_t i = 0; i < 256; ++i) {
-    _queue->dispatch(
-        [&_times_container](std::atomic<bool> const& cancelled) mutable {
-          std::size_t _times = 0;
-          while (!cancelled.load(std::memory_order_acquire)) {
-            ++_times;
-          }
-          if (_times > 0)
-            _times_container.emplace_back(_times);
-        });
+    _queue->dispatch([&_jobs_executed](std::atomic<bool> const& cancelled)
+                         -> boost::asio::awaitable<void> {
+      boost::ignore_unused(cancelled);
+      _jobs_executed.fetch_add(1, std::memory_order_relaxed);
+      co_return;
+    });
   }
+
   _state->run();
-  ASSERT_GE(_times_container.size(), 0);
-  ASSERT_LT(_times_container.size(), 256);
+  ASSERT_GE(_jobs_executed.load(std::memory_order_relaxed), 0);
+  ASSERT_LT(_jobs_executed.load(std::memory_order_relaxed), 256);
   ASSERT_EQ(_queue->number_of_jobs(), 256 + 1);
 
-  std::cout << _times_container.size()
+  std::cout << _jobs_executed.load(std::memory_order_relaxed)
             << " jobs has been processed before cancellation" << std::endl;
 }

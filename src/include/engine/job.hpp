@@ -23,8 +23,11 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 
+#include <boost/asio/awaitable.hpp>
+
 namespace engine {
-using handler_type = std::function<void(std::atomic<bool>&)>;
+using handler_type =
+    std::function<boost::asio::awaitable<void>(std::atomic<bool>&)>;
 
 class job : public std::enable_shared_from_this<job> {
   boost::uuids::uuid id_ = boost::uuids::random_generator()();
@@ -43,7 +46,8 @@ class job : public std::enable_shared_from_this<job> {
   bool finished() const noexcept;
   std::chrono::system_clock::time_point started_at() const noexcept;
   std::chrono::system_clock::time_point finished_at() const noexcept;
-  void run() noexcept;
+
+  boost::asio::awaitable<void> run();
   void cancel() noexcept;
 };
 }  // namespace engine
