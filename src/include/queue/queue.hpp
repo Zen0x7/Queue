@@ -21,6 +21,8 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/strand.hpp>
 
+#include <queue/job.hpp>
+
 namespace queue {
 class queue : public std::enable_shared_from_this<queue> {
   boost::asio::strand<boost::asio::io_context::executor_type> strand_;
@@ -28,6 +30,13 @@ class queue : public std::enable_shared_from_this<queue> {
  public:
   explicit queue(
       boost::asio::strand<boost::asio::io_context::executor_type> strand);
+
+  template <typename Handler>
+  shared_job push(Handler&& handler) {
+    auto _job = std::make_shared<job>(std::forward<Handler>(handler));
+    boost::asio::post(strand_, [_job] { _job->run(); });
+    return _job;
+  }
 };
 
 using shared_queue = std::shared_ptr<queue>;

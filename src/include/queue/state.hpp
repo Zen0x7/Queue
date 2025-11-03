@@ -34,6 +34,7 @@ class state : public std::enable_shared_from_this<state> {
   shared_queue get_queue(const std::string& name) noexcept;
   bool remove_queue(const std::string& name) noexcept;
   bool queue_exists(const std::string& name) noexcept;
+  void run() noexcept;
 };
 
 using shared_state = std::shared_ptr<state>;
