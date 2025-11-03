@@ -15,6 +15,7 @@
 #include <gtest/gtest.h>
 
 #include <engine/job.hpp>
+#include <engine/job_cancelled.hpp>
 #include <engine/queue.hpp>
 #include <engine/state.hpp>
 #include <engine/worker.hpp>
@@ -169,7 +170,7 @@ TEST(queue, can_handle_exceptions) {
   const auto _queue = _state->add_queue("notifications");
   _queue->set_workers_to(4);
 
-  auto _job = _queue->dispatch(
+  const auto _job = _queue->dispatch(
       [](std::atomic<bool> const&) -> boost::asio::awaitable<void> {
         throw custom_exception();
         co_return;
@@ -185,4 +186,21 @@ TEST(queue, can_handle_exceptions) {
     _logic_error = true;
   }
   ASSERT_TRUE(_logic_error);
+}
+
+TEST(queue, can_handle_cancellations) {
+  const auto _state = std::make_shared<engine::state>();
+  const auto _queue = _state->add_queue("notifications");
+  _queue->set_workers_to(4);
+
+  const auto _job = _queue->dispatch(
+      [](std::atomic<bool> const&) -> boost::asio::awaitable<void> {
+        throw engine::job_cancelled();
+        co_return;
+      });
+
+  _state->run();
+
+  ASSERT_FALSE(_job->failed());
+  ASSERT_TRUE(_job->cancelled());
 }
