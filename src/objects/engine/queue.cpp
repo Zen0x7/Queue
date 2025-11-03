@@ -12,6 +12,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <engine/job.hpp>
 #include <engine/queue.hpp>
 #include <engine/worker.hpp>
 
@@ -25,6 +26,10 @@ queue::queue(boost::asio::strand<boost::asio::io_context::executor_type> strand)
 
 std::size_t queue::number_of_workers() const {
   return workers_.size();
+}
+
+std::size_t queue::number_of_jobs() const {
+  return jobs_.size();
 }
 
 void queue::set_workers_to(const std::size_t number_of_workers) {
@@ -42,5 +47,9 @@ void queue::set_workers_to(const std::size_t number_of_workers) {
       _iterator = workers_.erase(_iterator);
     }
   }
+}
+
+void queue::cancel() {
+  std::ranges::for_each(jobs_, [&](auto& job) { job.second->cancel(); });
 }
 }  // namespace engine

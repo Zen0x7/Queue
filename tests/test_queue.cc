@@ -19,13 +19,16 @@
 #include <engine/state.hpp>
 #include <engine/worker.hpp>
 
+#include <thread>
+
 TEST(queue, can_handle_jobs) {
   const auto _state = std::make_shared<engine::state>();
   const auto _queue = _state->add_queue("notifications");
 
   std::atomic _task_executed{false};
 
-  const auto _job = _queue->push([&_task_executed] {
+  const auto _job = _queue->dispatch([&_task_executed](auto& cancelled) {
+    boost::ignore_unused(cancelled);
     _task_executed.store(true, std::memory_order_release);
   });
 
@@ -55,15 +58,21 @@ TEST(queue, can_handle_multiple_jobs) {
   std::atomic _second_task_executed{false};
   std::atomic _third_task_executed{false};
 
-  const auto _first_job = _queue->push([&_first_task_executed] {
-    _first_task_executed.store(true, std::memory_order_release);
-  });
-  const auto _second_job = _queue->push([&_second_task_executed] {
-    _second_task_executed.store(true, std::memory_order_release);
-  });
-  const auto _third_job = _queue->push([&_third_task_executed] {
-    _third_task_executed.store(true, std::memory_order_release);
-  });
+  const auto _first_job =
+      _queue->dispatch([&_first_task_executed](auto& cancelled) {
+        boost::ignore_unused(cancelled);
+        _first_task_executed.store(true, std::memory_order_release);
+      });
+  const auto _second_job =
+      _queue->dispatch([&_second_task_executed](auto& cancelled) {
+        boost::ignore_unused(cancelled);
+        _second_task_executed.store(true, std::memory_order_release);
+      });
+  const auto _third_job =
+      _queue->dispatch([&_third_task_executed](auto& cancelled) {
+        boost::ignore_unused(cancelled);
+        _third_task_executed.store(true, std::memory_order_release);
+      });
 
   _state->run();
 
@@ -86,7 +95,8 @@ TEST(queue, can_handle_multiple_jobs_on_multiple_workers) {
   std::atomic<std::uint64_t> _tasks_executed{0};
 
   for (std::uint32_t i = 0; i < 2048; ++i) {
-    _queue->push([&_tasks_executed] {
+    _queue->dispatch([&_tasks_executed](auto& cancelled) {
+      boost::ignore_unused(cancelled);
       _tasks_executed.fetch_add(1, std::memory_order_relaxed);
     });
   }
@@ -110,4 +120,37 @@ TEST(queue, can_upscale_and_downscale_workers) {
   ASSERT_EQ(16, _queue->number_of_workers());
   _queue->set_workers_to(16);
   ASSERT_EQ(16, _queue->number_of_workers());
+}
+
+TEST(queue, can_be_cancelled) {
+  const auto _state = std::make_shared<engine::state>();
+  const auto _queue = _state->add_queue("notifications");
+  _queue->set_workers_to(4);
+
+  std::vector<std::size_t> _times_container;
+  _times_container.reserve(256);
+
+  _queue->dispatch([&_queue](std::atomic<bool>& cancelled) {
+    boost::ignore_unused(cancelled);
+    _queue->cancel();
+  });
+
+  for (std::uint32_t i = 0; i < 256; ++i) {
+    _queue->dispatch(
+        [&_times_container](std::atomic<bool> const& cancelled) mutable {
+          std::size_t _times = 0;
+          while (!cancelled.load(std::memory_order_acquire)) {
+            ++_times;
+          }
+          if (_times > 0)
+            _times_container.emplace_back(_times);
+        });
+  }
+  _state->run();
+  ASSERT_GE(_times_container.size(), 0);
+  ASSERT_LT(_times_container.size(), 256);
+  ASSERT_EQ(_queue->number_of_jobs(), 256 + 1);
+
+  std::cout << _times_container.size()
+            << " jobs has been processed before cancellation" << std::endl;
 }
