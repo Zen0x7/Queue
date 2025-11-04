@@ -15,8 +15,6 @@
 #ifndef ENGINE_WORKER_HPP
 #define ENGINE_WORKER_HPP
 
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/json.hpp>
@@ -27,6 +25,7 @@
 
 namespace engine {
 class job;
+class task;
 
 class worker : public std::enable_shared_from_this<worker> {
   boost::uuids::uuid id_ = boost::uuids::random_generator()();
@@ -35,18 +34,9 @@ class worker : public std::enable_shared_from_this<worker> {
 
  public:
   explicit worker(boost::asio::strand<boost::asio::io_context::executor_type> strand);
-
   const boost::uuids::uuid& id() const noexcept;
-
   std::uint64_t number_of_tasks() const noexcept;
-
-  template <typename Handler>
-  std::shared_ptr<job> dispatch(Handler&& handler, boost::json::object data) {
-    auto _job = std::make_shared<job>(std::forward<Handler>(handler), std::move(data));
-    number_of_tasks_.fetch_add(1, std::memory_order_release);
-    boost::asio::co_spawn(strand_, [_job]() -> boost::asio::awaitable<void> { co_await _job->run(); }, boost::asio::detached);
-    return _job;
-  }
+  std::shared_ptr<job> dispatch(const std::shared_ptr<task>& task, boost::json::object data);
 };
 }  // namespace engine
 
