@@ -61,17 +61,15 @@ void queue::prepare() {
 }
 
 void queue::upscale(const std::size_t to) {
-  const std::size_t _needed = to - workers_.size();
-  for (std::size_t _index = 0; _index < _needed; _index++) {
+  while (workers_.size() != to) {
     auto _worker = std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
     workers_.try_emplace(_worker->id(), _worker);
   }
 }
 
 void queue::downscale(const std::size_t to) {
-  const std::size_t _remove = workers_.size() - to;
   auto _iterator = workers_.begin();
-  for (std::size_t _index = 0; _index < _remove; ++_index) {
+  while (workers_.size() != to) {
     _iterator = workers_.erase(_iterator);
   }
 }
