@@ -35,7 +35,7 @@ TEST(queue, can_handle_jobs) {
     co_return;
   });
 
-  const auto _job = _queue->dispatch("purchase_order_created", boost::json::object());
+  const auto _job = _queue->dispatch("purchase_order_created");
 
   ASSERT_FALSE(_job->started());
   ASSERT_FALSE(_job->finished());
@@ -81,9 +81,9 @@ TEST(queue, can_handle_multiple_jobs) {
     co_return;
   });
 
-  const auto _first_job = _queue->dispatch("first_task", boost::json::object());
-  const auto _second_job = _queue->dispatch("second_task", boost::json::object());
-  const auto _third_job = _queue->dispatch("third_task", boost::json::object());
+  const auto _first_job = _queue->dispatch("first_task");
+  const auto _second_job = _queue->dispatch("second_task");
+  const auto _third_job = _queue->dispatch("third_task");
 
   _state->run();
 
@@ -112,7 +112,7 @@ TEST(queue, can_handle_multiple_jobs_on_multiple_workers) {
   });
 
   for (std::uint32_t i = 0; i < 2048; ++i) {
-    _queue->dispatch("item", boost::json::object());
+    _queue->dispatch("item");
   }
 
   _state->run();
@@ -155,10 +155,10 @@ TEST(queue, can_be_cancelled) {
     co_return;
   });
 
-  _queue->dispatch("cancel", boost::json::object());
+  _queue->dispatch("cancel");
 
   for (std::uint32_t i = 0; i < 256; ++i) {
-    _queue->dispatch("item", boost::json::object());
+    _queue->dispatch("item");
   }
 
   _state->run();
@@ -182,7 +182,7 @@ TEST(queue, can_handle_exceptions) {
     co_return;
   });
 
-  const auto _job = _queue->dispatch("error", boost::json::object());
+  const auto _job = _queue->dispatch("error");
 
   _state->run();
 
@@ -207,7 +207,7 @@ TEST(queue, can_handle_cancellations) {
     co_return;
   });
 
-  const auto _job = _queue->dispatch("cancel", boost::json::object());
+  const auto _job = _queue->dispatch("cancel");
 
   _state->run();
 
@@ -223,7 +223,7 @@ TEST(queue, throw_error_on_undefined_task) {
   bool _throws = false;
 
   try {
-    const auto _job = _queue->dispatch("cancel", boost::json::object());
+    const auto _job = _queue->dispatch("cancel");
   } catch (...) {
     _throws = true;
   }

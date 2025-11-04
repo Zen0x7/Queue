@@ -21,8 +21,7 @@
 
 namespace engine {
 queue::queue(boost::asio::strand<boost::asio::io_context::executor_type> strand) : strand_(std::move(strand)) {
-  auto _worker = std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
-  workers_.try_emplace(_worker->id(), _worker);
+  prepare();
 }
 
 std::size_t queue::number_of_workers() const {
@@ -34,16 +33,10 @@ std::size_t queue::number_of_jobs() const {
 }
 
 std::shared_ptr<job> queue::dispatch(std::string const& name, boost::json::object data) {
-  const auto it = tasks_.find(name);
-  if (it == tasks_.end())
-    throw errors::task_not_found();
-  auto _comparator = [](const auto& a, const auto& b) { return a.second->number_of_tasks() < b.second->number_of_tasks(); };
-  auto _worker_iterator = std::ranges::min_element(workers_, _comparator);
-  auto const& [_, _worker] = *_worker_iterator;
-  boost::ignore_unused(_);
-  auto _job = _worker->dispatch(it->second, std::move(data));
-  std::scoped_lock _lock(jobs_mutex_);
-  jobs_.try_emplace(_job->id(), _job);
+  const auto _task = get_task(name);
+  const auto _worker = get_worker();
+  auto _job = _worker->dispatch(_task, std::move(data));
+  push_job(_job);
   return _job;
 }
 
@@ -53,22 +46,55 @@ void queue::add_task(std::string name, handler_type handler) {
 
 void queue::set_workers_to(const std::size_t number_of_workers) {
   if (workers_.size() < number_of_workers) {
-    const std::size_t _needed = number_of_workers - workers_.size();
-    for (std::size_t _index = 0; _index < _needed; _index++) {
-      auto _worker = std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
-      workers_.try_emplace(_worker->id(), _worker);
-    }
+    upscale(number_of_workers);
   } else if (workers_.size() > number_of_workers) {
-    const std::size_t _remove = workers_.size() - number_of_workers;
-    auto _iterator = workers_.begin();
-    for (std::size_t _index = 0; _index < _remove; ++_index) {
-      _iterator = workers_.erase(_iterator);
-    }
+    downscale(number_of_workers);
   }
 }
 
 void queue::cancel() {
   std::scoped_lock _lock(jobs_mutex_);
   std::ranges::for_each(jobs_, [&](auto& job) { job.second->cancel(); });
+}
+
+void queue::prepare() {
+  auto _worker = std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
+  workers_.try_emplace(_worker->id(), _worker);
+}
+
+void queue::upscale(const std::size_t to) {
+  const std::size_t _needed = to - workers_.size();
+  for (std::size_t _index = 0; _index < _needed; _index++) {
+    auto _worker = std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
+    workers_.try_emplace(_worker->id(), _worker);
+  }
+}
+
+void queue::downscale(const std::size_t to) {
+  const std::size_t _remove = workers_.size() - to;
+  auto _iterator = workers_.begin();
+  for (std::size_t _index = 0; _index < _remove; ++_index) {
+    _iterator = workers_.erase(_iterator);
+  }
+}
+
+void queue::push_job(const std::shared_ptr<job>& job) {
+  std::scoped_lock _lock(jobs_mutex_);
+  jobs_.try_emplace(job->id(), job);
+}
+
+std::shared_ptr<worker> queue::get_worker() {
+  auto _comparator = [](const auto& a, const auto& b) { return a.second->number_of_tasks() < b.second->number_of_tasks(); };
+  auto _worker_iterator = std::ranges::min_element(workers_, _comparator);
+  auto const& [_, _worker] = *_worker_iterator;
+  boost::ignore_unused(_);
+  return _worker;
+}
+
+std::shared_ptr<task> queue::get_task(const std::string& name) {
+  const auto it = tasks_.find(name);
+  if (it == tasks_.end())
+    throw errors::task_not_found();
+  return it->second;
 }
 }  // namespace engine
