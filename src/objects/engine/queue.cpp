@@ -33,9 +33,7 @@ std::size_t queue::number_of_jobs() const {
 }
 
 std::shared_ptr<job> queue::dispatch(std::string const& name, boost::json::object data) {
-  const auto _task = get_task(name);
-  const auto _worker = get_worker();
-  auto _job = _worker->dispatch(_task, std::move(data));
+  auto _job = get_worker()->dispatch(get_task(name), std::move(data));
   push_job(_job);
   return _job;
 }
@@ -47,7 +45,7 @@ void queue::add_task(std::string name, handler_type handler) {
 void queue::set_workers_to(const std::size_t number_of_workers) {
   if (workers_.size() < number_of_workers) {
     upscale(number_of_workers);
-  } else if (workers_.size() > number_of_workers) {
+  } else {
     downscale(number_of_workers);
   }
 }
@@ -85,10 +83,8 @@ void queue::push_job(const std::shared_ptr<job>& job) {
 
 std::shared_ptr<worker> queue::get_worker() {
   auto _comparator = [](const auto& a, const auto& b) { return a.second->number_of_tasks() < b.second->number_of_tasks(); };
-  auto _worker_iterator = std::ranges::min_element(workers_, _comparator);
-  auto const& [_, _worker] = *_worker_iterator;
-  boost::ignore_unused(_);
-  return _worker;
+  const auto _iterator = std::ranges::min_element(workers_, _comparator);
+  return _iterator->second;
 }
 
 std::shared_ptr<task> queue::get_task(const std::string& name) {

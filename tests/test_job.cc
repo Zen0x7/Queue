@@ -51,4 +51,7 @@ TEST(job, run_is_promise) {
   const auto _job = std::make_shared<engine::job>(_task, boost::json::object{});
   const auto _promise = _job->run();
   ASSERT_FALSE(_executed.load(std::memory_order_acquire));
+  std::atomic<bool> _cancelled;
+  auto _result = (*_task->callback())(_cancelled, boost::json::object{});
+  ASSERT_FALSE(_executed.load(std::memory_order_acquire));
 }
