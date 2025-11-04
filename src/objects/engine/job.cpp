@@ -39,6 +39,32 @@ bool job::cancelled() const noexcept {
   return cancelled_.load(std::memory_order_acquire);
 }
 
+void job::mark_as_started() noexcept {
+  started_.store(true, std::memory_order_release);
+  started_at_ = std::chrono::system_clock::now();
+}
+
+void job::mark_as_cancelled() noexcept {
+  cancelled_.store(true, std::memory_order_release);
+  cancelled_at_ = std::chrono::system_clock::now();
+}
+
+void job::mark_as_failed(const std::exception_ptr& exception) noexcept {
+  failed_.store(true, std::memory_order_release);
+  exception_ = exception;
+}
+
+void job::mark_as_finished() noexcept {
+  finished_.store(true, std::memory_order_release);
+  finished_at_ = std::chrono::system_clock::now();
+}
+
+void job::throw_if_cancelled() const {
+  if (cancelled_.load(std::memory_order_acquire)) {
+    throw errors::job_cancelled();
+  }
+}
+
 std::exception_ptr job::exception() const noexcept {
   return exception_;
 }
@@ -51,29 +77,21 @@ std::chrono::system_clock::time_point job::finished_at() const noexcept {
   return finished_at_;
 }
 
-boost::asio::awaitable<void> job::run() noexcept {
-  started_.store(true, std::memory_order_release);
-  started_at_ = std::chrono::system_clock::now();
-
+boost::asio::awaitable<void> job::run() {
+  mark_as_started();
   try {
-    if (cancelled_.load(std::memory_order_acquire)) {
-      throw errors::job_cancelled();
-    }
+    throw_if_cancelled();
     co_await (*task_->callback())(cancelled_, data_);
   } catch (errors::job_cancelled&) {
-    cancelled_.store(true, std::memory_order_release);
-    cancelled_at_ = std::chrono::system_clock::now();
+    mark_as_cancelled();
   } catch (...) {
-    failed_.store(true, std::memory_order_release);
-    exception_ = std::current_exception();
+    mark_as_failed(std::current_exception());
   }
-
-  finished_.store(true, std::memory_order_release);
-  finished_at_ = std::chrono::system_clock::now();
+  mark_as_finished();
   co_return;
 }
 
 void job::cancel() noexcept {
-  cancelled_.store(true, std::memory_order_release);
+  mark_as_cancelled();
 }
 }  // namespace engine
