@@ -12,9 +12,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <engine/errors/task_not_found.hpp>
 #include <engine/job.hpp>
 #include <engine/queue.hpp>
 #include <engine/worker.hpp>
+
+#include <boost/core/ignore_unused.hpp>
 
 namespace engine {
 queue::queue(boost::asio::strand<boost::asio::io_context::executor_type> strand) : strand_(std::move(strand)) {

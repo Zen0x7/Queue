@@ -21,6 +21,8 @@
 #include <engine/worker.hpp>
 #include <thread>
 
+#include <boost/core/ignore_unused.hpp>
+
 TEST(queue, can_handle_jobs) {
   const auto _state = std::make_shared<engine::state>();
   const auto _queue = _state->add_queue("notifications");

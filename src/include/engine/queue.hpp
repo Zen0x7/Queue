@@ -15,13 +15,10 @@
 #ifndef ENGINE_QUEUE_HPP
 #define ENGINE_QUEUE_HPP
 
-#include <algorithm>
 #include <atomic>
 #include <boost/asio/strand.hpp>
-#include <boost/core/ignore_unused.hpp>
 #include <boost/json/object.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <engine/errors/task_not_found.hpp>
 #include <engine/worker.hpp>
 #include <map>
 #include <memory>
