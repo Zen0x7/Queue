@@ -28,10 +28,15 @@ std::uint64_t worker::number_of_tasks() const noexcept {
   return number_of_tasks_.load(std::memory_order_acquire);
 }
 
+boost::asio::awaitable<void> worker::run(const std::shared_ptr<job> job) {
+  co_await job->run();
+  co_return;
+}
+
 std::shared_ptr<job> worker::dispatch(const std::shared_ptr<task>& task, boost::json::object data) {
   auto _job = std::make_shared<job>(task, std::move(data));
   number_of_tasks_.fetch_add(1, std::memory_order_release);
-  co_spawn(strand_, [_job]() -> boost::asio::awaitable<void> { co_await _job->run(); }, boost::asio::detached);
+  co_spawn(strand_, run(_job), boost::asio::detached);
   return _job;
 }
 }  // namespace engine

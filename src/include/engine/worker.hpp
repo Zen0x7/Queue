@@ -32,6 +32,8 @@ class worker : public std::enable_shared_from_this<worker> {
   boost::asio::strand<boost::asio::io_context::executor_type> strand_;
   std::atomic<std::uint64_t> number_of_tasks_;
 
+  static boost::asio::awaitable<void> run(std::shared_ptr<job> job);
+
  public:
   explicit worker(boost::asio::strand<boost::asio::io_context::executor_type> strand);
   const boost::uuids::uuid& id() const noexcept;
