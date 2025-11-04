@@ -46,10 +46,15 @@ class job : public std::enable_shared_from_this<job> {
   bool failed() const noexcept;
   bool finished() const noexcept;
   bool cancelled() const noexcept;
+  void mark_as_started() noexcept;
+  void mark_as_cancelled() noexcept;
+  void mark_as_failed(const std::exception_ptr& exception) noexcept;
+  void mark_as_finished() noexcept;
+  void throw_if_cancelled() const;
   std::exception_ptr exception() const noexcept;
   std::chrono::system_clock::time_point started_at() const noexcept;
   std::chrono::system_clock::time_point finished_at() const noexcept;
-  boost::asio::awaitable<void> run() noexcept;
+  boost::asio::awaitable<void> run();
   void cancel() noexcept;
 };
 }  // namespace engine
