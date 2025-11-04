@@ -30,6 +30,24 @@ std::size_t queue::number_of_jobs() const {
   return jobs_.size();
 }
 
+std::shared_ptr<job> queue::dispatch(std::string const& name, boost::json::object data) {
+  const auto it = tasks_.find(name);
+  if (it == tasks_.end())
+    throw errors::task_not_found();
+  auto _comparator = [](const auto& a, const auto& b) { return a.second->number_of_tasks() < b.second->number_of_tasks(); };
+  auto _worker_iterator = std::ranges::min_element(workers_, _comparator);
+  auto const& [_, _worker] = *_worker_iterator;
+  boost::ignore_unused(_);
+  auto _job = _worker->dispatch(it->second, std::move(data));
+  std::scoped_lock _lock(jobs_mutex_);
+  jobs_.try_emplace(_job->id(), _job);
+  return _job;
+}
+
+void queue::add_task(std::string name, handler_type handler) {
+  tasks_[std::move(name)] = std::make_shared<task>(std::move(handler));
+}
+
 void queue::set_workers_to(const std::size_t number_of_workers) {
   if (workers_.size() < number_of_workers) {
     const std::size_t _needed = number_of_workers - workers_.size();

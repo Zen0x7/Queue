@@ -21,15 +21,14 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <functional>
 #include <memory>
 
 namespace engine {
-using handler_type = std::function<boost::asio::awaitable<void>(std::atomic<bool>&, boost::json::object const&)>;
+class task;
 
 class job : public std::enable_shared_from_this<job> {
   boost::uuids::uuid id_ = boost::uuids::random_generator()();
-  handler_type handler_;
+  std::shared_ptr<task> task_;
   std::atomic<bool> started_{false};
   std::atomic<bool> cancelled_{false};
   std::atomic<bool> finished_{false};
@@ -41,7 +40,7 @@ class job : public std::enable_shared_from_this<job> {
   boost::json::object data_;
 
  public:
-  explicit job(handler_type handler, boost::json::object data);
+  explicit job(const std::shared_ptr<task>& task, boost::json::object data);
   const boost::uuids::uuid& id() const noexcept;
   bool started() const noexcept;
   bool failed() const noexcept;
@@ -50,7 +49,6 @@ class job : public std::enable_shared_from_this<job> {
   std::exception_ptr exception() const noexcept;
   std::chrono::system_clock::time_point started_at() const noexcept;
   std::chrono::system_clock::time_point finished_at() const noexcept;
-
   boost::asio::awaitable<void> run() noexcept;
   void cancel() noexcept;
 };

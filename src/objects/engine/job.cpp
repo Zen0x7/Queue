@@ -14,9 +14,10 @@
 
 #include <engine/errors/job_cancelled.hpp>
 #include <engine/job.hpp>
+#include <engine/task.hpp>
 
 namespace engine {
-job::job(handler_type handler, boost::json::object data) : handler_(std::move(handler)), data_(std::move(data)) {}
+job::job(const std::shared_ptr<task>& task, boost::json::object data) : task_(task), data_(std::move(data)) {}
 
 const boost::uuids::uuid& job::id() const noexcept {
   return id_;
@@ -58,7 +59,7 @@ boost::asio::awaitable<void> job::run() noexcept {
     if (cancelled_.load(std::memory_order_acquire)) {
       throw errors::job_cancelled();
     }
-    co_await handler_(cancelled_, data_);
+    co_await (*task_->callback())(cancelled_, data_);
   } catch (errors::job_cancelled&) {
     cancelled_.store(true, std::memory_order_release);
     cancelled_at_ = std::chrono::system_clock::now();

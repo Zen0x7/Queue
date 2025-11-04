@@ -26,53 +26,26 @@
 #include <map>
 #include <memory>
 
+#include <engine/task.hpp>
+
 namespace engine {
 class worker;
-
 class job;
-
-using task_handler = std::function<boost::asio::awaitable<void>(std::atomic<bool>&, boost::json::object const&)>;
-
-using tasks_container = std::map<std::string, task_handler>;
 
 class queue : public std::enable_shared_from_this<queue> {
   boost::asio::strand<boost::asio::io_context::executor_type> strand_;
   std::map<boost::uuids::uuid, std::shared_ptr<worker>> workers_;
   std::map<boost::uuids::uuid, std::shared_ptr<job>> jobs_;
-  tasks_container tasks_;
-
   std::mutex jobs_mutex_;
+  std::map<std::string, std::shared_ptr<task>, std::less<>> tasks_;
 
  public:
   explicit queue(boost::asio::strand<boost::asio::io_context::executor_type> strand);
-
   std::size_t number_of_workers() const;
   std::size_t number_of_jobs() const;
-
-  std::shared_ptr<job> dispatch(std::string const& name, boost::json::object data) {
-    const auto it = tasks_.find(name);
-    if (it == tasks_.end())
-      throw errors::task_not_found();
-    auto handler = it->second;
-    auto _comparator = [](const auto& a, const auto& b) { return a.second->number_of_tasks() < b.second->number_of_tasks(); };
-    auto _worker_iterator = std::ranges::min_element(workers_, _comparator);
-    auto& [_, _worker] = *_worker_iterator;
-    boost::ignore_unused(_);
-    auto _job = _worker->dispatch(handler, std::move(data));
-    {
-      std::scoped_lock _lock(jobs_mutex_);
-      jobs_.try_emplace(_job->id(), _job);
-    }
-    return _job;
-  }
-
-  template <typename Handler>
-  void add_task(std::string name, Handler handler) {
-    tasks_[std::move(name)] = task_handler(std::move(handler));
-  }
-
+  std::shared_ptr<job> dispatch(std::string const& name, boost::json::object data);
+  void add_task(std::string name, handler_type handler);
   void set_workers_to(std::size_t number_of_workers);
-
   void cancel();
 };
 }  // namespace engine
