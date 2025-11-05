@@ -12,10 +12,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <engine/server.hpp>
+#pragma once
 
-int main() {
-  engine::server server;
-  server.start();
-  return 0;
-}
+#ifndef ENGINE_SESSION_HPP
+#define ENGINE_SESSION_HPP
+
+#include <boost/asio/awaitable.hpp>
+#include <boost/beast/core/tcp_stream.hpp>
+
+namespace engine {
+class state;
+
+boost::asio::awaitable<void> session(const std::shared_ptr<state> &state,
+                                     boost::beast::tcp_stream stream);
+}  // namespace engine
+
+#endif  // ENGINE_SESSION_HPP

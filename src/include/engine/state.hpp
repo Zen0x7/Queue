@@ -29,12 +29,16 @@ class state : public std::enable_shared_from_this<state> {
   boost::asio::io_context ioc_;
 
  public:
+  std::atomic<bool> running_{false};
+  std::atomic<unsigned short int> port_{0};
+
   ~state();
   std::map<std::string, std::shared_ptr<queue>, std::less<>>& queues() noexcept;
   std::shared_ptr<queue> get_queue(const std::string& name) noexcept;
   bool remove_queue(const std::string& name) noexcept;
   bool queue_exists(const std::string& name) noexcept;
   void run() noexcept;
+  boost::asio::io_context& ioc() noexcept;
 };
 }  // namespace engine
 

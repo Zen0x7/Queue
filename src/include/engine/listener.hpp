@@ -12,10 +12,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <engine/server.hpp>
+#pragma once
 
-int main() {
-  engine::server server;
-  server.start();
-  return 0;
-}
+#ifndef ENGINE_LISTENER_HPP
+#define ENGINE_LISTENER_HPP
+
+#include <boost/asio/awaitable.hpp>
+#include <boost/beast/core/tcp_stream.hpp>
+
+namespace engine {
+class state;
+
+boost::asio::awaitable<void> listener(const std::shared_ptr<state> &state,
+                                      boost::asio::ip::tcp::endpoint endpoint);
+}  // namespace engine
+
+#endif  // ENGINE_LISTENER_HPP

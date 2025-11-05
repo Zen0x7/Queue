@@ -55,4 +55,6 @@ void state::run() noexcept {
   ioc_.run();
   for (auto& _thread : _threads_container) _thread.join();
 }
+
+boost::asio::io_context& state::ioc() noexcept { return ioc_; }
 }  // namespace engine
