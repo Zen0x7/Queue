@@ -25,9 +25,8 @@ namespace engine {
 class state;
 
 boost::asio::awaitable<boost::beast::http::message_generator> kernel(
-    const std::shared_ptr<state> &state,
-    const boost::beast::http::request<boost::beast::http::string_body>
-        &request);
+    std::shared_ptr<state> state,
+    boost::beast::http::request<boost::beast::http::string_body> request);
 }  // namespace engine
 
 #endif  // ENGINE_KERNEL_HPP

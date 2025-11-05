@@ -12,19 +12,22 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+#ifndef ENGINE_STRING_HASHER_HPP
+#define ENGINE_STRING_HASHER_HPP
 
-#ifndef ENGINE_LISTENER_HPP
-#define ENGINE_LISTENER_HPP
+#include <string>
 
-#include <boost/asio/awaitable.hpp>
-#include <boost/beast/core/tcp_stream.hpp>
+struct string_hasher {
+  using is_transparent = void;
+  std::size_t operator()(std::string_view sv) const noexcept {
+    return std::hash<std::string_view>{}(sv);
+  }
+  std::size_t operator()(std::string const& s) const noexcept {
+    return operator()(std::string_view{s});
+  }
+  std::size_t operator()(char const* s) const noexcept {
+    return operator()(std::string_view{s});
+  }
+};
 
-namespace engine {
-class state;
-
-boost::asio::awaitable<void> listener(std::shared_ptr<state> state,
-                                      boost::asio::ip::tcp::endpoint endpoint);
-}  // namespace engine
-
-#endif  // ENGINE_LISTENER_HPP
+#endif  // ENGINE_STRING_HASHER_HPP

@@ -21,16 +21,18 @@
 #include <boost/beast/http/write.hpp>
 #include <engine/server.hpp>
 #include <engine/state.hpp>
+#include <thread>
 
 class server : public testing::Test {
- protected:
+ public:
   std::shared_ptr<engine::server> server_;
-  std::shared_ptr<std::thread> thread_;
+  std::shared_ptr<std::jthread> thread_;
 
+ protected:
   void SetUp() override {
     server_ = std::make_shared<engine::server>();
 
-    thread_ = std::make_shared<std::thread>([&]() { server_->start(); });
+    thread_ = std::make_shared<std::jthread>([this]() { server_->start(); });
 
     thread_->detach();
 

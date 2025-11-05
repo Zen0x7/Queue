@@ -12,7 +12,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <engine/errors/job_cancelled.hpp>
+#include <engine/errors/cancel_error.hpp>
 #include <engine/job.hpp>
 #include <engine/task.hpp>
 
@@ -60,7 +60,7 @@ void job::mark_as_finished() noexcept {
 
 void job::throw_if_cancelled() const {
   if (cancelled_.load(std::memory_order_acquire)) {
-    throw errors::job_cancelled();
+    throw errors::cancel_error();
   }
 }
 
@@ -79,7 +79,7 @@ boost::asio::awaitable<void> job::run() {
   try {
     throw_if_cancelled();
     co_await (*task_->callback())(cancelled_, data_);
-  } catch (errors::job_cancelled&) {
+  } catch (errors::cancel_error&) {
     mark_as_cancelled();
   } catch (...) {
     mark_as_failed(std::current_exception());

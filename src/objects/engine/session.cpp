@@ -21,7 +21,7 @@
 #include <engine/session.hpp>
 
 namespace engine {
-boost::asio::awaitable<void> session(const std::shared_ptr<state> &state,
+boost::asio::awaitable<void> session(std::shared_ptr<state> state,
                                      boost::beast::tcp_stream stream) {
   boost::beast::flat_buffer _buffer;
 
@@ -32,7 +32,7 @@ boost::asio::awaitable<void> session(const std::shared_ptr<state> &state,
     co_await boost::beast::http::async_read(stream, _buffer, _request);
 
     boost::beast::http::message_generator _message =
-        co_await kernel(state, _request);
+        co_await kernel(state, std::move(_request));
 
     const bool keep_alive = _message.keep_alive();
     co_await boost::beast::async_write(stream, std::move(_message));

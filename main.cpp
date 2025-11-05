@@ -15,7 +15,7 @@
 #include <engine/server.hpp>
 
 int main() {
-  engine::server server;
-  server.start();
+  const engine::server server;
+  server.start(9000);
   return 0;
 }

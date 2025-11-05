@@ -13,13 +13,14 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <boost/asio/co_spawn.hpp>
+#include <engine/errors/session_error.hpp>
 #include <engine/listener.hpp>
 #include <engine/session.hpp>
 #include <engine/state.hpp>
 #include <iostream>
 
 namespace engine {
-boost::asio::awaitable<void> listener(const std::shared_ptr<state> &state,
+boost::asio::awaitable<void> listener(std::shared_ptr<state> state,
                                       boost::asio::ip::tcp::endpoint endpoint) {
   const auto _executor = co_await boost::asio::this_coro::executor;
   auto _acceptor = boost::asio::ip::tcp::acceptor{_executor, endpoint};
@@ -37,8 +38,17 @@ boost::asio::awaitable<void> listener(const std::shared_ptr<state> &state,
           if (throwable) {
             try {
               std::rethrow_exception(throwable);
-            } catch (std::exception const &exception) {
-              std::cerr << "Error in session: " << exception.what() << "\n";
+            } catch (const errors::session_error &exception) {
+              std::cerr << "[Listener] Error in session: " << exception.what()
+                        << std::endl;
+            } catch (const std::system_error &exception) {
+              std::cerr << "[Listener] System error: " << exception.what()
+                        << std::endl;
+            } catch (const boost::system::system_error &exception) {
+              std::cerr << "[Listener] Boost error: " << exception.what()
+                        << std::endl;
+            } catch (...) {
+              std::cerr << "[Listener] Unknown exception thrown." << std::endl;
             }
           }
         });

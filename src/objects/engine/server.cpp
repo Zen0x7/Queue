@@ -28,12 +28,18 @@ void server::start(const unsigned short int port) const {
 
   co_spawn(state_->ioc(),
            listener(state_, boost::asio::ip::tcp::endpoint{_address, port}),
-           [](const std::exception_ptr& throwable) {
+           [](const std::exception_ptr &throwable) {
              if (throwable) {
                try {
                  std::rethrow_exception(throwable);
-               } catch (std::exception const& exception) {
-                 std::cerr << "Error: " << exception.what() << std::endl;
+               } catch (const std::system_error &exception) {
+                 std::cerr << "[Server] System error: " << exception.what()
+                           << std::endl;
+               } catch (const boost::system::system_error &exception) {
+                 std::cerr << "[Server] Boost error: " << exception.what()
+                           << std::endl;
+               } catch (...) {
+                 std::cerr << "[Server] Unknown exception thrown." << std::endl;
                }
              }
            });

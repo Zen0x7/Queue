@@ -23,7 +23,7 @@
 namespace engine {
 class state;
 
-boost::asio::awaitable<void> session(const std::shared_ptr<state> &state,
+boost::asio::awaitable<void> session(std::shared_ptr<state> state,
                                      boost::beast::tcp_stream stream);
 }  // namespace engine
 
