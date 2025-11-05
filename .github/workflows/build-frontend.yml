@@ -15,5 +15,7 @@ jobs:
         with:
           node-version: '22.x'
 
-      - run: yarn
-      - run: yarn build
+      - run: | 
+          cd frontend
+          yarn
+          yarn build
