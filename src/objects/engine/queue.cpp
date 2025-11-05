@@ -17,7 +17,7 @@
 #include <engine/queue.hpp>
 #include <engine/worker.hpp>
 
-#include <boost/core/ignore_unused.hpp>
+#include <ranges>
 
 namespace engine {
 queue::queue(boost::asio::strand<boost::asio::io_context::executor_type> strand) : strand_(std::move(strand)) {
@@ -53,7 +53,7 @@ void queue::set_workers_to(const std::size_t no_of_workers) {
 
 void queue::cancel() {
   std::scoped_lock _lock(jobs_mutex_);
-  for (auto& [_, _job] : jobs_) {
+  for (const std::shared_ptr<job>& _job : jobs_ | std::views::values) {
     _job->cancel();
   }
 }
