@@ -13,14 +13,14 @@ endif ()
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g --coverage -fprofile-arcs -ftest-coverage")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-find_package(Boost 1.89.0 REQUIRED COMPONENTS
+find_package(Boost REQUIRED COMPONENTS
         program_options
         json
         charconv
 )
 
 include_directories(src/include)
-list(APPEND USED_LIBRARIES ${Boost_LIBRARIES})
+list(APPEND USED_LIBRARIES ${Boost_LIBRARIES} bcrypt)
 
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/objects/*.cpp")
 
