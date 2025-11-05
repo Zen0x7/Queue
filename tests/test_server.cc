@@ -34,31 +34,28 @@ class server : public testing::Test {
   void SetUp() override {
     server_ = std::make_shared<engine::server>();
 
-    thread_ = std::make_shared<std::jthread>([this]() {
-      auto _router = server_->get_state()->get_router();
+    auto _router = server_->get_state()->get_router();
 
-      _router->add(std::make_shared<engine::route>(
-          std::vector<boost::beast::http::verb>{
-              boost::beast::http::verb::get,
-          },
-          "/system_error",
-          std::make_shared<engine::controller>(
-              [](const std::shared_ptr<engine::state> &state,
-                 const boost::beast::http::request<
-                     boost::beast::http::string_body>
-                     request)
-                  -> boost::asio::awaitable<boost::beast::http::response<
-                      boost::beast::http::string_body>> {
-                boost::beast::http::response<boost::beast::http::empty_body>
-                    _response{boost::beast::http::status::ok,
-                              request.version()};
-                _response.prepare_payload();
-                throw std::system_error();
-                co_return _response;
-              })));
+    _router->add(std::make_shared<engine::route>(
+        std::vector{
+            boost::beast::http::verb::get,
+        },
+        "/system_error",
+        std::make_shared<engine::controller>(
+            [](const std::shared_ptr<engine::state> &state,
+               const boost::beast::http::request<
+                   boost::beast::http::string_body>
+                   request)
+                -> boost::asio::awaitable<boost::beast::http::response<
+                    boost::beast::http::string_body>> {
+              boost::beast::http::response<boost::beast::http::empty_body>
+                  _response{boost::beast::http::status::ok, request.version()};
+              _response.prepare_payload();
+              throw std::system_error();
+              co_return _response;
+            })));
 
-      server_->start();
-    });
+    thread_ = std::make_shared<std::jthread>([this]() { server_->start(); });
 
     thread_->detach();
 

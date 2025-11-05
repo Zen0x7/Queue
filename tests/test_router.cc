@@ -26,7 +26,7 @@ TEST(router, can_resolve_requests) {
 
   _router
       ->add(std::make_shared<engine::route>(
-          std::vector<boost::beast::http::verb>{
+          std::vector{
               boost::beast::http::verb::post,
           },
           "/transactions/{id}",
@@ -44,7 +44,7 @@ TEST(router, can_resolve_requests) {
                 co_return _response;
               })))
       ->add(std::make_shared<engine::route>(
-          std::vector<boost::beast::http::verb>{
+          std::vector{
               boost::beast::http::verb::delete_,
           },
           "/users/{id}",

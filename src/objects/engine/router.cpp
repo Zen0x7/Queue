@@ -16,7 +16,9 @@
 #include <engine/router.hpp>
 
 namespace engine {
-std::vector<std::shared_ptr<route>> router::get_routes() { return routes_; }
+std::vector<std::shared_ptr<route>> router::get_routes() const {
+  return routes_;
+}
 
 std::shared_ptr<router> router::add(std::shared_ptr<route> route) {
   routes_.push_back(std::move(route));
@@ -26,7 +28,8 @@ std::shared_ptr<router> router::add(std::shared_ptr<route> route) {
 std::tuple<std::unordered_map<std::string, std::string, string_hasher,
                               std::equal_to<>>,
            std::shared_ptr<route>>
-router::find(const boost::beast::http::verb verb, const std::string &path) {
+router::find(const boost::beast::http::verb verb,
+             const std::string &path) const {
   for (auto const &_route : get_routes()) {
     if (auto [_matched, _params] = _route->match(path);
         std::ranges::find(_route->get_verbs(), verb) !=
@@ -38,7 +41,7 @@ router::find(const boost::beast::http::verb verb, const std::string &path) {
   throw errors::not_found_error();
 }
 
-std::vector<std::string> router::methods_of(const std::string &path) {
+std::vector<std::string> router::methods_of(const std::string &path) const {
   std::vector<std::string> _methods;
   for (auto const &_route : get_routes()) {
     if (auto [_matched, _params] = _route->match(path); _matched) {

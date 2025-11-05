@@ -31,7 +31,7 @@ state::queues() noexcept {
   return queues_;
 }
 
-std::shared_ptr<router> state::get_router() noexcept { return router_; }
+std::shared_ptr<router> state::get_router() const noexcept { return router_; }
 
 std::shared_ptr<queue> state::get_queue(const std::string& name) noexcept {
   std::scoped_lock _lock(queues_mutex_);
