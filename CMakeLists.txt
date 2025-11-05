@@ -20,7 +20,7 @@ find_package(Boost 1.89.0 REQUIRED COMPONENTS
 )
 
 include_directories(src/include)
-list(APPEND USED_LIBRARIES ${Boost_LIBRARIES})
+list(APPEND USED_LIBRARIES ${Boost_LIBRARIES} bcrypt)
 
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/objects/*.cpp")
 
