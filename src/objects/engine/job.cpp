@@ -17,11 +17,10 @@
 #include <engine/task.hpp>
 
 namespace engine {
-job::job(const std::shared_ptr<task>& task, boost::json::object data) : task_(task), data_(std::move(data)) {}
+job::job(const std::shared_ptr<task>& task, boost::json::object data)
+    : task_(task), data_(std::move(data)) {}
 
-const boost::uuids::uuid& job::id() const noexcept {
-  return id_;
-}
+const boost::uuids::uuid& job::id() const noexcept { return id_; }
 
 bool job::started() const noexcept {
   return started_.load(std::memory_order_acquire);
@@ -65,9 +64,7 @@ void job::throw_if_cancelled() const {
   }
 }
 
-std::exception_ptr job::exception() const noexcept {
-  return exception_;
-}
+std::exception_ptr job::exception() const noexcept { return exception_; }
 
 std::chrono::system_clock::time_point job::started_at() const noexcept {
   return started_at_;
@@ -91,7 +88,5 @@ boost::asio::awaitable<void> job::run() {
   co_return;
 }
 
-void job::cancel() noexcept {
-  mark_as_cancelled();
-}
+void job::cancel() noexcept { mark_as_cancelled(); }
 }  // namespace engine

@@ -18,14 +18,14 @@
 #define ENGINE_TASK_HPP
 
 #include <atomic>
+#include <boost/asio/awaitable.hpp>
+#include <boost/json/object.hpp>
 #include <functional>
 #include <memory>
 
-#include <boost/asio/awaitable.hpp>
-#include <boost/json/object.hpp>
-
 namespace engine {
-using handler_signature_type = boost::asio::awaitable<void>(std::atomic<bool>&, boost::json::object const&);
+using handler_signature_type = boost::asio::awaitable<void>(
+    std::atomic<bool>&, boost::json::object const&);
 using handler_type = std::function<handler_signature_type>;
 
 class task : public std::enable_shared_from_this<task> {

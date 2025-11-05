@@ -35,10 +35,12 @@ class worker : public std::enable_shared_from_this<worker> {
   static boost::asio::awaitable<void> run(std::shared_ptr<job> job);
 
  public:
-  explicit worker(boost::asio::strand<boost::asio::io_context::executor_type> strand);
+  explicit worker(
+      boost::asio::strand<boost::asio::io_context::executor_type> strand);
   const boost::uuids::uuid& id() const noexcept;
   std::uint64_t number_of_tasks() const noexcept;
-  std::shared_ptr<job> dispatch(const std::shared_ptr<task>& task, boost::json::object data);
+  std::shared_ptr<job> dispatch(const std::shared_ptr<task>& task,
+                                boost::json::object data);
 };
 }  // namespace engine
 

@@ -1,5 +1,3 @@
 ---
 Language: Cpp
-BasedOnStyle: Chromium
-
-ColumnLimit: 200
+BasedOnStyle: Google

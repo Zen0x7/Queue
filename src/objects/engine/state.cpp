@@ -23,13 +23,15 @@ state::~state() {
   queues_.clear();
 }
 
-std::map<std::string, std::shared_ptr<queue>, std::less<>>& state::queues() noexcept {
+std::map<std::string, std::shared_ptr<queue>, std::less<>>&
+state::queues() noexcept {
   return queues_;
 }
 
 std::shared_ptr<queue> state::get_queue(const std::string& name) noexcept {
   std::scoped_lock _lock(queues_mutex_);
-  auto [_it, _ignored] = queues_.try_emplace(name, std::make_shared<queue>(make_strand(ioc_)));
+  auto [_it, _ignored] =
+      queues_.try_emplace(name, std::make_shared<queue>(make_strand(ioc_)));
   boost::ignore_unused(_ignored);
   return _it->second;
 }
@@ -51,7 +53,6 @@ void state::run() noexcept {
   for (auto _i = _threads - 1; _i > 0; --_i)
     _threads_container.emplace_back([this] { this->ioc_.run(); });
   ioc_.run();
-  for (auto& _thread : _threads_container)
-    _thread.join();
+  for (auto& _thread : _threads_container) _thread.join();
 }
 }  // namespace engine

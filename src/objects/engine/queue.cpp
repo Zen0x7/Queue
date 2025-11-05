@@ -16,23 +16,20 @@
 #include <engine/job.hpp>
 #include <engine/queue.hpp>
 #include <engine/worker.hpp>
-
 #include <ranges>
 
 namespace engine {
-queue::queue(boost::asio::strand<boost::asio::io_context::executor_type> strand) : strand_(std::move(strand)) {
+queue::queue(boost::asio::strand<boost::asio::io_context::executor_type> strand)
+    : strand_(std::move(strand)) {
   prepare();
 }
 
-std::size_t queue::number_of_workers() const {
-  return workers_.size();
-}
+std::size_t queue::number_of_workers() const { return workers_.size(); }
 
-std::size_t queue::number_of_jobs() const {
-  return jobs_.size();
-}
+std::size_t queue::number_of_jobs() const { return jobs_.size(); }
 
-std::shared_ptr<job> queue::dispatch(std::string const& name, boost::json::object data) {
+std::shared_ptr<job> queue::dispatch(std::string const& name,
+                                     boost::json::object data) {
   auto _job = get_worker()->dispatch(get_task(name), std::move(data));
   dispatch(_job);
   return _job;
@@ -58,14 +55,13 @@ void queue::cancel() {
   }
 }
 
-void queue::prepare() {
-  upscale();
-}
+void queue::prepare() { upscale(); }
 
 void queue::upscale(const std::size_t to) {
   std::scoped_lock _lock(workers_mutex_);
   while (number_of_workers() != to) {
-    auto _worker = std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
+    auto _worker =
+        std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
     workers_.try_emplace(_worker->id(), _worker);
   }
 }
@@ -85,16 +81,18 @@ void queue::dispatch(const std::shared_ptr<job>& job) {
 
 std::shared_ptr<worker> queue::get_worker() {
   std::scoped_lock _lock(workers_mutex_);
-  auto _comparator = [](const auto& a, const auto& b) { return a.second->number_of_tasks() < b.second->number_of_tasks(); };
-  const auto _iterator = std::ranges::min_element(workers_, _comparator);
-  return _iterator->second;
+  const auto _iterator = std::ranges::min_element(
+      workers_ | std::views::values,
+      [](const std::shared_ptr<worker>& a, const std::shared_ptr<worker>& b) {
+        return a->number_of_tasks() < b->number_of_tasks();
+      });
+  return *_iterator;
 }
 
 std::shared_ptr<task> queue::get_task(const std::string& name) {
   std::scoped_lock _lock(tasks_mutex_);
   const auto it = tasks_.find(name);
-  if (it == tasks_.end())
-    throw errors::task_not_found();
+  if (it == tasks_.end()) throw errors::task_not_found();
   return it->second;
 }
 }  // namespace engine
