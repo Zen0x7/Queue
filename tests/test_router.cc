@@ -91,6 +91,17 @@ TEST(router, can_resolve_requests) {
     bool throws = false;
     try {
       auto [_params, _route] =
+          _router->find(boost::beast::http::verb::delete_, "/transactions/5");
+    } catch (const engine::errors::not_found_error &) {
+      throws = true;
+    }
+    ASSERT_TRUE(throws);
+  }
+
+  {
+    bool throws = false;
+    try {
+      auto [_params, _route] =
           _router->find(boost::beast::http::verb::post, "/not_found");
     } catch (const engine::errors::not_found_error &) {
       throws = true;
