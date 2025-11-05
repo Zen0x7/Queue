@@ -29,7 +29,10 @@ TEST(route, can_be_instanced) {
   auto _controller = std::make_shared<engine::controller>(
       [](const std::shared_ptr<engine::state> &state,
          const boost::beast::http::request<boost::beast::http::string_body>
-             request)
+             request,
+         std::unordered_map<std::string, std::string, string_hasher,
+                            std::equal_to<>>
+             params)
           -> boost::asio::awaitable<
               boost::beast::http::response<boost::beast::http::string_body>> {
         boost::beast::http::response<boost::beast::http::empty_body> _response{
@@ -47,7 +50,10 @@ TEST(route, can_be_instanced) {
       std::make_shared<engine::controller>(
           [](const std::shared_ptr<engine::state> &state,
              const boost::beast::http::request<boost::beast::http::string_body>
-                 request)
+                 request,
+             std::unordered_map<std::string, std::string, string_hasher,
+                                std::equal_to<>>
+                 params)
               -> boost::asio::awaitable<boost::beast::http::response<
                   boost::beast::http::string_body>> {
             boost::beast::http::response<boost::beast::http::empty_body>
@@ -64,7 +70,10 @@ TEST(route, can_be_compiled) {
   auto _controller = std::make_shared<engine::controller>(
       [](const std::shared_ptr<engine::state> &state,
          const boost::beast::http::request<boost::beast::http::string_body>
-             request)
+             request,
+         std::unordered_map<std::string, std::string, string_hasher,
+                            std::equal_to<>>
+             params)
           -> boost::asio::awaitable<
               boost::beast::http::response<boost::beast::http::string_body>> {
         boost::beast::http::response<boost::beast::http::empty_body> _response{
@@ -82,7 +91,10 @@ TEST(route, can_be_compiled) {
       std::make_shared<engine::controller>(
           [](const std::shared_ptr<engine::state> &state,
              const boost::beast::http::request<boost::beast::http::string_body>
-                 request)
+                 request,
+             std::unordered_map<std::string, std::string, string_hasher,
+                                std::equal_to<>>
+                 params)
               -> boost::asio::awaitable<boost::beast::http::response<
                   boost::beast::http::string_body>> {
             boost::beast::http::response<boost::beast::http::empty_body>
@@ -101,7 +113,10 @@ TEST(route, can_be_invoked) {
   auto _controller = std::make_shared<engine::controller>(
       [](const std::shared_ptr<engine::state> &state,
          const boost::beast::http::request<boost::beast::http::string_body>
-             request)
+             request,
+         std::unordered_map<std::string, std::string, string_hasher,
+                            std::equal_to<>>
+             params)
           -> boost::asio::awaitable<
               boost::beast::http::response<boost::beast::http::string_body>> {
         boost::beast::http::response<boost::beast::http::empty_body> _response{
@@ -122,7 +137,10 @@ TEST(route, can_be_invoked) {
           [&_executed](
               const std::shared_ptr<engine::state> &state,
               const boost::beast::http::request<boost::beast::http::string_body>
-                  request)
+                  request,
+              std::unordered_map<std::string, std::string, string_hasher,
+                                 std::equal_to<>>
+                  params)
               -> boost::asio::awaitable<boost::beast::http::response<
                   boost::beast::http::string_body>> {
             boost::beast::http::response<boost::beast::http::empty_body>
@@ -142,7 +160,9 @@ TEST(route, can_be_invoked) {
   _request.prepare_payload();
 
   const auto _state = std::make_shared<engine::state>();
-  co_spawn(_ioc, (_callback)(_state, _request), boost::asio::detached);
+  std::unordered_map<std::string, std::string, string_hasher, std::equal_to<>>
+      _params;
+  co_spawn(_ioc, (_callback)(_state, _request, _params), boost::asio::detached);
   _ioc.run();
   ASSERT_TRUE(_executed->load(std::memory_order_acquire));
 }
@@ -151,7 +171,10 @@ TEST(route, can_be_matched) {
   auto _controller = std::make_shared<engine::controller>(
       [](const std::shared_ptr<engine::state> &state,
          const boost::beast::http::request<boost::beast::http::string_body>
-             request)
+             request,
+         std::unordered_map<std::string, std::string, string_hasher,
+                            std::equal_to<>>
+             params)
           -> boost::asio::awaitable<
               boost::beast::http::response<boost::beast::http::string_body>> {
         boost::beast::http::response<boost::beast::http::empty_body> _response{
@@ -172,7 +195,10 @@ TEST(route, can_be_matched) {
           [&_executed](
               const std::shared_ptr<engine::state> &state,
               const boost::beast::http::request<boost::beast::http::string_body>
-                  request)
+                  request,
+              std::unordered_map<std::string, std::string, string_hasher,
+                                 std::equal_to<>>
+                  params)
               -> boost::asio::awaitable<boost::beast::http::response<
                   boost::beast::http::string_body>> {
             boost::beast::http::response<boost::beast::http::empty_body>
@@ -203,7 +229,10 @@ TEST(route, throw_error_on_duplicated_parameters) {
   auto _controller = std::make_shared<engine::controller>(
       [](const std::shared_ptr<engine::state> &state,
          const boost::beast::http::request<boost::beast::http::string_body>
-             request)
+             request,
+         std::unordered_map<std::string, std::string, string_hasher,
+                            std::equal_to<>>
+             params)
           -> boost::asio::awaitable<
               boost::beast::http::response<boost::beast::http::string_body>> {
         boost::beast::http::response<boost::beast::http::empty_body> _response{
@@ -227,7 +256,10 @@ TEST(route, throw_error_on_duplicated_parameters) {
             [&_executed](const std::shared_ptr<engine::state> &state,
                          const boost::beast::http::request<
                              boost::beast::http::string_body>
-                             request)
+                             request,
+                         std::unordered_map<std::string, std::string,
+                                            string_hasher, std::equal_to<>>
+                             params)
                 -> boost::asio::awaitable<boost::beast::http::response<
                     boost::beast::http::string_body>> {
               boost::beast::http::response<boost::beast::http::empty_body>

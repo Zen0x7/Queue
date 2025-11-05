@@ -44,8 +44,8 @@ boost::asio::awaitable<boost::beast::http::message_generator> kernel(
   try {
     auto [_params, _route] =
         state->get_router()->find(request.method(), request.target());
-    auto _response =
-        co_await _route->get_controller()->callback()(state, request);
+    auto _response = co_await _route->get_controller()->callback()(
+        state, request, std::move(_params));
     _response.set(fields::access_control_allow_origin, "*");
     co_return _response;
   } catch (const errors::not_found_error &) {
