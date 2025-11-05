@@ -21,27 +21,26 @@
 #include <engine/session.hpp>
 
 namespace engine {
-boost::asio::awaitable<void> session(const std::shared_ptr<state> &state,
-                                     boost::beast::tcp_stream stream) {
-  boost::beast::flat_buffer _buffer;
+    boost::asio::awaitable<void> session(std::shared_ptr<state> state, boost::beast::tcp_stream stream) {
+        boost::beast::flat_buffer _buffer;
 
-  for (;;) {
-    stream.expires_after(std::chrono::seconds(5));
+        for (;;) {
+            stream.expires_after(std::chrono::seconds(5));
 
-    boost::beast::http::request<boost::beast::http::string_body> _request;
-    co_await boost::beast::http::async_read(stream, _buffer, _request);
+            boost::beast::http::request<boost::beast::http::string_body> _request;
+            co_await boost::beast::http::async_read(stream, _buffer, _request);
 
-    boost::beast::http::message_generator _message =
-        co_await kernel(state, _request);
+            boost::beast::http::message_generator _message =
+                co_await kernel(state, std::move(_request));
 
-    const bool keep_alive = _message.keep_alive();
-    co_await boost::beast::async_write(stream, std::move(_message));
+            const bool keep_alive = _message.keep_alive();
+            co_await boost::beast::async_write(stream, std::move(_message));
 
-    if (!keep_alive) {
-      break;
+            if (!keep_alive) {
+                break;
+            }
+        }
+
+        stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_send);
     }
-  }
-
-  stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_send);
-}
 }  // namespace engine

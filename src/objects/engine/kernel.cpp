@@ -15,11 +15,13 @@
 #include <boost/beast/http/empty_body.hpp>
 #include <engine/kernel.hpp>
 
+#include <engine/controller.hpp>
+#include <engine/route.hpp>
+
 namespace engine {
 boost::asio::awaitable<boost::beast::http::message_generator> kernel(
-    const std::shared_ptr<state> &state,
-    const boost::beast::http::request<boost::beast::http::string_body>
-        &request) {
+    std::shared_ptr<state> state,
+    boost::beast::http::request<boost::beast::http::string_body> request) {
   boost::beast::http::response<boost::beast::http::empty_body> _response{
       boost::beast::http::status::ok, request.version()};
   _response.prepare_payload();

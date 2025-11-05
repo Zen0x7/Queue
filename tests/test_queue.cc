@@ -15,7 +15,7 @@
 #include <gtest/gtest.h>
 
 #include <boost/core/ignore_unused.hpp>
-#include <engine/errors/job_cancelled.hpp>
+#include <engine/errors/cancel_error.hpp>
 #include <engine/job.hpp>
 #include <engine/queue.hpp>
 #include <engine/state.hpp>
@@ -232,7 +232,7 @@ TEST(queue, can_handle_cancellations) {
       "cancel",
       [](auto& cancelled, auto& data) -> boost::asio::awaitable<void> {
         boost::ignore_unused(cancelled, data);
-        throw engine::errors::job_cancelled();
+        throw engine::errors::cancel_error();
         co_return;
       });
 

@@ -12,19 +12,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
+#ifndef ENGINE_ERRORS_CANCEL_ERROR_HPP
+#define ENGINE_ERRORS_CANCEL_ERROR_HPP
 
-#ifndef ENGINE_LISTENER_HPP
-#define ENGINE_LISTENER_HPP
+#include <exception>
 
-#include <boost/asio/awaitable.hpp>
-#include <boost/beast/core/tcp_stream.hpp>
+namespace engine::errors {
+class cancel_error final : public std::exception {};
+}  // namespace engine::errors
 
-namespace engine {
-class state;
-
-boost::asio::awaitable<void> listener(std::shared_ptr<state> state,
-                                      boost::asio::ip::tcp::endpoint endpoint);
-}  // namespace engine
-
-#endif  // ENGINE_LISTENER_HPP
+#endif  // ENGINE_ERRORS_CANCEL_ERROR_HPP

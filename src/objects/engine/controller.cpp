@@ -12,19 +12,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
-#ifndef ENGINE_LISTENER_HPP
-#define ENGINE_LISTENER_HPP
-
-#include <boost/asio/awaitable.hpp>
-#include <boost/beast/core/tcp_stream.hpp>
+#include <engine/controller.hpp>
 
 namespace engine {
-class state;
+    controller::controller(controller_callback_type callback) : callback_(std::move(callback)) {
+    }
 
-boost::asio::awaitable<void> listener(std::shared_ptr<state> state,
-                                      boost::asio::ip::tcp::endpoint endpoint);
+    controller_callback_type & controller::callback() noexcept {
+        return callback_;
+    }
 }  // namespace engine
-
-#endif  // ENGINE_LISTENER_HPP
