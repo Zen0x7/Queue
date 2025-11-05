@@ -34,7 +34,10 @@ TEST(router, can_resolve_requests) {
               [](const std::shared_ptr<engine::state> &state,
                  const boost::beast::http::request<
                      boost::beast::http::string_body>
-                     request)
+                     request,
+                 std::unordered_map<std::string, std::string, string_hasher,
+                                    std::equal_to<>>
+                     params)
                   -> boost::asio::awaitable<boost::beast::http::response<
                       boost::beast::http::string_body>> {
                 boost::beast::http::response<boost::beast::http::empty_body>
@@ -52,7 +55,10 @@ TEST(router, can_resolve_requests) {
               [](const std::shared_ptr<engine::state> &state,
                  const boost::beast::http::request<
                      boost::beast::http::string_body>
-                     request)
+                     request,
+                 std::unordered_map<std::string, std::string, string_hasher,
+                                    std::equal_to<>>
+                     params)
                   -> boost::asio::awaitable<boost::beast::http::response<
                       boost::beast::http::string_body>> {
                 boost::beast::http::response<boost::beast::http::empty_body>
