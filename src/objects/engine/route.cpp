@@ -74,6 +74,7 @@ route::match(const std::string &input) {
     _matches = true;
     auto _iterator = _match.begin();
     ++_iterator;
+    _bindings.reserve(get_parameters().size());
     for (auto const &_key : get_parameters()) {
       _bindings[_key] = *_iterator;
       ++_iterator;
