@@ -37,4 +37,18 @@ router::find(const boost::beast::http::verb verb, const std::string &path) {
   }
   throw errors::not_found_error();
 }
+
+std::vector<std::string> router::methods_of(const std::string &path) {
+  std::vector<std::string> _methods;
+  for (auto const &_route : get_routes()) {
+    if (auto [_matched, _params] = _route->match(path); _matched) {
+      _methods.reserve(_route->get_verbs().size());
+      for (auto const &verb : _route->get_verbs()) {
+        _methods.push_back(to_string(verb));
+      }
+      return _methods;
+    }
+  }
+  return _methods;
+}
 }  // namespace engine

@@ -14,10 +14,13 @@
 
 #include <boost/core/ignore_unused.hpp>
 #include <engine/queue.hpp>
+#include <engine/router.hpp>
 #include <engine/state.hpp>
 #include <thread>
 
 namespace engine {
+state::state() : router_(std::make_shared<router>()) {}
+
 state::~state() {
   std::scoped_lock _lock(queues_mutex_);
   queues_.clear();
@@ -27,6 +30,8 @@ std::map<std::string, std::shared_ptr<queue>, std::less<>>&
 state::queues() noexcept {
   return queues_;
 }
+
+std::shared_ptr<router> state::get_router() noexcept { return router_; }
 
 std::shared_ptr<queue> state::get_queue(const std::string& name) noexcept {
   std::scoped_lock _lock(queues_mutex_);

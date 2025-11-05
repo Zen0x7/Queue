@@ -111,3 +111,35 @@ TEST_F(server, can_timeout_http_sessions) {
 
   ASSERT_EQ(_disconnect_ec, boost::beast::errc::not_connected);
 }
+
+TEST_F(server, can_handle_http_cors_request) {
+  boost::asio::io_context _client_ioc;
+  boost::asio::ip::tcp::resolver _resolver(_client_ioc);
+  const std::string _host = "127.0.0.1";
+  const unsigned short int _port = server_->get_state()->port_.load();
+  auto const _tcp_resolver_results =
+      _resolver.resolve(_host, std::to_string(_port));
+  boost::beast::tcp_stream _stream(_client_ioc);
+  _stream.connect(_tcp_resolver_results);
+
+  boost::beast::http::request<boost::beast::http::string_body> _request{
+      boost::beast::http::verb::options, "/status", 11};
+  _request.set(boost::beast::http::field::host, _host);
+  _request.set(boost::beast::http::field::user_agent, "Client");
+  _request.prepare_payload();
+
+  boost::beast::http::write(_stream, _request);
+  boost::beast::flat_buffer _buffer;
+
+  boost::beast::http::response<boost::beast::http::string_body> _response;
+  boost::beast::http::read(_stream, _buffer, _response);
+
+  ASSERT_EQ(_response.body().size(), 0);
+  ASSERT_EQ(_response.result_int(), 204);
+  ASSERT_EQ(_response[boost::beast::http::field::access_control_allow_methods],
+            "GET");
+
+  boost::beast::error_code _ec;
+  _stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, _ec);
+  ASSERT_EQ(_ec, boost::beast::errc::success);
+}

@@ -32,7 +32,9 @@ class router : public std::enable_shared_from_this<router> {
   std::tuple<std::unordered_map<std::string, std::string, string_hasher,
                                 std::equal_to<>>,
              std::shared_ptr<route>>
+
   find(boost::beast::http::verb verb, const std::string &path);
+  std::vector<std::string> methods_of(const std::string &path);
 };
 }  // namespace engine
 
