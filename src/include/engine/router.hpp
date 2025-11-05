@@ -25,7 +25,7 @@ class router : public std::enable_shared_from_this<router> {
   std::vector<std::shared_ptr<route>> routes_;
 
  public:
-  std::vector<std::shared_ptr<route>> get_routes();
+  std::vector<std::shared_ptr<route>> get_routes() const;
 
   std::shared_ptr<router> add(std::shared_ptr<route> route);
 
@@ -33,8 +33,8 @@ class router : public std::enable_shared_from_this<router> {
                                 std::equal_to<>>,
              std::shared_ptr<route>>
 
-  find(boost::beast::http::verb verb, const std::string &path);
-  std::vector<std::string> methods_of(const std::string &path);
+  find(boost::beast::http::verb verb, const std::string &path) const;
+  std::vector<std::string> methods_of(const std::string &path) const;
 };
 }  // namespace engine
 

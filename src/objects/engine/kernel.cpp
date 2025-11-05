@@ -25,16 +25,19 @@ namespace engine {
 boost::asio::awaitable<boost::beast::http::message_generator> kernel(
     std::shared_ptr<state> state,
     boost::beast::http::request<boost::beast::http::string_body> request) {
-  if (request.method() == boost::beast::http::verb::options) {
+  using fields = boost::beast::http::field;
+  using enum boost::beast::http::verb;
+
+  if (request.method() == options) {
     auto _verbs = state->get_router()->methods_of(request.target());
     const auto _methods = boost::join(_verbs, ",");
     boost::beast::http::response<boost::beast::http::empty_body> _response{
         boost::beast::http::status::no_content, request.version()};
-    _response.set(boost::beast::http::field::access_control_allow_methods,
+    _response.set(fields::access_control_allow_methods,
                   _methods.empty() ? "" : _methods);
-    _response.set(boost::beast::http::field::access_control_allow_headers,
+    _response.set(fields::access_control_allow_headers,
                   "Accept,Authorization,Content-Type");
-    _response.set(boost::beast::http::field::access_control_allow_origin, "*");
+    _response.set(fields::access_control_allow_origin, "*");
     co_return _response;
   }
 
@@ -43,18 +46,18 @@ boost::asio::awaitable<boost::beast::http::message_generator> kernel(
         state->get_router()->find(request.method(), request.target());
     auto _response =
         co_await _route->get_controller()->callback()(state, request);
-    _response.set(boost::beast::http::field::access_control_allow_origin, "*");
+    _response.set(fields::access_control_allow_origin, "*");
     co_return _response;
   } catch (const errors::not_found_error &) {
     boost::beast::http::response<boost::beast::http::empty_body> _response{
         boost::beast::http::status::not_found, request.version()};
-    _response.set(boost::beast::http::field::access_control_allow_origin, "*");
+    _response.set(fields::access_control_allow_origin, "*");
     _response.prepare_payload();
     co_return _response;
   } catch (...) {
     boost::beast::http::response<boost::beast::http::empty_body> _response{
         boost::beast::http::status::internal_server_error, request.version()};
-    _response.set(boost::beast::http::field::access_control_allow_origin, "*");
+    _response.set(fields::access_control_allow_origin, "*");
     _response.prepare_payload();
     co_return _response;
   }
