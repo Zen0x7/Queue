@@ -12,10 +12,22 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <engine/server.hpp>
+#pragma once
 
-int main() {
-  engine::server server;
-  server.start();
-  return 0;
-}
+#ifndef ENGINE_KERNEL_HPP
+#define ENGINE_KERNEL_HPP
+
+#include <boost/asio/awaitable.hpp>
+#include <boost/beast/http/message_generator.hpp>
+#include <boost/beast/http/string_body.hpp>
+
+namespace engine {
+class state;
+
+boost::asio::awaitable<boost::beast::http::message_generator> kernel(
+    const std::shared_ptr<state> &state,
+    const boost::beast::http::request<boost::beast::http::string_body>
+        &request);
+}  // namespace engine
+
+#endif  // ENGINE_KERNEL_HPP

@@ -12,10 +12,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <engine/server.hpp>
+#include <boost/beast/http/empty_body.hpp>
+#include <engine/kernel.hpp>
 
-int main() {
-  engine::server server;
-  server.start();
-  return 0;
+namespace engine {
+boost::asio::awaitable<boost::beast::http::message_generator> kernel(
+    const std::shared_ptr<state> &state,
+    const boost::beast::http::request<boost::beast::http::string_body>
+        &request) {
+  boost::beast::http::response<boost::beast::http::empty_body> _response{
+      boost::beast::http::status::ok, request.version()};
+  _response.prepare_payload();
+  co_return _response;
 }
+}  // namespace engine

@@ -12,10 +12,24 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <engine/server.hpp>
+#pragma once
 
-int main() {
-  engine::server server;
-  server.start();
-  return 0;
-}
+#ifndef ENGINE_SERVER_HPP
+#define ENGINE_SERVER_HPP
+
+#include <memory>
+
+namespace engine {
+class state;
+
+class server : public std::enable_shared_from_this<server> {
+  std::shared_ptr<state> state_;
+
+ public:
+  server();
+  void start(unsigned short int port = 0) const;
+  std::shared_ptr<state> get_state() const;
+};
+}  // namespace engine
+
+#endif  // ENGINE_SERVER_HPP
