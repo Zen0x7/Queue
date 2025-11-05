@@ -16,6 +16,4 @@
 
 #include <engine/version.hpp>
 
-TEST(queue, version) {
-  ASSERT_EQ(engine::get_version(), "1.0.0");
-}
+TEST(queue, version) { ASSERT_EQ(engine::get_version(), "1.0.0"); }

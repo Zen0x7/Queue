@@ -14,6 +14,4 @@
 
 #include <engine/version.hpp>
 
-std::string engine::get_version() noexcept {
-  return "1.0.0";
-}
+std::string engine::get_version() noexcept { return "1.0.0"; }

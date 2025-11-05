@@ -14,25 +14,25 @@
 
 #include <gtest/gtest.h>
 
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/use_future.hpp>
+#include <boost/core/ignore_unused.hpp>
+#include <boost/json/object.hpp>
 #include <engine/job.hpp>
 #include <engine/task.hpp>
 #include <thread>
 
-#include <boost/core/ignore_unused.hpp>
-
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/use_future.hpp>
-#include <boost/json/object.hpp>
-
 TEST(job, can_run) {
   boost::asio::io_context _ioc;
   std::atomic _executed{false};
-  const auto _task = std::make_shared<engine::task>([&_executed](auto& cancelled, auto& data) -> boost::asio::awaitable<void> {
-    boost::ignore_unused(cancelled, data);
-    _executed.store(true, std::memory_order_release);
-    co_return;
-  });
+  const auto _task = std::make_shared<engine::task>(
+      [&_executed](auto& cancelled,
+                   auto& data) -> boost::asio::awaitable<void> {
+        boost::ignore_unused(cancelled, data);
+        _executed.store(true, std::memory_order_release);
+        co_return;
+      });
   const auto _job = std::make_shared<engine::job>(_task, boost::json::object{});
   auto fut = co_spawn(_ioc, _job->run(), boost::asio::use_future);
   _ioc.run();
@@ -43,11 +43,13 @@ TEST(job, can_run) {
 TEST(job, run_is_promise) {
   boost::asio::io_context _ioc;
   std::atomic _executed{false};
-  const auto _task = std::make_shared<engine::task>([&_executed](auto& cancelled, auto& data) -> boost::asio::awaitable<void> {
-    boost::ignore_unused(cancelled, data);
-    _executed.store(true, std::memory_order_release);
-    co_return;
-  });
+  const auto _task = std::make_shared<engine::task>(
+      [&_executed](auto& cancelled,
+                   auto& data) -> boost::asio::awaitable<void> {
+        boost::ignore_unused(cancelled, data);
+        _executed.store(true, std::memory_order_release);
+        co_return;
+      });
   const auto _job = std::make_shared<engine::job>(_task, boost::json::object{});
   const auto _promise = _job->run();
   ASSERT_FALSE(_executed.load(std::memory_order_acquire));
