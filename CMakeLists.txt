@@ -13,7 +13,7 @@ endif ()
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g --coverage -fprofile-arcs -ftest-coverage")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-find_package(Boost 1.89.0 REQUIRED COMPONENTS
+find_package(Boost REQUIRED COMPONENTS
         program_options
         json
         charconv
