@@ -259,3 +259,9 @@ TEST(queue, throw_error_on_undefined_task) {
 
   ASSERT_TRUE(_throws);
 }
+
+TEST(queue, can_handle_cancellations_on_empty) {
+  const auto _state = std::make_shared<engine::state>();
+  const auto _queue = _state->get_queue("notifications");
+  _queue->cancel();
+}
