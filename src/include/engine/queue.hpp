@@ -31,10 +31,15 @@ class job;
 
 class queue : public std::enable_shared_from_this<queue> {
   boost::asio::strand<boost::asio::io_context::executor_type> strand_;
+
   std::map<boost::uuids::uuid, std::shared_ptr<worker>> workers_;
+  std::mutex workers_mutex_;
+
   std::map<boost::uuids::uuid, std::shared_ptr<job>> jobs_;
   std::mutex jobs_mutex_;
+
   std::map<std::string, std::shared_ptr<task>, std::less<>> tasks_;
+  std::mutex tasks_mutex_;
 
  public:
   explicit queue(boost::asio::strand<boost::asio::io_context::executor_type> strand);
@@ -42,14 +47,14 @@ class queue : public std::enable_shared_from_this<queue> {
   std::size_t number_of_jobs() const;
   std::shared_ptr<job> dispatch(std::string const& name, boost::json::object data = {});
   void add_task(std::string name, handler_type handler);
-  void set_workers_to(std::size_t number_of_workers);
+  void set_workers_to(std::size_t no_of_workers);
   void cancel();
 
  private:
   void prepare();
-  void upscale(std::size_t to);
-  void downscale(std::size_t to);
-  void push_job(const std::shared_ptr<job>& job);
+  void upscale(std::size_t to = 1);
+  void downscale(std::size_t to = 1);
+  void dispatch(const std::shared_ptr<job>& job);
   std::shared_ptr<worker> get_worker();
   std::shared_ptr<task> get_task(const std::string& name);
 };

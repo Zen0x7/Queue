@@ -25,7 +25,7 @@
 
 TEST(queue, can_handle_jobs) {
   const auto _state = std::make_shared<engine::state>();
-  const auto _queue = _state->add_queue("notifications");
+  const auto _queue = _state->get_queue("notifications");
 
   std::atomic _task_executed{false};
 
@@ -57,7 +57,7 @@ TEST(queue, can_handle_jobs) {
 
 TEST(queue, can_handle_multiple_jobs) {
   const auto _state = std::make_shared<engine::state>();
-  const auto _queue = _state->add_queue("notifications");
+  const auto _queue = _state->get_queue("notifications");
 
   std::atomic _first_task_executed{false};
   std::atomic _second_task_executed{false};
@@ -100,7 +100,7 @@ TEST(queue, can_handle_multiple_jobs) {
 
 TEST(queue, can_handle_multiple_jobs_on_multiple_workers) {
   const auto _state = std::make_shared<engine::state>();
-  const auto _queue = _state->add_queue("notifications");
+  const auto _queue = _state->get_queue("notifications");
   _queue->set_workers_to(16);
 
   std::atomic<std::uint64_t> _tasks_executed{0};
@@ -121,7 +121,7 @@ TEST(queue, can_handle_multiple_jobs_on_multiple_workers) {
 
 TEST(queue, can_upscale_and_downscale_workers) {
   const auto _state = std::make_shared<engine::state>();
-  const auto _queue = _state->add_queue("notifications");
+  const auto _queue = _state->get_queue("notifications");
   _queue->set_workers_to(16);
   _queue->set_workers_to(16);
   ASSERT_EQ(16, _queue->number_of_workers());
@@ -144,7 +144,7 @@ TEST(queue, can_upscale_and_downscale_workers) {
 //
 TEST(queue, can_be_cancelled) {
   const auto _state = std::make_shared<engine::state>();
-  const auto _queue = _state->add_queue("notifications");
+  const auto _queue = _state->get_queue("notifications");
   _queue->set_workers_to(4);
 
   std::atomic<std::size_t> _jobs_executed;
@@ -174,12 +174,12 @@ TEST(queue, can_be_cancelled) {
 
   std::cout << _jobs_executed.load(std::memory_order_relaxed) << " jobs has been processed before cancellation" << std::endl;
 }
-//
+
 class custom_exception final : public std::exception {};
 
 TEST(queue, can_handle_exceptions) {
   const auto _state = std::make_shared<engine::state>();
-  const auto _queue = _state->add_queue("notifications");
+  const auto _queue = _state->get_queue("notifications");
   _queue->set_workers_to(4);
 
   _queue->add_task("error", [](auto& cancelled, auto& data) -> boost::asio::awaitable<void> {
@@ -204,7 +204,7 @@ TEST(queue, can_handle_exceptions) {
 
 TEST(queue, can_handle_cancellations) {
   const auto _state = std::make_shared<engine::state>();
-  const auto _queue = _state->add_queue("notifications");
+  const auto _queue = _state->get_queue("notifications");
   _queue->set_workers_to(4);
 
   _queue->add_task("cancel", [](auto& cancelled, auto& data) -> boost::asio::awaitable<void> {
@@ -223,7 +223,7 @@ TEST(queue, can_handle_cancellations) {
 
 TEST(queue, throw_error_on_undefined_task) {
   const auto _state = std::make_shared<engine::state>();
-  const auto _queue = _state->add_queue("notifications");
+  const auto _queue = _state->get_queue("notifications");
   _queue->set_workers_to(4);
 
   bool _throws = false;

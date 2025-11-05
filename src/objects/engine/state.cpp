@@ -27,18 +27,11 @@ std::map<std::string, std::shared_ptr<queue>, std::less<>>& state::queues() noex
   return queues_;
 }
 
-std::shared_ptr<queue> state::add_queue(const std::string& name) noexcept {
+std::shared_ptr<queue> state::get_queue(const std::string& name) noexcept {
   std::scoped_lock _lock(queues_mutex_);
   auto [_it, _ignored] = queues_.try_emplace(name, std::make_shared<queue>(make_strand(ioc_)));
   boost::ignore_unused(_ignored);
   return _it->second;
-}
-
-std::shared_ptr<queue> state::get_queue(const std::string& name) noexcept {
-  if (queue_exists(name)) {
-    return queues_[name];
-  }
-  return add_queue(name);
 }
 
 bool state::remove_queue(const std::string& name) noexcept {

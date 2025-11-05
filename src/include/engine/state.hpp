@@ -31,7 +31,6 @@ class state : public std::enable_shared_from_this<state> {
  public:
   ~state();
   std::map<std::string, std::shared_ptr<queue>, std::less<>>& queues() noexcept;
-  std::shared_ptr<queue> add_queue(const std::string& name) noexcept;
   std::shared_ptr<queue> get_queue(const std::string& name) noexcept;
   bool remove_queue(const std::string& name) noexcept;
   bool queue_exists(const std::string& name) noexcept;
