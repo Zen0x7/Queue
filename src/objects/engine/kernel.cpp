@@ -13,9 +13,8 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <boost/beast/http/empty_body.hpp>
-#include <engine/kernel.hpp>
-
 #include <engine/controller.hpp>
+#include <engine/kernel.hpp>
 #include <engine/route.hpp>
 
 namespace engine {

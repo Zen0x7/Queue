@@ -15,10 +15,8 @@
 #include <engine/controller.hpp>
 
 namespace engine {
-    controller::controller(controller_callback_type callback) : callback_(std::move(callback)) {
-    }
+controller::controller(controller_callback_type callback)
+    : callback_(std::move(callback)) {}
 
-    controller_callback_type & controller::callback() noexcept {
-        return callback_;
-    }
+controller_callback_type& controller::callback() noexcept { return callback_; }
 }  // namespace engine

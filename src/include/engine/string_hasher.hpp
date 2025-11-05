@@ -18,16 +18,16 @@
 #include <string>
 
 struct string_hasher {
-    using is_transparent = void;
-    std::size_t operator()(std::string_view sv) const noexcept {
-        return std::hash<std::string_view>{}(sv);
-    }
-    std::size_t operator()(std::string const& s) const noexcept {
-        return operator()(std::string_view{s});
-    }
-    std::size_t operator()(char const* s) const noexcept {
-        return operator()(std::string_view{s});
-    }
+  using is_transparent = void;
+  std::size_t operator()(std::string_view sv) const noexcept {
+    return std::hash<std::string_view>{}(sv);
+  }
+  std::size_t operator()(std::string const& s) const noexcept {
+    return operator()(std::string_view{s});
+  }
+  std::size_t operator()(char const* s) const noexcept {
+    return operator()(std::string_view{s});
+  }
 };
 
-#endif // ENGINE_STRING_HASHER_HPP
+#endif  // ENGINE_STRING_HASHER_HPP
