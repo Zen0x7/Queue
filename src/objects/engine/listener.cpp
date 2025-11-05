@@ -38,12 +38,6 @@ boost::asio::awaitable<void> listener(std::shared_ptr<state> state,
           if (throwable) {
             try {
               std::rethrow_exception(throwable);
-            } catch (const errors::session_error &exception) {
-              std::cerr << "[Listener] Error in session: " << exception.what()
-                        << std::endl;
-            } catch (const std::system_error &exception) {
-              std::cerr << "[Listener] System error: " << exception.what()
-                        << std::endl;
             } catch (const boost::system::system_error &exception) {
               std::cerr << "[Listener] Boost error: " << exception.what()
                         << std::endl;

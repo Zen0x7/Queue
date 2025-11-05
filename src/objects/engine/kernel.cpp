@@ -51,6 +51,12 @@ boost::asio::awaitable<boost::beast::http::message_generator> kernel(
     _response.set(boost::beast::http::field::access_control_allow_origin, "*");
     _response.prepare_payload();
     co_return _response;
+  } catch (...) {
+    boost::beast::http::response<boost::beast::http::empty_body> _response{
+        boost::beast::http::status::internal_server_error, request.version()};
+    _response.set(boost::beast::http::field::access_control_allow_origin, "*");
+    _response.prepare_payload();
+    co_return _response;
   }
 }
 }  // namespace engine

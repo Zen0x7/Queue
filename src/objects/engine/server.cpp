@@ -13,13 +13,13 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/beast/http/empty_body.hpp>
 #include <engine/listener.hpp>
 #include <engine/router.hpp>
 #include <engine/server.hpp>
 #include <engine/state.hpp>
-#include <iostream>
 
 namespace engine {
 
@@ -28,7 +28,7 @@ server::server() : state_(std::make_shared<state>()) {}
 void server::start(const unsigned short int port) const {
   auto const _address = boost::asio::ip::make_address("0.0.0.0");
 
-  auto _router = state_->get_router();
+  const auto _router = state_->get_router();
 
   _router->add(std::make_shared<route>(
       std::vector{
@@ -49,21 +49,7 @@ void server::start(const unsigned short int port) const {
 
   co_spawn(state_->ioc(),
            listener(state_, boost::asio::ip::tcp::endpoint{_address, port}),
-           [](const std::exception_ptr &throwable) {
-             if (throwable) {
-               try {
-                 std::rethrow_exception(throwable);
-               } catch (const std::system_error &exception) {
-                 std::cerr << "[Server] System error: " << exception.what()
-                           << std::endl;
-               } catch (const boost::system::system_error &exception) {
-                 std::cerr << "[Server] Boost error: " << exception.what()
-                           << std::endl;
-               } catch (...) {
-                 std::cerr << "[Server] Unknown exception thrown." << std::endl;
-               }
-             }
-           });
+           boost::asio::detached);
 
   state_->run();
 }
