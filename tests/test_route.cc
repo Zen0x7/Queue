@@ -194,6 +194,9 @@ TEST(route, can_be_matched) {
   ASSERT_EQ(_parameters.at("1"), "4");
   ASSERT_EQ(_parameters.at("2"), "5");
   ASSERT_EQ(_parameters.at("3"), "6");
+
+  auto [_not_matches, _] = _route.match("/parameters/7/8");
+  ASSERT_FALSE(_not_matches);
 }
 
 TEST(route, throw_error_on_duplicated_parameters) {
