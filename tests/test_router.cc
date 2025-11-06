@@ -19,7 +19,6 @@
 #include <engine/route.hpp>
 #include <engine/router.hpp>
 #include <engine/support.hpp>
-#include <functional>
 
 using namespace engine;
 

@@ -13,7 +13,6 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <engine/controller.hpp>
-#include <engine/controller_config.hpp>
 
 namespace engine {
 controller::controller(controller_callback_type callback, controller_config config) : callback_(std::move(callback)), config_(config) {}

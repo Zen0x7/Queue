@@ -14,14 +14,11 @@
 
 #include <gtest/gtest.h>
 
-#include <boost/core/ignore_unused.hpp>
 #include <engine/errors/cancel_error.hpp>
 #include <engine/job.hpp>
 #include <engine/queue.hpp>
 #include <engine/state.hpp>
 #include <engine/support.hpp>
-#include <engine/worker.hpp>
-#include <thread>
 
 using namespace engine;
 

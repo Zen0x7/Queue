@@ -12,14 +12,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <openssl/err.h>
-#include <openssl/evp.h>
-#include <openssl/rand.h>
-
 #include <engine/cipher.hpp>
 #include <engine/encoding.hpp>
 #include <engine/errors/cipher_error.hpp>
-#include <vector>
 
 namespace engine {
 __attribute__((noreturn)) void on_openssl_error() {

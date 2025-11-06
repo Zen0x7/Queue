@@ -12,18 +12,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <boost/json/parse.hpp>
-#include <boost/json/serialize.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <engine/chrono.hpp>
 #include <engine/cipher.hpp>
 #include <engine/encoding.hpp>
 #include <engine/errors/parse_error.hpp>
 #include <engine/errors/signature_error.hpp>
 #include <engine/jwt.hpp>
-#include <ranges>
 
 namespace engine {
 jwt::jwt(const uuid id, const uuid sub, std::string header, object payload, std::string signature)

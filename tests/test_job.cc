@@ -14,15 +14,9 @@
 
 #include <gtest/gtest.h>
 
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/use_future.hpp>
-#include <boost/core/ignore_unused.hpp>
-#include <boost/json/object.hpp>
 #include <engine/job.hpp>
 #include <engine/support.hpp>
 #include <engine/task.hpp>
-#include <thread>
 
 using namespace engine;
 

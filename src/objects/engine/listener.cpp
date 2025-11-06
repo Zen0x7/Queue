@@ -17,7 +17,6 @@
 #include <engine/listener.hpp>
 #include <engine/session.hpp>
 #include <engine/state.hpp>
-#include <iostream>
 
 namespace engine {
 async_of<void> listener(shared_state state, endpoint endpoint) {

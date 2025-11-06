@@ -17,7 +17,6 @@
 #include <engine/queue.hpp>
 #include <engine/task.hpp>
 #include <engine/worker.hpp>
-#include <ranges>
 
 namespace engine {
 queue::queue(strand_of<boost::asio::io_context::executor_type> strand) : strand_(std::move(strand)) { prepare(); }

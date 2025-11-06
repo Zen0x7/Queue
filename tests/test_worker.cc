@@ -17,14 +17,13 @@
 #include <engine/support.hpp>
 #include <engine/task.hpp>
 #include <engine/worker.hpp>
-#include <thread>
 
 using namespace engine;
 
 TEST(worker, can_run) {
   boost::asio::io_context _ioc;
   std::atomic _executed{false};
-  const auto _task = std::make_shared<task>([&_executed](auto& cancelled, auto& data) -> boost::asio::awaitable<void> {
+  const auto _task = std::make_shared<task>([&_executed](auto& cancelled, auto& data) -> async_of<void> {
     boost::ignore_unused(cancelled, data);
     _executed.store(true, std::memory_order_release);
     co_return;

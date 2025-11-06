@@ -17,32 +17,27 @@
 #ifndef ENGINE_SUPPORT_HPP
 #define ENGINE_SUPPORT_HPP
 
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/rand.h>
+
 #include <array>
 #include <atomic>
 #include <bcrypt/BCrypt.hpp>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/detached.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/strand.hpp>
-#include <boost/asio/use_future.hpp>
-#include <boost/beast/core/flat_buffer.hpp>
-#include <boost/beast/core/tcp_stream.hpp>
-#include <boost/beast/http/empty_body.hpp>
-#include <boost/beast/http/message_generator.hpp>
-#include <boost/beast/http/read.hpp>
-#include <boost/beast/http/string_body.hpp>
-#include <boost/beast/http/write.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/asio.hpp>
+#include <boost/beast.hpp>
 #include <boost/core/ignore_unused.hpp>
-#include <boost/json/object.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid.hpp>
+#include <boost/json.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid.hpp>
 #include <chrono>
 #include <engine/string_hasher.hpp>
 #include <functional>
+#include <iostream>
 #include <map>
 #include <memory>
+#include <ranges>
 #include <regex>
 #include <string>
 #include <thread>
@@ -88,9 +83,6 @@ using response_empty_type = boost::beast::http::response<boost::beast::http::emp
 using request_type = boost::beast::http::request<boost::beast::http::string_body>;
 using route_params_type = std::unordered_map<std::string, std::string, string_hasher, std::equal_to<>>;
 
-using controller_callback_type =
-    std::function<boost::asio::awaitable<response_type>(const shared_state&, const request_type&, route_params_type)>;
-
 template <typename T>
 using shared_of = std::shared_ptr<T>;
 
@@ -129,6 +121,8 @@ using time_point = std::chrono::system_clock::time_point;
 using uuid = boost::uuids::uuid;
 
 using object = boost::json::object;
+
+using controller_callback_type = std::function<async_of<response_type>(const shared_state&, const request_type&, route_params_type)>;
 
 using handler_signature_type = async_of<void>(atomic_of<bool>&, object const&);
 

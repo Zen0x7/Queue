@@ -20,7 +20,6 @@
 #include <engine/server.hpp>
 #include <engine/state.hpp>
 #include <engine/support.hpp>
-#include <thread>
 
 using namespace engine;
 
