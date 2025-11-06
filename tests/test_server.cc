@@ -62,7 +62,7 @@ class server : public testing::Test {
 
     thread_->detach();
 
-    while (server_->get_state()->running_.load() == false) {
+    while (server_->get_state()->get_running() == false) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
   }
@@ -74,7 +74,7 @@ TEST_F(server, can_handle_http_request) {
   boost::asio::io_context _client_ioc;
   boost::asio::ip::tcp::resolver _resolver(_client_ioc);
   const std::string _host = "127.0.0.1";
-  const unsigned short int _port = server_->get_state()->port_.load();
+  const unsigned short int _port = server_->get_state()->get_port();
   auto const _tcp_resolver_results =
       _resolver.resolve(_host, std::to_string(_port));
   boost::beast::tcp_stream _stream(_client_ioc);
@@ -104,7 +104,7 @@ TEST_F(server, can_timeout_http_sessions) {
   boost::asio::io_context _client_ioc;
   boost::asio::ip::tcp::resolver _resolver(_client_ioc);
   const std::string _host = "127.0.0.1";
-  const unsigned short int _port = server_->get_state()->port_.load();
+  const unsigned short int _port = server_->get_state()->get_port();
   auto const _tcp_resolver_results =
       _resolver.resolve(_host, std::to_string(_port));
   boost::beast::tcp_stream _stream(_client_ioc);
@@ -142,7 +142,7 @@ TEST_F(server, can_handle_http_cors_request) {
   boost::asio::io_context _client_ioc;
   boost::asio::ip::tcp::resolver _resolver(_client_ioc);
   const std::string _host = "127.0.0.1";
-  const unsigned short int _port = server_->get_state()->port_.load();
+  const unsigned short int _port = server_->get_state()->get_port();
   auto const _tcp_resolver_results =
       _resolver.resolve(_host, std::to_string(_port));
   boost::beast::tcp_stream _stream(_client_ioc);
@@ -193,7 +193,7 @@ TEST_F(server, can_handle_exceptions) {
   boost::asio::io_context _client_ioc;
   boost::asio::ip::tcp::resolver _resolver(_client_ioc);
   const std::string _host = "127.0.0.1";
-  const unsigned short int _port = server_->get_state()->port_.load();
+  const unsigned short int _port = server_->get_state()->get_port();
   auto const _tcp_resolver_results =
       _resolver.resolve(_host, std::to_string(_port));
   boost::beast::tcp_stream _stream(_client_ioc);

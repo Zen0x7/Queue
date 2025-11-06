@@ -41,7 +41,7 @@ class jwt : public std::enable_shared_from_this<jwt> {
   static std::shared_ptr<jwt> make(boost::uuids::uuid id,
                                    const std::string &key);
 
-  static std::shared_ptr<jwt> from(const std::string &bearer,
+  static std::shared_ptr<jwt> from(const std::string_view &bearer,
                                    const std::string &key);
 };
 }  // namespace engine

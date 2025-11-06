@@ -29,13 +29,17 @@ class state : public std::enable_shared_from_this<state> {
   std::map<std::string, std::shared_ptr<queue>, std::less<>> queues_;
   std::mutex queues_mutex_;
   boost::asio::io_context ioc_;
-
- public:
-  state();
   std::atomic<bool> running_{false};
   std::atomic<unsigned short int> port_{0};
 
+ public:
+  state();
+
   ~state();
+  bool get_running() const;
+  unsigned short int get_port() const;
+  void set_port(unsigned short int port);
+  void set_running(bool running);
   std::map<std::string, std::shared_ptr<queue>, std::less<>>& queues() noexcept;
   std::shared_ptr<router> get_router() const noexcept;
   std::shared_ptr<queue> get_queue(const std::string& name) noexcept;

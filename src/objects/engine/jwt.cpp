@@ -63,7 +63,7 @@ std::shared_ptr<jwt> jwt::make(boost::uuids::uuid id, const std::string &key) {
   return std::make_shared<jwt>(_jti, id, _header, _payload, _signature);
 }
 
-std::shared_ptr<jwt> jwt::from(const std::string &bearer,
+std::shared_ptr<jwt> jwt::from(const std::string_view &bearer,
                                const std::string &key) {
   std::string _bearer{bearer.begin(), bearer.end()};
   static constexpr std::string_view _prefix = "Bearer ";
@@ -79,28 +79,28 @@ std::shared_ptr<jwt> jwt::from(const std::string &bearer,
   }
 
   if (_parts.size() != 3)
-    throw new errors::parse_error("JWT token doesn't contains 3 parts.");
+    throw errors::parse_error("JWT token doesn't contains 3 parts.");
 
   const std::string _challenge = _parts[0] + "." + _parts[1];
   const std::string _signature = base64url_encode(hmac(_challenge, key), false);
 
   if (_parts[2] != _signature)
-    throw new errors::signature_error("Token doesn't matches");
+    throw errors::signature_error("Token doesn't matches");
+
   boost::system::error_code _parse_ec;
   auto _payload = boost::json::parse(base64url_decode(_parts.at(1)), _parse_ec);
 
-  if (_parse_ec) throw new errors::parse_error("JWT payload isn't valid JSON.");
+  if (_parse_ec) throw errors::parse_error("JWT payload isn't valid JSON.");
 
   if (!_payload.is_object() || !_payload.as_object().contains("sub") ||
       !_payload.as_object().contains("iat") ||
       !_payload.as_object().contains("jti"))
-    throw new errors::parse_error(
-        "JWT payload doesn't contains required fields.");
+    throw errors::parse_error("JWT payload doesn't contains required fields.");
 
   if (!_payload.as_object().at("sub").is_string() ||
       !_payload.as_object().at("iat").is_int64() ||
       !_payload.as_object().at("jti").is_string())
-    throw new errors::parse_error(
+    throw errors::parse_error(
         "JWT payload doesn't contains required fields data types.");
 
   std::string _jti{_payload.as_object().at("jti").as_string()};

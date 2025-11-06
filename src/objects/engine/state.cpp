@@ -26,6 +26,22 @@ state::~state() {
   queues_.clear();
 }
 
+bool state::get_running() const {
+  return running_.load(std::memory_order_acquire);
+}
+
+unsigned short int state::get_port() const {
+  return port_.load(std::memory_order_acquire);
+}
+
+void state::set_port(const unsigned short int port) {
+  port_.store(port, std::memory_order_release);
+}
+
+void state::set_running(const bool running) {
+  running_.store(running, std::memory_order_release);
+}
+
 std::map<std::string, std::shared_ptr<queue>, std::less<>>&
 state::queues() noexcept {
   return queues_;
