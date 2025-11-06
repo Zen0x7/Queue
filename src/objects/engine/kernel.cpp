@@ -13,7 +13,6 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <boost/algorithm/string/join.hpp>
-#include <boost/beast/http/empty_body.hpp>
 #include <engine/controller.hpp>
 #include <engine/errors/not_found_error.hpp>
 #include <engine/kernel.hpp>
@@ -22,22 +21,16 @@
 #include <engine/state.hpp>
 
 namespace engine {
-boost::asio::awaitable<boost::beast::http::message_generator> kernel(
-    std::shared_ptr<state> state,
-    boost::beast::http::request<boost::beast::http::string_body> request) {
-  using fields = boost::beast::http::field;
-  using enum boost::beast::http::verb;
-
-  if (request.method() == options) {
+async_of<message> kernel(shared_state state, request_type request) {
+  if (request.method() == http_verb::options) {
     auto _verbs = state->get_router()->methods_of(request.target());
     const auto _methods = boost::join(_verbs, ",");
-    boost::beast::http::response<boost::beast::http::empty_body> _response{
-        boost::beast::http::status::no_content, request.version()};
-    _response.set(fields::access_control_allow_methods,
+    response_empty_type _response{http_status::no_content, request.version()};
+    _response.set(http_field::access_control_allow_methods,
                   _methods.empty() ? "" : _methods);
-    _response.set(fields::access_control_allow_headers,
+    _response.set(http_field::access_control_allow_headers,
                   "Accept,Authorization,Content-Type");
-    _response.set(fields::access_control_allow_origin, "*");
+    _response.set(http_field::access_control_allow_origin, "*");
     co_return _response;
   }
 
@@ -46,18 +39,17 @@ boost::asio::awaitable<boost::beast::http::message_generator> kernel(
         state->get_router()->find(request.method(), request.target());
     auto _response = co_await _route->get_controller()->callback()(
         state, request, std::move(_params));
-    _response.set(fields::access_control_allow_origin, "*");
+    _response.set(http_field::access_control_allow_origin, "*");
     co_return _response;
   } catch (const errors::not_found_error &) {
-    boost::beast::http::response<boost::beast::http::empty_body> _response{
-        boost::beast::http::status::not_found, request.version()};
-    _response.set(fields::access_control_allow_origin, "*");
+    response_empty_type _response{http_status::not_found, request.version()};
+    _response.set(http_field::access_control_allow_origin, "*");
     _response.prepare_payload();
     co_return _response;
   } catch (...) {
-    boost::beast::http::response<boost::beast::http::empty_body> _response{
-        boost::beast::http::status::internal_server_error, request.version()};
-    _response.set(fields::access_control_allow_origin, "*");
+    response_empty_type _response{http_status::internal_server_error,
+                                  request.version()};
+    _response.set(http_field::access_control_allow_origin, "*");
     _response.prepare_payload();
     co_return _response;
   }

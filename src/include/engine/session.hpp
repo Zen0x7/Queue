@@ -17,14 +17,10 @@
 #ifndef ENGINE_SESSION_HPP
 #define ENGINE_SESSION_HPP
 
-#include <boost/asio/awaitable.hpp>
-#include <boost/beast/core/tcp_stream.hpp>
+#include <engine/support.hpp>
 
 namespace engine {
-class state;
-
-boost::asio::awaitable<void> session(std::shared_ptr<state> state,
-                                     boost::beast::tcp_stream stream);
+async_of<void> session(shared_state state, tcp_stream stream);
 }  // namespace engine
 
 #endif  // ENGINE_SESSION_HPP

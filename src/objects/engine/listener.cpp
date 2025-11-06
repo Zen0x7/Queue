@@ -20,31 +20,29 @@
 #include <iostream>
 
 namespace engine {
-boost::asio::awaitable<void> listener(std::shared_ptr<state> state,
-                                      boost::asio::ip::tcp::endpoint endpoint) {
+async_of<void> listener(shared_state state, endpoint endpoint) {
   const auto _executor = co_await boost::asio::this_coro::executor;
-  auto _acceptor = boost::asio::ip::tcp::acceptor{_executor, endpoint};
+  auto _acceptor = acceptor{_executor, endpoint};
 
   state->set_port(_acceptor.local_endpoint().port());
   state->set_running(true);
 
   for (;;) {
-    co_spawn(
-        _executor,
-        session(state,
-                boost::beast::tcp_stream{co_await _acceptor.async_accept()}),
-        [](const std::exception_ptr &throwable) {
-          if (throwable) {
-            try {
-              std::rethrow_exception(throwable);
-            } catch (const boost::system::system_error &exception) {
-              std::cerr << "[Listener] Boost error: " << exception.what()
-                        << std::endl;
-            } catch (...) {
-              std::cerr << "[Listener] Unknown exception thrown." << std::endl;
-            }
-          }
-        });
+    co_spawn(_executor,
+             session(state, tcp_stream{co_await _acceptor.async_accept()}),
+             [](const std::exception_ptr &throwable) {
+               if (throwable) {
+                 try {
+                   std::rethrow_exception(throwable);
+                 } catch (const system_error &exception) {
+                   std::cerr << "[Listener] Boost error: " << exception.what()
+                             << std::endl;
+                 } catch (...) {
+                   std::cerr << "[Listener] Unknown exception thrown."
+                             << std::endl;
+                 }
+               }
+             });
   }
 }
 }  // namespace engine

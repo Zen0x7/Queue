@@ -17,7 +17,7 @@
 #ifndef ENGINE_TASK_HPP
 #define ENGINE_TASK_HPP
 
-#include <engine/types.hpp>
+#include <engine/support.hpp>
 
 namespace engine {
 class task : public std::enable_shared_from_this<task> {

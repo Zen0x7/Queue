@@ -39,18 +39,18 @@ std::string jwt::as_string() const {
          base64url_encode(serialize(payload_), false) + "." + signature_;
 }
 
-boost::uuids::uuid jwt::get_id() const { return id_; }
+uuid jwt::get_id() const { return id_; }
 
-boost::uuids::uuid jwt::get_sub() const { return sub_; }
+uuid jwt::get_sub() const { return sub_; }
 
-boost::json::object jwt::get_payload() const { return payload_; }
+object jwt::get_payload() const { return payload_; }
 
 std::string jwt::get_signature() const { return signature_; }
 
-std::shared_ptr<jwt> jwt::make(boost::uuids::uuid id, const std::string &key) {
+shared_jwt jwt::make(uuid id, const std::string &key) {
   const std::string _header = R"({"alg":"HS256","typ":"JWT"})";
   const auto _jti = boost::uuids::random_generator()();
-  const boost::json::object _payload = {
+  const object _payload = {
       {"sub", to_string(id)},
       {"iat", now()},
       {"jti", to_string(_jti)},
@@ -63,8 +63,7 @@ std::shared_ptr<jwt> jwt::make(boost::uuids::uuid id, const std::string &key) {
   return std::make_shared<jwt>(_jti, id, _header, _payload, _signature);
 }
 
-std::shared_ptr<jwt> jwt::from(const std::string_view &bearer,
-                               const std::string &key) {
+shared_jwt jwt::from(const std::string_view &bearer, const std::string &key) {
   std::string _bearer{bearer.begin(), bearer.end()};
   static constexpr std::string_view _prefix = "Bearer ";
   const std::string _header = R"({"alg":"HS256","typ":"JWT"})";
@@ -73,7 +72,7 @@ std::shared_ptr<jwt> jwt::from(const std::string_view &bearer,
     _bearer = _bearer.substr(_prefix.size());
   }
 
-  std::vector<std::string> _parts;
+  vector_of<std::string> _parts;
   for (auto _part : std::views::split(_bearer, '.')) {
     _parts.emplace_back(_part.begin(), _part.end());
   }
@@ -105,8 +104,8 @@ std::shared_ptr<jwt> jwt::from(const std::string_view &bearer,
 
   std::string _jti{_payload.as_object().at("jti").as_string()};
   std::string _sub{_payload.as_object().at("sub").as_string()};
-  return std::make_shared<jwt>(boost::lexical_cast<boost::uuids::uuid>(_jti),
-                               boost::lexical_cast<boost::uuids::uuid>(_sub),
-                               _header, _payload.as_object(), _signature);
+  return std::make_shared<jwt>(boost::lexical_cast<uuid>(_jti),
+                               boost::lexical_cast<uuid>(_sub), _header,
+                               _payload.as_object(), _signature);
 }
 }  // namespace engine

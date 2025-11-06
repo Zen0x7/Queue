@@ -15,15 +15,14 @@
 #ifndef ENGINE_CIPHER_HPP
 #define ENGINE_CIPHER_HPP
 
-#include <bcrypt/BCrypt.hpp>
-#include <string>
+#include <engine/support.hpp>
 
 namespace engine {
 std::string generate_sha_256();
 
 std::string hmac(const std::string& input, const std::string_view& app_key);
 
-std::pair<std::string, std::string> generate_aes_key_iv();
+pair_of<std::string, std::string> generate_aes_key_iv();
 
 std::string encrypt(const std::string& input, const std::string& key,
                     const std::string& iv);
@@ -36,7 +35,8 @@ inline bool password_validator(const std::string& input,
   return BCrypt::validatePassword(input, hash);
 }
 
-inline std::string password_hash(const std::string& input, int workload = 12) {
+inline std::string password_hash(const std::string& input,
+                                 const int workload = 12) {
   return BCrypt::generateHash(input, workload);
 }
 }  // namespace engine

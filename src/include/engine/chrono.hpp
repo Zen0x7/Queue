@@ -15,7 +15,7 @@
 #ifndef ENGINE_CHRONO_HPP
 #define ENGINE_CHRONO_HPP
 
-#include <cstdint>
+#include <engine/support.hpp>
 
 namespace engine {
 std::size_t now();

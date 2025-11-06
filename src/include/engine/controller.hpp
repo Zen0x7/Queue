@@ -15,14 +15,10 @@
 #ifndef ENGINE_CONTROLLER_HPP
 #define ENGINE_CONTROLLER_HPP
 
-#include <boost/beast/http/read.hpp>
 #include <engine/controller_config.hpp>
-#include <engine/types.hpp>
-#include <memory>
+#include <engine/support.hpp>
 
 namespace engine {
-class state;
-
 class controller : public std::enable_shared_from_this<controller> {
   controller_callback_type callback_;
   controller_config config_;

@@ -42,5 +42,5 @@ void server::start(const unsigned short int port) const {
   state_->run();
 }
 
-std::shared_ptr<state> server::get_state() const { return state_; }
+shared_state server::get_state() const { return state_; }
 }  // namespace engine

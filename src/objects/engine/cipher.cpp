@@ -104,10 +104,10 @@ std::string hmac(const std::string &input, const std::string_view &app_key) {
   return _digest;
 }
 
-std::pair<std::string, std::string> generate_aes_key_iv() {
-  std::pair<std::string, std::string> _output;
+pair_of<std::string, std::string> generate_aes_key_iv() {
+  pair_of<std::string, std::string> _output;
 
-  std::vector<unsigned char> _key(CIPHER_KEY_LENGTH);
+  vector_of<unsigned char> _key(CIPHER_KEY_LENGTH);
 
   if (RAND_bytes(_key.data(), static_cast<int>(_key.size())) != 1) {
     on_openssl_error();
@@ -115,7 +115,7 @@ std::pair<std::string, std::string> generate_aes_key_iv() {
 
   _output.first.assign(_key.begin(), _key.end());
 
-  std::vector<unsigned char> _iv(CIPHER_IV_LENGTH);
+  vector_of<unsigned char> _iv(CIPHER_IV_LENGTH);
   if (RAND_bytes(_iv.data(), static_cast<int>(_iv.size())) != 1) {
     on_openssl_error();
   }

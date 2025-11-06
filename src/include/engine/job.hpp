@@ -15,18 +15,9 @@
 #ifndef ENGINE_JOB_HPP
 #define ENGINE_JOB_HPP
 
-#include <atomic>
-#include <boost/asio/awaitable.hpp>
-#include <boost/json/object.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <chrono>
-#include <engine/types.hpp>
-#include <memory>
+#include <engine/support.hpp>
 
 namespace engine {
-class task;
-
 class job : public std::enable_shared_from_this<job> {
   uuid id_ = boost::uuids::random_generator()();
   shared_task task_;

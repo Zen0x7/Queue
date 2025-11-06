@@ -12,18 +12,33 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ENGINE_TYPES_HPP
-#define ENGINE_TYPES_HPP
+#pragma once
 
+#ifndef ENGINE_SUPPORT_HPP
+#define ENGINE_SUPPORT_HPP
+
+#include <array>
+#include <atomic>
+#include <bcrypt/BCrypt.hpp>
 #include <boost/asio/awaitable.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/strand.hpp>
+#include <boost/beast/core/flat_buffer.hpp>
+#include <boost/beast/core/tcp_stream.hpp>
+#include <boost/beast/http/empty_body.hpp>
+#include <boost/beast/http/message_generator.hpp>
+#include <boost/beast/http/read.hpp>
 #include <boost/beast/http/string_body.hpp>
+#include <boost/beast/http/write.hpp>
 #include <boost/json/object.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <engine/string_hasher.hpp>
 #include <functional>
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace engine {
@@ -45,12 +60,26 @@ using shared_job = std::shared_ptr<job>;
 class worker;
 using shared_worker = std::shared_ptr<worker>;
 
+class queue;
+using shared_queue = std::shared_ptr<queue>;
+
+class jwt;
+using shared_jwt = std::shared_ptr<jwt>;
+
+struct controller_config;
+
 class controller;
 using shared_controller = std::shared_ptr<controller>;
 
 using http_verb = boost::beast::http::verb;
+using http_status = boost::beast::http::status;
+using http_field = boost::beast::http::field;
+using message = boost::beast::http::message_generator;
 using response_type =
     boost::beast::http::response<boost::beast::http::string_body>;
+using response_empty_type =
+    boost::beast::http::response<boost::beast::http::empty_body>;
+
 using request_type =
     boost::beast::http::request<boost::beast::http::string_body>;
 using route_params_type = std::unordered_map<std::string, std::string,
@@ -68,6 +97,9 @@ using atomic_of = std::atomic<T>;
 
 template <typename T>
 using vector_of = std::vector<T>;
+
+template <typename T>
+using optional_of = std::optional<T>;
 
 template <typename T, typename S>
 using tuple_of = std::tuple<T, S>;
@@ -97,7 +129,13 @@ using uuid = boost::uuids::uuid;
 using object = boost::json::object;
 
 using handler_signature_type = async_of<void>(atomic_of<bool>&, object const&);
+
 using handler_type = std::function<handler_signature_type>;
+
+using endpoint = boost::asio::ip::tcp::endpoint;
+using acceptor = boost::asio::ip::tcp::acceptor;
+using tcp_stream = boost::beast::tcp_stream;
+using system_error = boost::system::system_error;
 }  // namespace engine
 
-#endif  // ENGINE_TYPES_HPP
+#endif  // ENGINE_SUPPORT_HPP

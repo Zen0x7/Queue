@@ -15,8 +15,7 @@
 #ifndef ENGINE_ENCODING_HPP
 #define ENGINE_ENCODING_HPP
 
-#include <array>
-#include <string>
+#include <engine/support.hpp>
 
 namespace engine {
 

@@ -17,16 +17,10 @@
 #ifndef ENGINE_KERNEL_HPP
 #define ENGINE_KERNEL_HPP
 
-#include <boost/asio/awaitable.hpp>
-#include <boost/beast/http/message_generator.hpp>
-#include <boost/beast/http/string_body.hpp>
+#include <engine/support.hpp>
 
 namespace engine {
-class state;
-
-boost::asio::awaitable<boost::beast::http::message_generator> kernel(
-    std::shared_ptr<state> state,
-    boost::beast::http::request<boost::beast::http::string_body> request);
+async_of<message> kernel(shared_state state, request_type request);
 }  // namespace engine
 
 #endif  // ENGINE_KERNEL_HPP
