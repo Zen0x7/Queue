@@ -12,35 +12,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#pragma once
+
 #ifndef ENGINE_WORKER_HPP
 #define ENGINE_WORKER_HPP
 
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/strand.hpp>
-#include <boost/json.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <engine/job.hpp>
-#include <memory>
+#include <engine/support.hpp>
 
 namespace engine {
-class job;
-class task;
-
 class worker : public std::enable_shared_from_this<worker> {
-  boost::uuids::uuid id_ = boost::uuids::random_generator()();
-  boost::asio::strand<boost::asio::io_context::executor_type> strand_;
-  std::atomic<std::uint64_t> number_of_tasks_;
+  uuid id_ = boost::uuids::random_generator()();
+  strand_of<boost::asio::io_context::executor_type> strand_;
+  atomic_of<std::uint64_t> number_of_tasks_;
 
-  static boost::asio::awaitable<void> run(std::shared_ptr<job> job);
+  static async_of<void> run(shared_job job);
 
  public:
-  explicit worker(
-      boost::asio::strand<boost::asio::io_context::executor_type> strand);
-  const boost::uuids::uuid& id() const noexcept;
+  explicit worker(strand_of<boost::asio::io_context::executor_type> strand);
+  const uuid& id() const noexcept;
   std::uint64_t number_of_tasks() const noexcept;
-  std::shared_ptr<job> dispatch(const std::shared_ptr<task>& task,
-                                boost::json::object data);
+  shared_job dispatch(const shared_task& task, object data);
 };
 }  // namespace engine
 

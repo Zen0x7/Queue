@@ -12,37 +12,34 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#pragma once
+
 #ifndef ENGINE_JWT_HPP
 #define ENGINE_JWT_HPP
 
-#include <boost/json/object.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <memory>
+#include <engine/support.hpp>
 
 namespace engine {
 class jwt : public std::enable_shared_from_this<jwt> {
-  boost::uuids::uuid id_;
-  boost::uuids::uuid sub_;
+  uuid id_;
+  uuid sub_;
   std::string header_;
-  boost::json::object payload_;
+  object payload_;
   std::string signature_;
 
  public:
-  jwt(boost::uuids::uuid id, boost::uuids::uuid sub, std::string header,
-      boost::json::object payload, std::string signature);
+  jwt(uuid id, uuid sub, std::string header, object payload, std::string signature);
 
   std::string as_string() const;
 
-  boost::uuids::uuid get_id() const;
-  boost::uuids::uuid get_sub() const;
-  boost::json::object get_payload() const;
+  uuid get_id() const;
+  uuid get_sub() const;
+  object get_payload() const;
   std::string get_signature() const;
 
-  static std::shared_ptr<jwt> make(boost::uuids::uuid id,
-                                   const std::string &key);
+  static shared_jwt make(uuid id, const std::string &key);
 
-  static std::shared_ptr<jwt> from(const std::string_view &bearer,
-                                   const std::string &key);
+  static shared_jwt from(const std::string_view &bearer, const std::string &key);
 };
 }  // namespace engine
 

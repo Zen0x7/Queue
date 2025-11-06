@@ -14,20 +14,21 @@
 
 #include <gtest/gtest.h>
 
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <engine/cipher.hpp>
 #include <engine/encoding.hpp>
 #include <engine/errors/parse_error.hpp>
 #include <engine/errors/signature_error.hpp>
 #include <engine/jwt.hpp>
+#include <engine/support.hpp>
+
+using namespace engine;
 
 TEST(jwt, can_be_generated) {
   bool throws = false;
   try {
-    const std::string _key = engine::base64_decode(engine::generate_sha_256());
-    const boost::uuids::uuid _id = boost::uuids::random_generator()();
-    const auto _jwt = engine::jwt::make(_id, _key);
+    const std::string _key = base64_decode(generate_sha_256());
+    const uuid _id = boost::uuids::random_generator()();
+    const auto _jwt = jwt::make(_id, _key);
   } catch (...) {
     throws = true;
   }
@@ -35,12 +36,12 @@ TEST(jwt, can_be_generated) {
 }
 
 TEST(jwt, throws_error_on_invalid_token) {
-  const std::string _key = engine::base64_decode(engine::generate_sha_256());
+  const std::string _key = base64_decode(generate_sha_256());
   const std::string _bearer = "Bearer a.b.c";
 
   bool throws = false;
   try {
-    const auto _jwt = engine::jwt::from(_bearer, _key);
+    const auto _jwt = jwt::from(_bearer, _key);
   } catch (...) {
     throws = true;
   }
@@ -49,8 +50,7 @@ TEST(jwt, throws_error_on_invalid_token) {
 }
 
 TEST(jwt, can_parse_tokens) {
-  const std::string _key =
-      engine::base64url_decode("-66WcolkZd8-oHejFFj1EUhxg3-8UWErNkgMqCwLDEI");
+  const std::string _key = base64url_decode("-66WcolkZd8-oHejFFj1EUhxg3-8UWErNkgMqCwLDEI");
   const std::string _bearer =
       "Bearer "
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
@@ -59,15 +59,13 @@ TEST(jwt, can_parse_tokens) {
       ".2dV1qpXyN0S9VWiYzB92x7w1EG9R7I_jWn9C9ppfgow";
   bool throws = false;
   try {
-    const auto _jwt = engine::jwt::from(_bearer, _key);
-    ASSERT_EQ(to_string(_jwt->get_id()),
-              "c4447564-4ac9-4e5c-ae15-bd196cee29bb");
-    ASSERT_EQ(to_string(_jwt->get_sub()),
-              "807d9a27-8226-489e-8ff4-dcfd902ccde6");
+    const auto _jwt = jwt::from(_bearer, _key);
+    ASSERT_EQ(to_string(_jwt->get_id()), "c4447564-4ac9-4e5c-ae15-bd196cee29bb");
+    ASSERT_EQ(to_string(_jwt->get_sub()), "807d9a27-8226-489e-8ff4-dcfd902ccde6");
     ASSERT_EQ(_jwt->get_payload().at("iat").as_int64(), 1762445047);
-  } catch (engine::errors::parse_error &) {
+  } catch (errors::parse_error &) {
     throws = true;
-  } catch (engine::errors::signature_error &) {
+  } catch (errors::signature_error &) {
     throws = true;
   }
   ASSERT_FALSE(throws);

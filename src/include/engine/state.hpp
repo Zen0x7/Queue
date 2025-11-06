@@ -12,37 +12,32 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#pragma once
+
 #ifndef ENGINE_STATE_HPP
 #define ENGINE_STATE_HPP
 
-#include <boost/asio/io_context.hpp>
-#include <map>
-#include <memory>
-#include <mutex>
+#include <engine/support.hpp>
 
 namespace engine {
-class queue;
-class router;
-
 class state : public std::enable_shared_from_this<state> {
-  std::shared_ptr<router> router_;
-  std::map<std::string, std::shared_ptr<queue>, std::less<>> queues_;
+  shared_router router_;
+  map_hash_of<std::string, shared_queue, std::less<>> queues_;
   std::mutex queues_mutex_;
   boost::asio::io_context ioc_;
-  std::atomic<bool> running_{false};
-  std::atomic<unsigned short int> port_{0};
+  atomic_of<bool> running_{false};
+  atomic_of<unsigned short int> port_{0};
 
  public:
   state();
-
   ~state();
   bool get_running() const;
   unsigned short int get_port() const;
   void set_port(unsigned short int port);
   void set_running(bool running);
-  std::map<std::string, std::shared_ptr<queue>, std::less<>>& queues() noexcept;
-  std::shared_ptr<router> get_router() const noexcept;
-  std::shared_ptr<queue> get_queue(const std::string& name) noexcept;
+  map_hash_of<std::string, shared_queue, std::less<>>& queues() noexcept;
+  shared_router get_router() const noexcept;
+  shared_queue get_queue(const std::string& name) noexcept;
   bool remove_queue(const std::string& name) noexcept;
   bool queue_exists(const std::string& name) noexcept;
   void run() noexcept;

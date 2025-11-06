@@ -14,15 +14,14 @@
 
 #pragma once
 
-#ifndef ENGINE_AUTH_HPP
-#define ENGINE_AUTH_HPP
-
-#include <engine/support.hpp>
+#ifndef ENGINE_CONTROLLER_CONFIG_HPP
+#define ENGINE_CONTROLLER_CONFIG_HPP
 
 namespace engine {
-class auth : public std::enable_shared_from_this<auth> {
-  optional_of<shared_jwt> jwt_;
+struct controller_config {
+  bool authenticated_{false};
+  bool validated_{false};
 };
 }  // namespace engine
 
-#endif  // ENGINE_AUTH_HPP
+#endif  // ENGINE_CONTROLLER_CONFIG_HPP

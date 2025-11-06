@@ -15,21 +15,17 @@
 #include <engine/errors/task_not_found.hpp>
 #include <engine/job.hpp>
 #include <engine/queue.hpp>
+#include <engine/task.hpp>
 #include <engine/worker.hpp>
-#include <ranges>
 
 namespace engine {
-queue::queue(boost::asio::strand<boost::asio::io_context::executor_type> strand)
-    : strand_(std::move(strand)) {
-  prepare();
-}
+queue::queue(strand_of<boost::asio::io_context::executor_type> strand) : strand_(std::move(strand)) { prepare(); }
 
 std::size_t queue::number_of_workers() const { return workers_.size(); }
 
 std::size_t queue::number_of_jobs() const { return jobs_.size(); }
 
-std::shared_ptr<job> queue::dispatch(std::string const& name,
-                                     boost::json::object data) {
+shared_job queue::dispatch(std::string const& name, object data) {
   auto _job = get_worker()->dispatch(get_task(name), std::move(data));
   dispatch(_job);
   return _job;
@@ -50,7 +46,7 @@ void queue::set_workers_to(const std::size_t no_of_workers) {
 
 void queue::cancel() {
   std::scoped_lock _lock(jobs_mutex_);
-  for (const std::shared_ptr<job>& _job : jobs_ | std::views::values) {
+  for (const shared_job& _job : jobs_ | std::views::values) {
     _job->cancel();
   }
 }
@@ -60,8 +56,7 @@ void queue::prepare() { upscale(); }
 void queue::upscale(const std::size_t to) {
   std::scoped_lock _lock(workers_mutex_);
   while (number_of_workers() != to) {
-    auto _worker =
-        std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
+    auto _worker = std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
     workers_.try_emplace(_worker->id(), _worker);
   }
 }
@@ -74,22 +69,20 @@ void queue::downscale(const std::size_t to) {
   }
 }
 
-void queue::dispatch(const std::shared_ptr<job>& job) {
+void queue::dispatch(const shared_job& job) {
   std::scoped_lock _lock(jobs_mutex_);
   jobs_.try_emplace(job->id(), job);
 }
 
-std::shared_ptr<worker> queue::get_worker() {
+shared_worker queue::get_worker() {
   std::scoped_lock _lock(workers_mutex_);
-  const auto _iterator = std::ranges::min_element(
-      workers_ | std::views::values,
-      [](const std::shared_ptr<worker>& a, const std::shared_ptr<worker>& b) {
-        return a->number_of_tasks() < b->number_of_tasks();
-      });
+  const auto _iterator = std::ranges::min_element(workers_ | std::views::values, [](const shared_worker& a, const shared_worker& b) {
+    return a->number_of_tasks() < b->number_of_tasks();
+  });
   return *_iterator;
 }
 
-std::shared_ptr<task> queue::get_task(const std::string& name) {
+shared_task queue::get_task(const std::string& name) {
   std::scoped_lock _lock(tasks_mutex_);
   const auto it = tasks_.find(name);
   if (it == tasks_.end()) throw errors::task_not_found();

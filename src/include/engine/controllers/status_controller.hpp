@@ -15,14 +15,13 @@
 #ifndef ENGINE_CONTROLLERS_STATUS_CONTROLLER_HPP
 #define ENGINE_CONTROLLERS_STATUS_CONTROLLER_HPP
 
-#include <engine/controller.hpp>
-#include <memory>
+#include <engine/support.hpp>
 
 namespace engine::controllers {
 class status_controller {
  public:
-  static std::vector<boost::beast::http::verb> verbs();
-  static std::shared_ptr<controller> make();
+  static vector_of<http_verb> verbs();
+  static shared_controller make();
 };
 
 }  // namespace engine::controllers

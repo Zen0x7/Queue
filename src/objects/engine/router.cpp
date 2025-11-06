@@ -13,36 +13,29 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <engine/errors/not_found_error.hpp>
+#include <engine/route.hpp>
 #include <engine/router.hpp>
 
 namespace engine {
-std::vector<std::shared_ptr<route>> router::get_routes() const {
-  return routes_;
-}
+vector_of<shared_route> router::get_routes() const { return routes_; }
 
-std::shared_ptr<router> router::add(std::shared_ptr<route> route) {
+shared_router router::add(shared_route route) {
   routes_.push_back(std::move(route));
   return shared_from_this();
 }
 
-std::tuple<std::unordered_map<std::string, std::string, string_hasher,
-                              std::equal_to<>>,
-           std::shared_ptr<route>>
-router::find(const boost::beast::http::verb verb,
-             const std::string &path) const {
+std::tuple<route_params_type, shared_route> router::find(const http_verb verb, const std::string &path) const {
   for (auto const &_route : get_routes()) {
     if (auto [_matched, _params] = _route->match(path);
-        std::ranges::find(_route->get_verbs(), verb) !=
-            _route->get_verbs().end() &&
-        _matched) {
+        std::ranges::find(_route->get_verbs(), verb) != _route->get_verbs().end() && _matched) {
       return std::make_tuple(_params, _route);
     }
   }
   throw errors::not_found_error();
 }
 
-std::vector<std::string> router::methods_of(const std::string &path) const {
-  std::vector<std::string> _methods;
+vector_of<std::string> router::methods_of(const std::string &path) const {
+  vector_of<std::string> _methods;
   for (auto const &_route : get_routes()) {
     if (auto [_matched, _params] = _route->match(path); _matched) {
       _methods.reserve(_route->get_verbs().size());

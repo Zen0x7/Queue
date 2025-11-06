@@ -17,18 +17,16 @@
 #ifndef ENGINE_SERVER_HPP
 #define ENGINE_SERVER_HPP
 
-#include <memory>
+#include <engine/support.hpp>
 
 namespace engine {
-class state;
-
 class server : public std::enable_shared_from_this<server> {
-  std::shared_ptr<state> state_;
+  shared_state state_;
 
  public:
   server();
   void start(unsigned short int port = 0) const;
-  std::shared_ptr<state> get_state() const;
+  shared_state get_state() const;
 };
 }  // namespace engine
 

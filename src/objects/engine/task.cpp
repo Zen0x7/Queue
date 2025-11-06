@@ -15,9 +15,7 @@
 #include <engine/task.hpp>
 
 namespace engine {
-task::task(handler_type callback)
-    : callback_(std::make_shared<handler_type>(std::move(callback))) {}
-std::shared_ptr<handler_type> task::callback() const noexcept {
-  return callback_;
-}
+task::task(handler_type callback) : callback_(std::make_shared<handler_type>(std::move(callback))) {}
+
+shared_of<handler_type> task::callback() const noexcept { return callback_; }
 }  // namespace engine

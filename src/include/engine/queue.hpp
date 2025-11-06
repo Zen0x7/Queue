@@ -12,41 +12,31 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#pragma once
+
 #ifndef ENGINE_QUEUE_HPP
 #define ENGINE_QUEUE_HPP
 
-#include <atomic>
-#include <boost/asio/strand.hpp>
-#include <boost/json/object.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <engine/task.hpp>
-#include <engine/worker.hpp>
-#include <map>
-#include <memory>
+#include <engine/support.hpp>
 
 namespace engine {
-class worker;
-class job;
-
 class queue : public std::enable_shared_from_this<queue> {
-  boost::asio::strand<boost::asio::io_context::executor_type> strand_;
+  strand_of<boost::asio::io_context::executor_type> strand_;
 
-  std::map<boost::uuids::uuid, std::shared_ptr<worker>> workers_;
+  map_of<uuid, shared_worker> workers_;
   std::mutex workers_mutex_;
 
-  std::map<boost::uuids::uuid, std::shared_ptr<job>> jobs_;
+  map_of<uuid, shared_job> jobs_;
   std::mutex jobs_mutex_;
 
-  std::map<std::string, std::shared_ptr<task>, std::less<>> tasks_;
+  map_hash_of<std::string, shared_task, std::less<>> tasks_;
   std::mutex tasks_mutex_;
 
  public:
-  explicit queue(
-      boost::asio::strand<boost::asio::io_context::executor_type> strand);
+  explicit queue(strand_of<boost::asio::io_context::executor_type> strand);
   std::size_t number_of_workers() const;
   std::size_t number_of_jobs() const;
-  std::shared_ptr<job> dispatch(std::string const& name,
-                                boost::json::object data = {});
+  shared_job dispatch(std::string const& name, object data = {});
   void add_task(std::string name, handler_type handler);
   void set_workers_to(std::size_t no_of_workers);
   void cancel();
@@ -55,9 +45,9 @@ class queue : public std::enable_shared_from_this<queue> {
   void prepare();
   void upscale(std::size_t to = 1);
   void downscale(std::size_t to = 1);
-  void dispatch(const std::shared_ptr<job>& job);
-  std::shared_ptr<worker> get_worker();
-  std::shared_ptr<task> get_task(const std::string& name);
+  void dispatch(const shared_job& job);
+  shared_worker get_worker();
+  shared_task get_task(const std::string& name);
 };
 }  // namespace engine
 

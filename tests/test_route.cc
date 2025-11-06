@@ -14,50 +14,31 @@
 
 #include <gtest/gtest.h>
 
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/detached.hpp>
-#include <boost/beast/http/empty_body.hpp>
-#include <boost/beast/http/message_generator.hpp>
-#include <boost/beast/http/string_body.hpp>
 #include <engine/controller.hpp>
 #include <engine/errors/parse_error.hpp>
 #include <engine/route.hpp>
 #include <engine/state.hpp>
-#include <functional>
+#include <engine/support.hpp>
+
+using namespace engine;
 
 TEST(route, can_be_instanced) {
-  auto _controller = std::make_shared<engine::controller>(
-      [](const std::shared_ptr<engine::state> &state,
-         const boost::beast::http::request<boost::beast::http::string_body>
-             request,
-         std::unordered_map<std::string, std::string, string_hasher,
-                            std::equal_to<>>
-             params)
-          -> boost::asio::awaitable<
-              boost::beast::http::response<boost::beast::http::string_body>> {
-        boost::beast::http::response<boost::beast::http::empty_body> _response{
-            boost::beast::http::status::ok, request.version()};
+  auto _controller = std::make_shared<controller>(
+      [](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
+        response_empty_type _response{http_status::ok, request.version()};
         _response.prepare_payload();
         co_return _response;
       });
 
-  engine::route _route(
+  route _route(
       {
-          boost::beast::http::verb::get,
-          boost::beast::http::verb::post,
+          http_verb::get,
+          http_verb::post,
       },
       "/hello-world",
-      std::make_shared<engine::controller>(
-          [](const std::shared_ptr<engine::state> &state,
-             const boost::beast::http::request<boost::beast::http::string_body>
-                 request,
-             std::unordered_map<std::string, std::string, string_hasher,
-                                std::equal_to<>>
-                 params)
-              -> boost::asio::awaitable<boost::beast::http::response<
-                  boost::beast::http::string_body>> {
-            boost::beast::http::response<boost::beast::http::empty_body>
-                _response{boost::beast::http::status::ok, request.version()};
+      std::make_shared<controller>(
+          [](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
+            response_empty_type _response{http_status::ok, request.version()};
             _response.prepare_payload();
             co_return _response;
           }));
@@ -67,38 +48,22 @@ TEST(route, can_be_instanced) {
 }
 
 TEST(route, can_be_compiled) {
-  auto _controller = std::make_shared<engine::controller>(
-      [](const std::shared_ptr<engine::state> &state,
-         const boost::beast::http::request<boost::beast::http::string_body>
-             request,
-         std::unordered_map<std::string, std::string, string_hasher,
-                            std::equal_to<>>
-             params)
-          -> boost::asio::awaitable<
-              boost::beast::http::response<boost::beast::http::string_body>> {
-        boost::beast::http::response<boost::beast::http::empty_body> _response{
-            boost::beast::http::status::ok, request.version()};
+  auto _controller = std::make_shared<controller>(
+      [](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
+        response_empty_type _response{http_status::ok, request.version()};
         _response.prepare_payload();
         co_return _response;
       });
 
-  engine::route _route(
+  route _route(
       {
-          boost::beast::http::verb::get,
-          boost::beast::http::verb::post,
+          http_verb::get,
+          http_verb::post,
       },
       "/api/users/{user_id}/configurations",
-      std::make_shared<engine::controller>(
-          [](const std::shared_ptr<engine::state> &state,
-             const boost::beast::http::request<boost::beast::http::string_body>
-                 request,
-             std::unordered_map<std::string, std::string, string_hasher,
-                                std::equal_to<>>
-                 params)
-              -> boost::asio::awaitable<boost::beast::http::response<
-                  boost::beast::http::string_body>> {
-            boost::beast::http::response<boost::beast::http::empty_body>
-                _response{boost::beast::http::status::ok, request.version()};
+      std::make_shared<controller>(
+          [](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
+            response_empty_type _response{http_status::ok, request.version()};
             _response.prepare_payload();
             co_return _response;
           }));
@@ -110,41 +75,24 @@ TEST(route, can_be_compiled) {
 TEST(route, can_be_invoked) {
   boost::asio::io_context _ioc;
 
-  auto _controller = std::make_shared<engine::controller>(
-      [](const std::shared_ptr<engine::state> &state,
-         const boost::beast::http::request<boost::beast::http::string_body>
-             request,
-         std::unordered_map<std::string, std::string, string_hasher,
-                            std::equal_to<>>
-             params)
-          -> boost::asio::awaitable<
-              boost::beast::http::response<boost::beast::http::string_body>> {
-        boost::beast::http::response<boost::beast::http::empty_body> _response{
-            boost::beast::http::status::ok, request.version()};
+  auto _controller = std::make_shared<controller>(
+      [](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
+        response_empty_type _response{http_status::ok, request.version()};
         _response.prepare_payload();
         co_return _response;
       });
 
-  auto _executed = std::make_shared<std::atomic<bool>>(false);
+  auto _executed = std::make_shared<atomic_of<bool>>(false);
 
-  engine::route _route(
+  route _route(
       {
-          boost::beast::http::verb::get,
-          boost::beast::http::verb::post,
+          http_verb::get,
+          http_verb::post,
       },
       "/endpoint",
-      std::make_shared<engine::controller>(
-          [&_executed](
-              const std::shared_ptr<engine::state> &state,
-              const boost::beast::http::request<boost::beast::http::string_body>
-                  request,
-              std::unordered_map<std::string, std::string, string_hasher,
-                                 std::equal_to<>>
-                  params)
-              -> boost::asio::awaitable<boost::beast::http::response<
-                  boost::beast::http::string_body>> {
-            boost::beast::http::response<boost::beast::http::empty_body>
-                _response{boost::beast::http::status::ok, request.version()};
+      std::make_shared<controller>(
+          [&_executed](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
+            response_empty_type _response{http_status::ok, request.version()};
             std::cout << "Inside of controller ..." << std::endl;
             _response.prepare_payload();
             _executed->store(true, std::memory_order_release);
@@ -153,56 +101,37 @@ TEST(route, can_be_invoked) {
 
   auto _callback = _route.get_controller()->callback();
 
-  boost::beast::http::request<boost::beast::http::string_body> _request{
-      boost::beast::http::verb::get, "/status", 11};
-  _request.set(boost::beast::http::field::host, "127.0.0.1");
-  _request.set(boost::beast::http::field::user_agent, "Client");
+  request_type _request{http_verb::get, "/status", 11};
+  _request.set(http_field::host, "127.0.0.1");
+  _request.set(http_field::user_agent, "Client");
   _request.prepare_payload();
 
-  const auto _state = std::make_shared<engine::state>();
-  std::unordered_map<std::string, std::string, string_hasher, std::equal_to<>>
-      _params;
+  const auto _state = std::make_shared<state>();
+  route_params_type _params;
   co_spawn(_ioc, (_callback)(_state, _request, _params), boost::asio::detached);
   _ioc.run();
   ASSERT_TRUE(_executed->load(std::memory_order_acquire));
 }
 
 TEST(route, can_be_matched) {
-  auto _controller = std::make_shared<engine::controller>(
-      [](const std::shared_ptr<engine::state> &state,
-         const boost::beast::http::request<boost::beast::http::string_body>
-             request,
-         std::unordered_map<std::string, std::string, string_hasher,
-                            std::equal_to<>>
-             params)
-          -> boost::asio::awaitable<
-              boost::beast::http::response<boost::beast::http::string_body>> {
-        boost::beast::http::response<boost::beast::http::empty_body> _response{
-            boost::beast::http::status::ok, request.version()};
+  auto _controller = std::make_shared<controller>(
+      [](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
+        response_empty_type _response{http_status::ok, request.version()};
         _response.prepare_payload();
         co_return _response;
       });
 
-  auto _executed = std::make_shared<std::atomic<bool>>(false);
+  auto _executed = std::make_shared<atomic_of<bool>>(false);
 
-  engine::route _route(
+  route _route(
       {
-          boost::beast::http::verb::get,
-          boost::beast::http::verb::post,
+          http_verb::get,
+          http_verb::post,
       },
       "/parameters/{1}/{2}/{3}",
-      std::make_shared<engine::controller>(
-          [&_executed](
-              const std::shared_ptr<engine::state> &state,
-              const boost::beast::http::request<boost::beast::http::string_body>
-                  request,
-              std::unordered_map<std::string, std::string, string_hasher,
-                                 std::equal_to<>>
-                  params)
-              -> boost::asio::awaitable<boost::beast::http::response<
-                  boost::beast::http::string_body>> {
-            boost::beast::http::response<boost::beast::http::empty_body>
-                _response{boost::beast::http::status::ok, request.version()};
+      std::make_shared<controller>(
+          [&_executed](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
+            response_empty_type _response{http_status::ok, request.version()};
             std::cout << "Inside of controller ..." << std::endl;
             _response.prepare_payload();
             _executed->store(true, std::memory_order_release);
@@ -226,50 +155,33 @@ TEST(route, can_be_matched) {
 }
 
 TEST(route, throw_error_on_duplicated_parameters) {
-  auto _controller = std::make_shared<engine::controller>(
-      [](const std::shared_ptr<engine::state> &state,
-         const boost::beast::http::request<boost::beast::http::string_body>
-             request,
-         std::unordered_map<std::string, std::string, string_hasher,
-                            std::equal_to<>>
-             params)
-          -> boost::asio::awaitable<
-              boost::beast::http::response<boost::beast::http::string_body>> {
-        boost::beast::http::response<boost::beast::http::empty_body> _response{
-            boost::beast::http::status::ok, request.version()};
+  auto _controller = std::make_shared<controller>(
+      [](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
+        response_empty_type _response{http_status::ok, request.version()};
         _response.prepare_payload();
         co_return _response;
       });
 
-  auto _executed = std::make_shared<std::atomic<bool>>(false);
+  auto _executed = std::make_shared<atomic_of<bool>>(false);
 
   bool throws = false;
 
   try {
-    engine::route _route(
+    route _route(
         {
-            boost::beast::http::verb::get,
-            boost::beast::http::verb::post,
+            http_verb::get,
+            http_verb::post,
         },
         "/parameters/{1}/{1}/{1}",
-        std::make_shared<engine::controller>(
-            [&_executed](const std::shared_ptr<engine::state> &state,
-                         const boost::beast::http::request<
-                             boost::beast::http::string_body>
-                             request,
-                         std::unordered_map<std::string, std::string,
-                                            string_hasher, std::equal_to<>>
-                             params)
-                -> boost::asio::awaitable<boost::beast::http::response<
-                    boost::beast::http::string_body>> {
-              boost::beast::http::response<boost::beast::http::empty_body>
-                  _response{boost::beast::http::status::ok, request.version()};
+        std::make_shared<controller>(
+            [&_executed](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
+              response_type _response{http_status::ok, request.version()};
               std::cout << "Inside of controller ..." << std::endl;
               _response.prepare_payload();
               _executed->store(true, std::memory_order_release);
               co_return _response;
             }));
-  } catch (const engine::errors::parse_error &e) {
+  } catch (const errors::parse_error &e) {
     std::cout << e.what() << std::endl;
     throws = true;
   }

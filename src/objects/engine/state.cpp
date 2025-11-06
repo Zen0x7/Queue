@@ -12,11 +12,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <boost/core/ignore_unused.hpp>
 #include <engine/queue.hpp>
 #include <engine/router.hpp>
 #include <engine/state.hpp>
-#include <thread>
 
 namespace engine {
 state::state() : router_(std::make_shared<router>()) {}
@@ -26,33 +24,21 @@ state::~state() {
   queues_.clear();
 }
 
-bool state::get_running() const {
-  return running_.load(std::memory_order_acquire);
-}
+bool state::get_running() const { return running_.load(std::memory_order_acquire); }
 
-unsigned short int state::get_port() const {
-  return port_.load(std::memory_order_acquire);
-}
+unsigned short int state::get_port() const { return port_.load(std::memory_order_acquire); }
 
-void state::set_port(const unsigned short int port) {
-  port_.store(port, std::memory_order_release);
-}
+void state::set_port(const unsigned short int port) { port_.store(port, std::memory_order_release); }
 
-void state::set_running(const bool running) {
-  running_.store(running, std::memory_order_release);
-}
+void state::set_running(const bool running) { running_.store(running, std::memory_order_release); }
 
-std::map<std::string, std::shared_ptr<queue>, std::less<>>&
-state::queues() noexcept {
-  return queues_;
-}
+map_hash_of<std::string, shared_queue, std::less<>>& state::queues() noexcept { return queues_; }
 
-std::shared_ptr<router> state::get_router() const noexcept { return router_; }
+shared_router state::get_router() const noexcept { return router_; }
 
-std::shared_ptr<queue> state::get_queue(const std::string& name) noexcept {
+shared_queue state::get_queue(const std::string& name) noexcept {
   std::scoped_lock _lock(queues_mutex_);
-  auto [_it, _ignored] =
-      queues_.try_emplace(name, std::make_shared<queue>(make_strand(ioc_)));
+  auto [_it, _ignored] = queues_.try_emplace(name, std::make_shared<queue>(make_strand(ioc_)));
   boost::ignore_unused(_ignored);
   return _it->second;
 }
@@ -68,11 +54,10 @@ bool state::queue_exists(const std::string& name) noexcept {
 }
 
 void state::run() noexcept {
-  std::vector<std::jthread> _threads_container;
+  vector_of<std::jthread> _threads_container;
   const auto _threads = std::thread::hardware_concurrency();
   _threads_container.reserve(_threads);
-  for (auto _i = _threads - 1; _i > 0; --_i)
-    _threads_container.emplace_back([this] { this->ioc_.run(); });
+  for (auto _i = _threads - 1; _i > 0; --_i) _threads_container.emplace_back([this] { this->ioc_.run(); });
   ioc_.run();
   for (auto& _thread : _threads_container) _thread.join();
 }

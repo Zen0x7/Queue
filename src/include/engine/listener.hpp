@@ -17,14 +17,10 @@
 #ifndef ENGINE_LISTENER_HPP
 #define ENGINE_LISTENER_HPP
 
-#include <boost/asio/awaitable.hpp>
-#include <boost/beast/core/tcp_stream.hpp>
+#include <engine/support.hpp>
 
 namespace engine {
-class state;
-
-boost::asio::awaitable<void> listener(std::shared_ptr<state> state,
-                                      boost::asio::ip::tcp::endpoint endpoint);
+async_of<void> listener(shared_state state, endpoint endpoint);
 }  // namespace engine
 
 #endif  // ENGINE_LISTENER_HPP
