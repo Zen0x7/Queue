@@ -15,18 +15,9 @@
 #ifndef ENGINE_JWT_HPP
 #define ENGINE_JWT_HPP
 
-#include <boost/json/parse.hpp>
-#include <boost/json/serialize.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/random_generator.hpp>
+#include <boost/json/object.hpp>
 #include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <engine/chrono.hpp>
-#include <engine/errors/parse_error.hpp>
-#include <engine/errors/signature_error.hpp>
 #include <memory>
-#include <ranges>
-#include <vector>
 
 namespace engine {
 class jwt : public std::enable_shared_from_this<jwt> {
@@ -37,91 +28,21 @@ class jwt : public std::enable_shared_from_this<jwt> {
   std::string signature_;
 
  public:
-  jwt(const boost::uuids::uuid id, const boost::uuids::uuid sub,
-      std::string header, boost::json::object payload, std::string signature)
-      : id_(id),
-        sub_(sub),
-        header_(std::move(header)),
-        payload_(std::move(payload)),
-        signature_(std::move(signature)) {}
+  jwt(boost::uuids::uuid id, boost::uuids::uuid sub, std::string header,
+      boost::json::object payload, std::string signature);
 
-  std::string as_string() const {
-    return "Bearer " + base64url_encode(header_, false) + "." +
-           base64url_encode(serialize(payload_), false) + "." + signature_;
-  }
+  std::string as_string() const;
 
-  boost::uuids::uuid get_id() const { return id_; }
-  boost::uuids::uuid get_sub() const { return sub_; }
-  boost::json::object get_payload() const { return payload_; }
-  std::string get_signature() const { return signature_; }
+  boost::uuids::uuid get_id() const;
+  boost::uuids::uuid get_sub() const;
+  boost::json::object get_payload() const;
+  std::string get_signature() const;
 
   static std::shared_ptr<jwt> make(boost::uuids::uuid id,
-                                   const std::string &key) {
-    const std::string _header = R"({"alg":"HS256","typ":"JWT"})";
-    const auto _jti = boost::uuids::random_generator()();
-    const boost::json::object _payload = {
-        {"sub", to_string(id)},
-        {"iat", now()},
-        {"jti", to_string(_jti)},
-    };
-    const std::string _payload_string = serialize(_payload);
-    std::string _signature =
-        base64url_encode(hmac(base64url_encode(_header) + "." +
-                                  base64url_encode(_payload_string),
-                              key),
-                         false);
-    return std::make_shared<jwt>(_jti, id, _header, _payload, _signature);
-  }
+                                   const std::string &key);
 
   static std::shared_ptr<jwt> from(const std::string &bearer,
-                                   const std::string &key) {
-    std::string _bearer{bearer.begin(), bearer.end()};
-    static constexpr std::string_view _prefix = "Bearer ";
-    const std::string _header = R"({"alg":"HS256","typ":"JWT"})";
-
-    if (bearer.starts_with(_prefix)) {
-      _bearer = _bearer.substr(_prefix.size());
-    }
-
-    std::vector<std::string> _parts;
-    for (auto _part : std::views::split(_bearer, '.')) {
-      _parts.emplace_back(_part.begin(), _part.end());
-    }
-
-    if (_parts.size() != 3)
-      throw new errors::parse_error("JWT token doesn't contains 3 parts.");
-
-    const std::string _challenge = _parts[0] + "." + _parts[1];
-    const std::string _signature =
-        base64url_encode(hmac(_challenge, key), false);
-
-    if (_parts[2] != _signature)
-      throw new errors::signature_error("Token doesn't matches");
-    boost::system::error_code _parse_ec;
-    auto _payload =
-        boost::json::parse(base64url_decode(_parts.at(1)), _parse_ec);
-
-    if (_parse_ec)
-      throw new errors::parse_error("JWT payload isn't valid JSON.");
-
-    if (!_payload.is_object() || !_payload.as_object().contains("sub") ||
-        !_payload.as_object().contains("iat") ||
-        !_payload.as_object().contains("jti"))
-      throw new errors::parse_error(
-          "JWT payload doesn't contains required fields.");
-
-    if (!_payload.as_object().at("sub").is_string() ||
-        !_payload.as_object().at("iat").is_int64() ||
-        !_payload.as_object().at("jti").is_string())
-      throw new errors::parse_error(
-          "JWT payload doesn't contains required fields data types.");
-
-    std::string _jti{_payload.as_object().at("jti").as_string()};
-    std::string _sub{_payload.as_object().at("sub").as_string()};
-    return std::make_shared<jwt>(boost::lexical_cast<boost::uuids::uuid>(_jti),
-                                 boost::lexical_cast<boost::uuids::uuid>(_sub),
-                                 _header, _payload.as_object(), _signature);
-  }
+                                   const std::string &key);
 };
 }  // namespace engine
 
