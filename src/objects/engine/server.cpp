@@ -12,12 +12,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/detached.hpp>
-#include <boost/asio/ip/address.hpp>
-#include <boost/beast/http/empty_body.hpp>
 #include <engine/controllers/status_controller.hpp>
 #include <engine/listener.hpp>
+#include <engine/route.hpp>
 #include <engine/router.hpp>
 #include <engine/server.hpp>
 #include <engine/state.hpp>
@@ -31,13 +28,9 @@ void server::start(const unsigned short int port) const {
 
   const auto _router = state_->get_router();
 
-  _router->add(std::make_shared<route>(controllers::status_controller::verbs(),
-                                       "/status",
-                                       controllers::status_controller::make()));
+  _router->add(std::make_shared<route>(controllers::status_controller::verbs(), "/status", controllers::status_controller::make()));
 
-  co_spawn(state_->ioc(),
-           listener(state_, boost::asio::ip::tcp::endpoint{_address, port}),
-           boost::asio::detached);
+  co_spawn(state_->ioc(), listener(state_, endpoint{_address, port}), boost::asio::detached);
 
   state_->run();
 }

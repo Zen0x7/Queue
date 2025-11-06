@@ -15,13 +15,7 @@
 #ifndef ENGINE_WORKER_HPP
 #define ENGINE_WORKER_HPP
 
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/strand.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <engine/job.hpp>
 #include <engine/support.hpp>
-#include <memory>
 
 namespace engine {
 class worker : public std::enable_shared_from_this<worker> {

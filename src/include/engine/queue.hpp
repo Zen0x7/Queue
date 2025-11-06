@@ -15,15 +15,7 @@
 #ifndef ENGINE_QUEUE_HPP
 #define ENGINE_QUEUE_HPP
 
-#include <atomic>
-#include <boost/asio/strand.hpp>
-#include <boost/json/object.hpp>
-#include <boost/uuid/uuid.hpp>
 #include <engine/support.hpp>
-#include <engine/task.hpp>
-#include <engine/worker.hpp>
-#include <map>
-#include <memory>
 
 namespace engine {
 class queue : public std::enable_shared_from_this<queue> {

@@ -15,14 +15,12 @@
 #include <engine/errors/task_not_found.hpp>
 #include <engine/job.hpp>
 #include <engine/queue.hpp>
+#include <engine/task.hpp>
 #include <engine/worker.hpp>
 #include <ranges>
 
 namespace engine {
-queue::queue(strand_of<boost::asio::io_context::executor_type> strand)
-    : strand_(std::move(strand)) {
-  prepare();
-}
+queue::queue(strand_of<boost::asio::io_context::executor_type> strand) : strand_(std::move(strand)) { prepare(); }
 
 std::size_t queue::number_of_workers() const { return workers_.size(); }
 
@@ -59,8 +57,7 @@ void queue::prepare() { upscale(); }
 void queue::upscale(const std::size_t to) {
   std::scoped_lock _lock(workers_mutex_);
   while (number_of_workers() != to) {
-    auto _worker =
-        std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
+    auto _worker = std::make_shared<worker>(make_strand(strand_.get_inner_executor()));
     workers_.try_emplace(_worker->id(), _worker);
   }
 }
@@ -80,11 +77,9 @@ void queue::dispatch(const shared_job& job) {
 
 shared_worker queue::get_worker() {
   std::scoped_lock _lock(workers_mutex_);
-  const auto _iterator = std::ranges::min_element(
-      workers_ | std::views::values,
-      [](const shared_worker& a, const shared_worker& b) {
-        return a->number_of_tasks() < b->number_of_tasks();
-      });
+  const auto _iterator = std::ranges::min_element(workers_ | std::views::values, [](const shared_worker& a, const shared_worker& b) {
+    return a->number_of_tasks() < b->number_of_tasks();
+  });
   return *_iterator;
 }
 

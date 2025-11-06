@@ -18,7 +18,6 @@
 #define ENGINE_SERVER_HPP
 
 #include <engine/support.hpp>
-#include <memory>
 
 namespace engine {
 class server : public std::enable_shared_from_this<server> {

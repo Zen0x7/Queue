@@ -15,14 +15,7 @@
 #ifndef ENGINE_ROUTE_HPP
 #define ENGINE_ROUTE_HPP
 
-#include <boost/beast/http/verb.hpp>
-#include <engine/controller.hpp>
-#include <engine/string_hasher.hpp>
 #include <engine/support.hpp>
-#include <memory>
-#include <regex>
-#include <unordered_map>
-#include <vector>
 
 namespace engine {
 class route : public std::enable_shared_from_this<route> {
@@ -33,8 +26,7 @@ class route : public std::enable_shared_from_this<route> {
   vector_of<std::string> parameters_;
 
  public:
-  explicit route(vector_of<http_verb> verbs, std::string signature,
-                 const shared_controller &controller);
+  explicit route(vector_of<http_verb> verbs, std::string signature, const shared_controller &controller);
   void compile();
   shared_of<std::regex> &get_expression();
   shared_controller &get_controller();

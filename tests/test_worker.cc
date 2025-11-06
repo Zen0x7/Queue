@@ -14,30 +14,26 @@
 
 #include <gtest/gtest.h>
 
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/use_future.hpp>
-#include <boost/core/ignore_unused.hpp>
-#include <boost/json/object.hpp>
+#include <engine/support.hpp>
 #include <engine/task.hpp>
 #include <engine/worker.hpp>
 #include <thread>
 
+using namespace engine;
+
 TEST(worker, can_run) {
   boost::asio::io_context _ioc;
   std::atomic _executed{false};
-  const auto _task = std::make_shared<engine::task>(
-      [&_executed](auto& cancelled,
-                   auto& data) -> boost::asio::awaitable<void> {
-        boost::ignore_unused(cancelled, data);
-        _executed.store(true, std::memory_order_release);
-        co_return;
-      });
-  const auto _worker = std::make_shared<engine::worker>(make_strand(_ioc));
+  const auto _task = std::make_shared<task>([&_executed](auto& cancelled, auto& data) -> boost::asio::awaitable<void> {
+    boost::ignore_unused(cancelled, data);
+    _executed.store(true, std::memory_order_release);
+    co_return;
+  });
+  const auto _worker = std::make_shared<worker>(make_strand(_ioc));
   auto fut = co_spawn(
       _ioc,
-      [&_worker, &_task]() -> boost::asio::awaitable<void> {
-        _worker->dispatch(_task, boost::json::object{});
+      [&_worker, &_task]() -> async_of<void> {
+        _worker->dispatch(_task, object{});
         co_return;
       },
       boost::asio::use_future);
@@ -48,6 +44,6 @@ TEST(worker, can_run) {
 
 TEST(worker, can_be_instanced) {
   boost::asio::io_context _ioc;
-  const engine::worker _worker(make_strand(_ioc));
+  const worker _worker(make_strand(_ioc));
   ASSERT_EQ(_worker.number_of_tasks(), 0);
 }

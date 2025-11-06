@@ -15,14 +15,17 @@
 #include <gtest/gtest.h>
 
 #include <engine/state.hpp>
+#include <engine/support.hpp>
+
+using namespace engine;
 
 TEST(state, can_create_shared_instance) {
-  const auto _state = std::make_shared<engine::state>();
+  const auto _state = std::make_shared<state>();
   ASSERT_NE(_state.get(), nullptr);
 }
 
 TEST(state, can_manage_queues) {
-  const auto _state = std::make_shared<engine::state>();
+  const auto _state = std::make_shared<state>();
   std::string _channel = "notifications";
 
   // State persists queue after scope exit.

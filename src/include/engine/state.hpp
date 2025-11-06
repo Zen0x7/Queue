@@ -15,11 +15,7 @@
 #ifndef ENGINE_STATE_HPP
 #define ENGINE_STATE_HPP
 
-#include <boost/asio/io_context.hpp>
 #include <engine/support.hpp>
-#include <map>
-#include <memory>
-#include <mutex>
 
 namespace engine {
 class state : public std::enable_shared_from_this<state> {

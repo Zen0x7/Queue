@@ -21,8 +21,12 @@
 #include <atomic>
 #include <bcrypt/BCrypt.hpp>
 #include <boost/asio/awaitable.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/strand.hpp>
+#include <boost/asio/use_future.hpp>
 #include <boost/beast/core/flat_buffer.hpp>
 #include <boost/beast/core/tcp_stream.hpp>
 #include <boost/beast/http/empty_body.hpp>
@@ -30,6 +34,7 @@
 #include <boost/beast/http/read.hpp>
 #include <boost/beast/http/string_body.hpp>
 #include <boost/beast/http/write.hpp>
+#include <boost/core/ignore_unused.hpp>
 #include <boost/json/object.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -38,7 +43,9 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <regex>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace engine {
@@ -75,19 +82,14 @@ using http_verb = boost::beast::http::verb;
 using http_status = boost::beast::http::status;
 using http_field = boost::beast::http::field;
 using message = boost::beast::http::message_generator;
-using response_type =
-    boost::beast::http::response<boost::beast::http::string_body>;
-using response_empty_type =
-    boost::beast::http::response<boost::beast::http::empty_body>;
+using response_type = boost::beast::http::response<boost::beast::http::string_body>;
+using response_empty_type = boost::beast::http::response<boost::beast::http::empty_body>;
 
-using request_type =
-    boost::beast::http::request<boost::beast::http::string_body>;
-using route_params_type = std::unordered_map<std::string, std::string,
-                                             string_hasher, std::equal_to<>>;
+using request_type = boost::beast::http::request<boost::beast::http::string_body>;
+using route_params_type = std::unordered_map<std::string, std::string, string_hasher, std::equal_to<>>;
 
 using controller_callback_type =
-    std::function<boost::asio::awaitable<response_type>(
-        const shared_state&, const request_type&, route_params_type)>;
+    std::function<boost::asio::awaitable<response_type>(const shared_state&, const request_type&, route_params_type)>;
 
 template <typename T>
 using shared_of = std::shared_ptr<T>;
@@ -134,8 +136,11 @@ using handler_type = std::function<handler_signature_type>;
 
 using endpoint = boost::asio::ip::tcp::endpoint;
 using acceptor = boost::asio::ip::tcp::acceptor;
+using resolver = boost::asio::ip::tcp::resolver;
 using tcp_stream = boost::beast::tcp_stream;
+using flat_buffer = boost::beast::flat_buffer;
 using system_error = boost::system::system_error;
+using socket = boost::asio::ip::tcp::socket;
 }  // namespace engine
 
 #endif  // ENGINE_SUPPORT_HPP

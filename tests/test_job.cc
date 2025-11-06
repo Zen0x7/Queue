@@ -20,20 +20,21 @@
 #include <boost/core/ignore_unused.hpp>
 #include <boost/json/object.hpp>
 #include <engine/job.hpp>
+#include <engine/support.hpp>
 #include <engine/task.hpp>
 #include <thread>
 
+using namespace engine;
+
 TEST(job, can_run) {
   boost::asio::io_context _ioc;
-  std::atomic _executed{false};
-  const auto _task = std::make_shared<engine::task>(
-      [&_executed](auto& cancelled,
-                   auto& data) -> boost::asio::awaitable<void> {
-        boost::ignore_unused(cancelled, data);
-        _executed.store(true, std::memory_order_release);
-        co_return;
-      });
-  const auto _job = std::make_shared<engine::job>(_task, boost::json::object{});
+  atomic_of _executed{false};
+  const auto _task = std::make_shared<task>([&_executed](auto& cancelled, auto& data) -> async_of<void> {
+    boost::ignore_unused(cancelled, data);
+    _executed.store(true, std::memory_order_release);
+    co_return;
+  });
+  const auto _job = std::make_shared<job>(_task, object{});
   auto fut = co_spawn(_ioc, _job->run(), boost::asio::use_future);
   _ioc.run();
   fut.get();
@@ -42,22 +43,20 @@ TEST(job, can_run) {
 
 TEST(job, run_is_promise) {
   boost::asio::io_context _ioc;
-  std::atomic _executed{false};
-  const auto _task = std::make_shared<engine::task>(
-      [&_executed](auto& cancelled,
-                   auto& data) -> boost::asio::awaitable<void> {
-        boost::ignore_unused(cancelled, data);
-        _executed.store(true, std::memory_order_release);
-        co_return;
-      });
-  const auto _job = std::make_shared<engine::job>(_task, boost::json::object{});
+  atomic_of _executed{false};
+  const auto _task = std::make_shared<task>([&_executed](auto& cancelled, auto& data) -> async_of<void> {
+    boost::ignore_unused(cancelled, data);
+    _executed.store(true, std::memory_order_release);
+    co_return;
+  });
+  const auto _job = std::make_shared<job>(_task, object{});
   const auto _promise = _job->run();
   ASSERT_FALSE(_executed.load(std::memory_order_acquire));
-  std::atomic<bool> _cancelled;
-  auto _result = (*_task->callback())(_cancelled, boost::json::object{});
+  atomic_of<bool> _cancelled;
+  auto _result = (*_task->callback())(_cancelled, object{});
   ASSERT_FALSE(_executed.load(std::memory_order_acquire));
 
-  const auto _running_job = [&_job]() -> boost::asio::awaitable<void> {
+  const auto _running_job = [&_job]() -> async_of<void> {
     co_await _job->run();
     co_return;
   };

@@ -17,7 +17,6 @@
 
 namespace engine {
 async_of<void> session(shared_state state, tcp_stream stream) {
-  using namespace boost::beast;
   flat_buffer _buffer;
 
   for (;;) {
@@ -26,8 +25,7 @@ async_of<void> session(shared_state state, tcp_stream stream) {
     request_type _request;
     co_await async_read(stream, _buffer, _request);
 
-    http::message_generator _message =
-        co_await kernel(state, std::move(_request));
+    message _message = co_await kernel(state, std::move(_request));
 
     const bool keep_alive = _message.keep_alive();
     co_await async_write(stream, std::move(_message));
@@ -37,6 +35,6 @@ async_of<void> session(shared_state state, tcp_stream stream) {
     }
   }
 
-  stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_send);
+  stream.socket().shutdown(socket::shutdown_send);
 }
 }  // namespace engine

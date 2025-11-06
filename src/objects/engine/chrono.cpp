@@ -16,9 +16,5 @@
 #include <engine/chrono.hpp>
 
 namespace engine {
-std::size_t now() {
-  return std::chrono::duration_cast<std::chrono::seconds>(
-             std::chrono::system_clock::now().time_since_epoch())
-      .count();
-}
+std::size_t now() { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count(); }
 }  // namespace engine

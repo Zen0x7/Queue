@@ -14,63 +14,44 @@
 
 #include <gtest/gtest.h>
 
-#include <boost/beast/http/empty_body.hpp>
+#include <engine/controller.hpp>
 #include <engine/errors/not_found_error.hpp>
 #include <engine/route.hpp>
 #include <engine/router.hpp>
-#include <engine/state.hpp>
+#include <engine/support.hpp>
 #include <functional>
 
+using namespace engine;
+
 TEST(router, can_resolve_requests) {
-  const auto _router = std::make_shared<engine::router>();
+  const auto _router = std::make_shared<router>();
 
   _router
-      ->add(std::make_shared<engine::route>(
-          std::vector{
-              boost::beast::http::verb::post,
+      ->add(std::make_shared<route>(
+          vector_of{
+              http_verb::post,
           },
           "/transactions/{id}",
-          std::make_shared<engine::controller>(
-              [](const std::shared_ptr<engine::state> &state,
-                 const boost::beast::http::request<
-                     boost::beast::http::string_body>
-                     request,
-                 std::unordered_map<std::string, std::string, string_hasher,
-                                    std::equal_to<>>
-                     params)
-                  -> boost::asio::awaitable<boost::beast::http::response<
-                      boost::beast::http::string_body>> {
-                boost::beast::http::response<boost::beast::http::empty_body>
-                    _response{boost::beast::http::status::ok,
-                              request.version()};
+          std::make_shared<controller>(
+              [](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
+                response_empty_type _response{http_status::ok, request.version()};
                 _response.prepare_payload();
                 co_return _response;
               })))
-      ->add(std::make_shared<engine::route>(
-          std::vector{
-              boost::beast::http::verb::delete_,
+      ->add(std::make_shared<route>(
+          vector_of{
+              http_verb::delete_,
           },
           "/users/{id}",
-          std::make_shared<engine::controller>(
-              [](const std::shared_ptr<engine::state> &state,
-                 const boost::beast::http::request<
-                     boost::beast::http::string_body>
-                     request,
-                 std::unordered_map<std::string, std::string, string_hasher,
-                                    std::equal_to<>>
-                     params)
-                  -> boost::asio::awaitable<boost::beast::http::response<
-                      boost::beast::http::string_body>> {
-                boost::beast::http::response<boost::beast::http::empty_body>
-                    _response{boost::beast::http::status::ok,
-                              request.version()};
+          std::make_shared<controller>(
+              [](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
+                response_empty_type _response{http_status::ok, request.version()};
                 _response.prepare_payload();
                 co_return _response;
               })));
 
   {
-    auto [_params, _route] =
-        _router->find(boost::beast::http::verb::delete_, "/users/5");
+    auto [_params, _route] = _router->find(http_verb::delete_, "/users/5");
     ASSERT_EQ(_params.size(), 1);
     ASSERT_EQ(_params.at("id"), "5");
   }
@@ -78,17 +59,15 @@ TEST(router, can_resolve_requests) {
   {
     bool throws = false;
     try {
-      auto [_params, _route] =
-          _router->find(boost::beast::http::verb::post, "/users/5");
-    } catch (const engine::errors::not_found_error &) {
+      auto [_params, _route] = _router->find(http_verb::post, "/users/5");
+    } catch (const errors::not_found_error &) {
       throws = true;
     }
     ASSERT_TRUE(throws);
   }
 
   {
-    auto [_params, _route] =
-        _router->find(boost::beast::http::verb::post, "/transactions/7");
+    auto [_params, _route] = _router->find(http_verb::post, "/transactions/7");
     ASSERT_EQ(_params.size(), 1);
     ASSERT_EQ(_params.at("id"), "7");
   }
@@ -96,9 +75,8 @@ TEST(router, can_resolve_requests) {
   {
     bool throws = false;
     try {
-      auto [_params, _route] =
-          _router->find(boost::beast::http::verb::delete_, "/transactions/5");
-    } catch (const engine::errors::not_found_error &) {
+      auto [_params, _route] = _router->find(http_verb::delete_, "/transactions/5");
+    } catch (const errors::not_found_error &) {
       throws = true;
     }
     ASSERT_TRUE(throws);
@@ -107,9 +85,8 @@ TEST(router, can_resolve_requests) {
   {
     bool throws = false;
     try {
-      auto [_params, _route] =
-          _router->find(boost::beast::http::verb::post, "/not_found");
-    } catch (const engine::errors::not_found_error &) {
+      auto [_params, _route] = _router->find(http_verb::post, "/not_found");
+    } catch (const errors::not_found_error &) {
       throws = true;
     }
     ASSERT_TRUE(throws);

@@ -12,28 +12,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <boost/beast/http/empty_body.hpp>
+#include <engine/controller.hpp>
 #include <engine/controllers/status_controller.hpp>
 
 namespace engine::controllers {
-std::vector<boost::beast::http::verb> status_controller::verbs() {
-  return std::vector{
-      boost::beast::http::verb::get,
+vector_of<http_verb> status_controller::verbs() {
+  return vector_of{
+      http_verb::get,
   };
 }
 
-std::shared_ptr<controller> status_controller::make() {
+shared_controller status_controller::make() {
   return std::make_shared<controller>(
-      [](const std::shared_ptr<state> &state,
-         const boost::beast::http::request<boost::beast::http::string_body>
-             request,
-         std::unordered_map<std::string, std::string, string_hasher,
-                            std::equal_to<>>
-             params)
-          -> boost::asio::awaitable<
-              boost::beast::http::response<boost::beast::http::string_body>> {
-        boost::beast::http::response<boost::beast::http::empty_body> _response{
-            boost::beast::http::status::ok, request.version()};
+      [](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
+        response_empty_type _response{http_status::ok, request.version()};
         _response.prepare_payload();
         co_return _response;
       });

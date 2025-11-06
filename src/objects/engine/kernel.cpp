@@ -26,19 +26,15 @@ async_of<message> kernel(shared_state state, request_type request) {
     auto _verbs = state->get_router()->methods_of(request.target());
     const auto _methods = boost::join(_verbs, ",");
     response_empty_type _response{http_status::no_content, request.version()};
-    _response.set(http_field::access_control_allow_methods,
-                  _methods.empty() ? "" : _methods);
-    _response.set(http_field::access_control_allow_headers,
-                  "Accept,Authorization,Content-Type");
+    _response.set(http_field::access_control_allow_methods, _methods.empty() ? "" : _methods);
+    _response.set(http_field::access_control_allow_headers, "Accept,Authorization,Content-Type");
     _response.set(http_field::access_control_allow_origin, "*");
     co_return _response;
   }
 
   try {
-    auto [_params, _route] =
-        state->get_router()->find(request.method(), request.target());
-    auto _response = co_await _route->get_controller()->callback()(
-        state, request, std::move(_params));
+    auto [_params, _route] = state->get_router()->find(request.method(), request.target());
+    auto _response = co_await _route->get_controller()->callback()(state, request, std::move(_params));
     _response.set(http_field::access_control_allow_origin, "*");
     co_return _response;
   } catch (const errors::not_found_error &) {
@@ -47,8 +43,7 @@ async_of<message> kernel(shared_state state, request_type request) {
     _response.prepare_payload();
     co_return _response;
   } catch (...) {
-    response_empty_type _response{http_status::internal_server_error,
-                                  request.version()};
+    response_empty_type _response{http_status::internal_server_error, request.version()};
     _response.set(http_field::access_control_allow_origin, "*");
     _response.prepare_payload();
     co_return _response;

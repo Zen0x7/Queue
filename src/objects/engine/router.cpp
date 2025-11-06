@@ -13,6 +13,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <engine/errors/not_found_error.hpp>
+#include <engine/route.hpp>
 #include <engine/router.hpp>
 
 namespace engine {
@@ -23,13 +24,10 @@ shared_router router::add(shared_route route) {
   return shared_from_this();
 }
 
-std::tuple<route_params_type, shared_route> router::find(
-    const http_verb verb, const std::string &path) const {
+std::tuple<route_params_type, shared_route> router::find(const http_verb verb, const std::string &path) const {
   for (auto const &_route : get_routes()) {
     if (auto [_matched, _params] = _route->match(path);
-        std::ranges::find(_route->get_verbs(), verb) !=
-            _route->get_verbs().end() &&
-        _matched) {
+        std::ranges::find(_route->get_verbs(), verb) != _route->get_verbs().end() && _matched) {
       return std::make_tuple(_params, _route);
     }
   }

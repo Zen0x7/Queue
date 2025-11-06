@@ -28,21 +28,17 @@ async_of<void> listener(shared_state state, endpoint endpoint) {
   state->set_running(true);
 
   for (;;) {
-    co_spawn(_executor,
-             session(state, tcp_stream{co_await _acceptor.async_accept()}),
-             [](const std::exception_ptr &throwable) {
-               if (throwable) {
-                 try {
-                   std::rethrow_exception(throwable);
-                 } catch (const system_error &exception) {
-                   std::cerr << "[Listener] Boost error: " << exception.what()
-                             << std::endl;
-                 } catch (...) {
-                   std::cerr << "[Listener] Unknown exception thrown."
-                             << std::endl;
-                 }
-               }
-             });
+    co_spawn(_executor, session(state, tcp_stream{co_await _acceptor.async_accept()}), [](const std::exception_ptr &throwable) {
+      if (throwable) {
+        try {
+          std::rethrow_exception(throwable);
+        } catch (const system_error &exception) {
+          std::cerr << "[Listener] Boost error: " << exception.what() << std::endl;
+        } catch (...) {
+          std::cerr << "[Listener] Unknown exception thrown." << std::endl;
+        }
+      }
+    });
   }
 }
 }  // namespace engine
