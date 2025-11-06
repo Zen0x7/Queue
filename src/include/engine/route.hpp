@@ -18,6 +18,7 @@
 #include <boost/beast/http/verb.hpp>
 #include <engine/controller.hpp>
 #include <engine/string_hasher.hpp>
+#include <engine/types.hpp>
 #include <memory>
 #include <regex>
 #include <unordered_map>
@@ -26,23 +27,20 @@
 namespace engine {
 class route : public std::enable_shared_from_this<route> {
   std::string signature_;
-  std::shared_ptr<std::regex> expression_;
-  std::shared_ptr<controller> controller_;
-  std::vector<boost::beast::http::verb> verbs_;
-  std::vector<std::string> parameters_;
+  shared_of<std::regex> expression_;
+  shared_controller controller_;
+  vector_of<http_verb> verbs_;
+  vector_of<std::string> parameters_;
 
  public:
-  explicit route(std::vector<boost::beast::http::verb> verbs,
-                 std::string signature,
-                 const std::shared_ptr<controller> &controller);
+  explicit route(vector_of<http_verb> verbs, std::string signature,
+                 const shared_controller &controller);
   void compile();
-  std::shared_ptr<std::regex> &get_expression();
-  std::shared_ptr<controller> &get_controller();
-  std::vector<boost::beast::http::verb> &get_verbs();
-  std::vector<std::string> &get_parameters();
-  std::pair<bool, std::unordered_map<std::string, std::string, string_hasher,
-                                     std::equal_to<>>>
-  match(const std::string &input);
+  shared_of<std::regex> &get_expression();
+  shared_controller &get_controller();
+  vector_of<http_verb> &get_verbs();
+  vector_of<std::string> &get_parameters();
+  pair_of<bool, route_params_type> match(const std::string &input);
 };
 }  // namespace engine
 

@@ -12,21 +12,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
-#ifndef ENGINE_TASK_HPP
-#define ENGINE_TASK_HPP
-
-#include <engine/types.hpp>
+#ifndef ENGINE_CONTROLLER_CONFIG_HPP
+#define ENGINE_CONTROLLER_CONFIG_HPP
 
 namespace engine {
-class task : public std::enable_shared_from_this<task> {
-  shared_of<handler_type> callback_;
-
- public:
-  explicit task(handler_type callback);
-  shared_of<handler_type> callback() const noexcept;
+struct controller_config {
+  bool authenticated_{false};
+  bool validated_{false};
 };
 }  // namespace engine
 
-#endif  // ENGINE_TASK_HPP
+#endif  // ENGINE_CONTROLLER_CONFIG_HPP

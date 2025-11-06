@@ -16,25 +16,21 @@
 #define ENGINE_ROUTER_HPP
 
 #include <engine/route.hpp>
+#include <engine/types.hpp>
 #include <memory>
 #include <regex>
 #include <vector>
 
 namespace engine {
 class router : public std::enable_shared_from_this<router> {
-  std::vector<std::shared_ptr<route>> routes_;
+  vector_of<shared_route> routes_;
 
  public:
-  std::vector<std::shared_ptr<route>> get_routes() const;
-
-  std::shared_ptr<router> add(std::shared_ptr<route> route);
-
-  std::tuple<std::unordered_map<std::string, std::string, string_hasher,
-                                std::equal_to<>>,
-             std::shared_ptr<route>>
-
-  find(boost::beast::http::verb verb, const std::string &path) const;
-  std::vector<std::string> methods_of(const std::string &path) const;
+  vector_of<shared_route> get_routes() const;
+  shared_router add(shared_route route);
+  tuple_of<route_params_type, shared_route> find(http_verb verb,
+                                                 const std::string &path) const;
+  vector_of<std::string> methods_of(const std::string &path) const;
 };
 }  // namespace engine
 

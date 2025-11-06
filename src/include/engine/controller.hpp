@@ -15,26 +15,21 @@
 #ifndef ENGINE_CONTROLLER_HPP
 #define ENGINE_CONTROLLER_HPP
 
-#include <boost/asio/awaitable.hpp>
 #include <boost/beast/http/read.hpp>
-#include <boost/beast/http/string_body.hpp>
-#include <engine/string_hasher.hpp>
+#include <engine/controller_config.hpp>
+#include <engine/types.hpp>
 #include <memory>
 
 namespace engine {
 class state;
-using controller_callback_type = std::function<boost::asio::awaitable<
-    boost::beast::http::response<boost::beast::http::string_body>>(
-    const std::shared_ptr<state>&,
-    const boost::beast::http::request<boost::beast::http::string_body>&,
-    std::unordered_map<std::string, std::string, string_hasher,
-                       std::equal_to<>>)>;
 
 class controller : public std::enable_shared_from_this<controller> {
   controller_callback_type callback_;
+  controller_config config_;
 
  public:
-  explicit controller(controller_callback_type callback);
+  explicit controller(controller_callback_type callback,
+                      controller_config config = {});
   controller_callback_type& callback() noexcept;
 };
 }  // namespace engine
