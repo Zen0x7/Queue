@@ -12,15 +12,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ENGINE_ERRORS_PARSE_ERROR_HPP
-#define ENGINE_ERRORS_PARSE_ERROR_HPP
+#include <chrono>
+#include <engine/chrono.hpp>
 
-#include <stdexcept>
-
-namespace engine::errors {
-class parse_error final : public std::runtime_error {
-  using std::runtime_error::runtime_error;
-};
-}  // namespace engine::errors
-
-#endif  // ENGINE_ERRORS_PARSE_ERROR_HPP
+namespace engine {
+std::size_t now() {
+  return std::chrono::duration_cast<std::chrono::seconds>(
+             std::chrono::system_clock::now().time_since_epoch())
+      .count();
+}
+}  // namespace engine

@@ -12,15 +12,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ENGINE_ERRORS_PARSE_ERROR_HPP
-#define ENGINE_ERRORS_PARSE_ERROR_HPP
+#ifndef ENGINE_CHRONO_HPP
+#define ENGINE_CHRONO_HPP
 
-#include <stdexcept>
+#include <cstdint>
 
-namespace engine::errors {
-class parse_error final : public std::runtime_error {
-  using std::runtime_error::runtime_error;
-};
-}  // namespace engine::errors
+namespace engine {
+std::size_t now();
+}  // namespace engine
 
-#endif  // ENGINE_ERRORS_PARSE_ERROR_HPP
+#endif  // ENGINE_CHRONO_HPP
