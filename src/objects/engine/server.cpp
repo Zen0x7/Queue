@@ -16,6 +16,7 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/beast/http/empty_body.hpp>
+#include <engine/controllers/status_controller.hpp>
 #include <engine/listener.hpp>
 #include <engine/router.hpp>
 #include <engine/server.hpp>
@@ -30,25 +31,9 @@ void server::start(const unsigned short int port) const {
 
   const auto _router = state_->get_router();
 
-  _router->add(std::make_shared<route>(
-      std::vector{
-          boost::beast::http::verb::get,
-      },
-      "/status",
-      std::make_shared<controller>(
-          [](const std::shared_ptr<state> &state,
-             const boost::beast::http::request<boost::beast::http::string_body>
-                 request,
-             std::unordered_map<std::string, std::string, string_hasher,
-                                std::equal_to<>>
-                 params)
-              -> boost::asio::awaitable<boost::beast::http::response<
-                  boost::beast::http::string_body>> {
-            boost::beast::http::response<boost::beast::http::empty_body>
-                _response{boost::beast::http::status::ok, request.version()};
-            _response.prepare_payload();
-            co_return _response;
-          })));
+  _router->add(std::make_shared<route>(controllers::status_controller::verbs(),
+                                       "/status",
+                                       controllers::status_controller::make()));
 
   co_spawn(state_->ioc(),
            listener(state_, boost::asio::ip::tcp::endpoint{_address, port}),
