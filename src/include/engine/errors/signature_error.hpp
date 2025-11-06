@@ -12,15 +12,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ENGINE_ERRORS_PARSE_ERROR_HPP
-#define ENGINE_ERRORS_PARSE_ERROR_HPP
+#ifndef ENGINE_ERRORS_SIGNATURE_ERROR_HPP
+#define ENGINE_ERRORS_SIGNATURE_ERROR_HPP
 
 #include <stdexcept>
 
 namespace engine::errors {
-class parse_error final : public std::runtime_error {
+class signature_error final : public std::runtime_error {
   using std::runtime_error::runtime_error;
 };
 }  // namespace engine::errors
 
-#endif  // ENGINE_ERRORS_PARSE_ERROR_HPP
+#endif  // ENGINE_ERRORS_SIGNATURE_ERROR_HPP

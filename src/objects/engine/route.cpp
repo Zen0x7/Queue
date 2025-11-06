@@ -38,7 +38,7 @@ void route::compile() {
       std::string _value{signature_.substr(_open + 1, _close - _open - 1)};
 
       if (std::ranges::find(parameters_, _value) != parameters_.end())
-        throw errors::parse_error();
+        throw errors::parse_error("Route parameters is duplicated.");
 
       _regex.append(R"(([a-zA-Z0-9\-_]+))");
       parameters_.emplace_back(_value);
