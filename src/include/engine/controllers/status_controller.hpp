@@ -15,7 +15,6 @@
 #ifndef ENGINE_CONTROLLERS_STATUS_CONTROLLER_HPP
 #define ENGINE_CONTROLLERS_STATUS_CONTROLLER_HPP
 
-#include <boost/beast/http/empty_body.hpp>
 #include <engine/controller.hpp>
 #include <memory>
 

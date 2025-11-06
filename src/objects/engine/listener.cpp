@@ -25,9 +25,8 @@ boost::asio::awaitable<void> listener(std::shared_ptr<state> state,
   const auto _executor = co_await boost::asio::this_coro::executor;
   auto _acceptor = boost::asio::ip::tcp::acceptor{_executor, endpoint};
 
-  state->port_.store(_acceptor.local_endpoint().port(),
-                     std::memory_order_release);
-  state->running_.store(true, std::memory_order_release);
+  state->set_port(_acceptor.local_endpoint().port());
+  state->set_running(true);
 
   for (;;) {
     co_spawn(

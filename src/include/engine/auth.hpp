@@ -15,8 +15,14 @@
 #ifndef ENGINE_AUTH_HPP
 #define ENGINE_AUTH_HPP
 
+#include <engine/jwt.hpp>
 #include <memory>
+#include <optional>
 
-namespace engine {}  // namespace engine
+namespace engine {
+class auth : public std::enable_shared_from_this<auth> {
+  std::optional<std::shared_ptr<jwt>> jwt_;
+};
+}  // namespace engine
 
 #endif  // ENGINE_AUTH_HPP

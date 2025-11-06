@@ -18,6 +18,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <engine/cipher.hpp>
 #include <engine/encoding.hpp>
+#include <engine/errors/parse_error.hpp>
+#include <engine/errors/signature_error.hpp>
 #include <engine/jwt.hpp>
 
 TEST(jwt, can_be_generated) {
@@ -63,7 +65,9 @@ TEST(jwt, can_parse_tokens) {
     ASSERT_EQ(to_string(_jwt->get_sub()),
               "807d9a27-8226-489e-8ff4-dcfd902ccde6");
     ASSERT_EQ(_jwt->get_payload().at("iat").as_int64(), 1762445047);
-  } catch (std::exception& e) {
+  } catch (engine::errors::parse_error &) {
+    throws = true;
+  } catch (engine::errors::signature_error &) {
     throws = true;
   }
   ASSERT_FALSE(throws);
