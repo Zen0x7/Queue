@@ -21,29 +21,32 @@
 
 namespace engine {
 async_of<message> kernel(shared_state state, request_type request) {
+  using enum http_field;
+
   if (request.method() == http_verb::options) {
     auto _verbs = state->get_router()->methods_of(request.target());
     const auto _methods = boost::join(_verbs, ",");
     response_empty_type _response{http_status::no_content, request.version()};
-    _response.set(http_field::access_control_allow_methods, _methods.empty() ? "" : _methods);
-    _response.set(http_field::access_control_allow_headers, "Accept,Authorization,Content-Type");
-    _response.set(http_field::access_control_allow_origin, "*");
+    _response.set(access_control_allow_methods, _methods.empty() ? "" : _methods);
+    _response.set(access_control_allow_headers, "Accept,Authorization,Content-Type");
+    _response.set(access_control_allow_origin, "*");
     co_return _response;
   }
 
   try {
     auto [_params, _route] = state->get_router()->find(request.method(), request.target());
-    auto _response = co_await _route->get_controller()->callback()(state, request, std::move(_params));
-    _response.set(http_field::access_control_allow_origin, "*");
+    auto _controller = _route->get_controller();
+    auto _response = co_await _controller->callback()(state, std::move(request), std::move(_params));
+    _response.set(access_control_allow_origin, "*");
     co_return _response;
   } catch (const errors::not_found_error &) {
     response_empty_type _response{http_status::not_found, request.version()};
-    _response.set(http_field::access_control_allow_origin, "*");
+    _response.set(access_control_allow_origin, "*");
     _response.prepare_payload();
     co_return _response;
   } catch (...) {
     response_empty_type _response{http_status::internal_server_error, request.version()};
-    _response.set(http_field::access_control_allow_origin, "*");
+    _response.set(access_control_allow_origin, "*");
     _response.prepare_payload();
     co_return _response;
   }
