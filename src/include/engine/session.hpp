@@ -20,7 +20,7 @@
 #include <engine/support.hpp>
 
 namespace engine {
-async_of<void> session(shared_state state, tcp_stream stream);
+async_of<void> session(const shared_state& state, tcp_stream stream);
 }  // namespace engine
 
 #endif  // ENGINE_SESSION_HPP

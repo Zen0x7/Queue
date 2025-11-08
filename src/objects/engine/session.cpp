@@ -16,7 +16,7 @@
 #include <engine/session.hpp>
 
 namespace engine {
-async_of<void> session(shared_state state, tcp_stream stream) {
+async_of<void> session(const shared_state &state, tcp_stream stream) {
   flat_buffer _buffer;
 
   for (;;) {
@@ -25,7 +25,7 @@ async_of<void> session(shared_state state, tcp_stream stream) {
     request_type _request;
     co_await async_read(stream, _buffer, _request);
 
-    message _message = co_await kernel(state, std::move(_request));
+    message _message = co_await kernel(state, _request);
 
     const bool keep_alive = _message.keep_alive();
     co_await async_write(stream, std::move(_message));

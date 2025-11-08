@@ -13,4 +13,5 @@ WORKDIR /srv
 COPY . .
 RUN sh scripts/build.sh ${BOOST_VARIANT} ${LINK}
 
+EXPOSE 9000
 ENTRYPOINT ["/srv/build/server"]

@@ -16,4 +16,5 @@ FROM alpine:latest AS runtime
 WORKDIR /srv
 COPY --from=builder /srv/build/server /usr/local/bin/server
 
+EXPOSE 9000
 ENTRYPOINT ["/usr/local/bin/server"]

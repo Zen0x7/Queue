@@ -20,7 +20,7 @@
 #include <engine/support.hpp>
 
 namespace engine {
-async_of<void> listener(shared_state state, endpoint endpoint);
+async_of<void> listener(const shared_state& state, endpoint endpoint);
 }  // namespace engine
 
 #endif  // ENGINE_LISTENER_HPP

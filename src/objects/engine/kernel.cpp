@@ -25,7 +25,7 @@
 #include <engine/validator.hpp>
 
 namespace engine {
-async_of<message> kernel(shared_state state, request_type request) {
+async_of<message> kernel(const shared_state &state, const request_type &request) {
   using enum http_field;
 
   if (request.method() == http_verb::options) {

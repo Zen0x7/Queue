@@ -16,7 +16,7 @@
 #include <engine/jwt.hpp>
 
 namespace engine {
-void auth::set_jwt(shared_jwt jwt) { jwt_.emplace(std::move(jwt)); }
+void auth::set_jwt(const shared_jwt& jwt) { jwt_.emplace(jwt); }
 
 optional_of<shared_jwt> auth::get_jwt() { return jwt_; }
 
