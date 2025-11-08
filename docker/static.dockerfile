@@ -5,6 +5,9 @@ ARG LINK="static"
 FROM ghcr.io/zen0x7/compiler:${BOOST_VERSION}-${LINK}-${BOOST_VARIANT} AS builder
 WORKDIR /srv
 
+ARG BOOST_VARIANT
+ARG LINK
+
 COPY . .
 RUN sh scripts/build.sh ${BOOST_VARIANT} ${LINK}
 

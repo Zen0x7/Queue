@@ -7,6 +7,7 @@ option(ENABLE_STATIC_LINKING "Enable static linking feature" OFF)
 option(ENABLE_NATIVE_OPTIMIZATION "Enable native CPU optimization feature" OFF)
 
 if (ENABLE_STATIC_LINKING)
+    message(STATUS "Using ENABLE_STATIC_LINKING = ${ENABLE_STATIC_LINKING}")
     set(Boost_USE_STATIC_LIBS ON)
     set(Boost_USE_STATIC_RUNTIME ON)
     set(BOOST_ALL_NO_LIB ON)

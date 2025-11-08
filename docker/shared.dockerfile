@@ -4,6 +4,9 @@ ARG LINK="shared"
 
 FROM ghcr.io/zen0x7/compiler:${BOOST_VERSION}-${LINK}-${BOOST_VARIANT}
 
+ARG BOOST_VARIANT
+ARG LINK
+
 WORKDIR /srv/engine
 
 COPY . .
