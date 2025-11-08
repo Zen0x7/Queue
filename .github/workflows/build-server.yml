@@ -4,7 +4,6 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
     env:
       BUILD_WRAPPER_OUT_DIR: /srv/build
 
@@ -14,6 +13,9 @@ jobs:
         version: [1.87, 1.88, 1.89]
         type: [debug, release]
         link: [shared, static]
+        platform: [linux/amd64, linux/arm64]
+
+    runs-on: ${{ matrix.platform == 'linux/arm64' && 'ubuntu-22.04-arm' || 'ubuntu-latest' }}
 
     container:
       image: ghcr.io/zen0x7/compiler:${{ matrix.version }}.0-${{ matrix.link }}-${{ matrix.type }}
@@ -28,7 +30,7 @@ jobs:
 
       - name: Run Build Wrapper
         run: |
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} bash scripts/build.sh ${{ matrix.type }} ${{ matrix.link }}
+          build-wrapper-linux-${{ matrix.platform == 'linux/arm64' && 'arm64' || 'x86-64' }} --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} bash scripts/build.sh ${{ matrix.type }} ${{ matrix.link }}
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
