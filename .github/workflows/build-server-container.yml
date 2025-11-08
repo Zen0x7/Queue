@@ -1,6 +1,17 @@
 name: Build Server Container
 
-on: [push]
+on:
+  push:
+    paths:
+      - '.github/workflows/build-server-container.yml'
+      - 'src/**'
+      - 'scripts/**'
+      - 'docker/**'
+      - 'deps/**'
+      - 'tests/**'
+      - 'main.cpp'
+      - '.clang-format'
+      - 'CMakeLists.txt'
 
 env:
   REGISTRY_IMAGE: ghcr.io/zen0x7/queue

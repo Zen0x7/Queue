@@ -1,6 +1,17 @@
 name: Build Server
 
-on: [push]
+on:
+  push:
+    paths:
+      - '.github/workflows/build-server.yml'
+      - 'src/**'
+      - 'scripts/**'
+      - 'docker/**'
+      - 'deps/**'
+      - 'tests/**'
+      - 'main.cpp'
+      - '.clang-format'
+      - 'CMakeLists.txt'
 
 jobs:
   build:
