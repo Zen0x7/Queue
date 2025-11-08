@@ -6,7 +6,7 @@ FROM ghcr.io/zen0x7/compiler:${BOOST_VERSION}-${LINK}-${BOOST_VARIANT} AS builde
 WORKDIR /srv
 
 COPY . .
-RUN sh scripts/build.sh $BOOST_VARIANT $LINK
+RUN sh scripts/build.sh ${BOOST_VARIANT} ${LINK}
 
 FROM alpine:latest AS runtime
 WORKDIR /srv
