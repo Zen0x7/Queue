@@ -13,9 +13,10 @@ jobs:
       matrix:
         version: [1.87, 1.88, 1.89]
         type: [debug, release]
+        link: [shared, static]
 
     container:
-      image: ghcr.io/zen0x7/compiler:${{ matrix.version }}.0-${{ matrix.type }}
+      image: ghcr.io/zen0x7/compiler:${{ matrix.version }}.0-${{ matrix.link }}-${{ matrix.type }}
 
     steps:
       - uses: actions/checkout@v4
@@ -31,11 +32,11 @@ jobs:
 
       - name: Run Build Wrapper
         run: |
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} bash scripts/build.sh ${{ matrix.type }}
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} bash scripts/build.sh ${{ matrix.type }} ${{ matrix.link }}
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
-        if: ${{ matrix.type == 'debug' && matrix.version == '1.89' }}
+        if: ${{ matrix.type == 'debug' && matrix.version == '1.89' && matrix.link == 'static' }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
@@ -44,6 +45,6 @@ jobs:
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7
-        if: ${{ matrix.type == 'debug' && matrix.version == '1.89' }}
+        if: ${{ matrix.type == 'debug' && matrix.version == '1.89' && matrix.link == 'static' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

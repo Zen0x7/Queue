@@ -3,6 +3,31 @@ project(queue)
 
 option(ENABLE_TESTS "Enable testing" ON)
 option(ENABLE_DEBUG "Enable debugging" ON)
+option(ENABLE_STATIC_LINKING "Enable static linking feature" OFF)
+option(ENABLE_NATIVE_OPTIMIZATION "Enable native CPU optimization feature" OFF)
+
+if (ENABLE_STATIC_LINKING)
+    set(Boost_USE_STATIC_LIBS ON)
+    set(Boost_USE_STATIC_RUNTIME ON)
+    set(BOOST_ALL_NO_LIB ON)
+    set(BUILD_SHARED_LIBS OFF)
+    set(OPENSSL_USE_STATIC_LIBS TRUE)
+
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+        set(ARCH_LIB_DIR "/usr/lib/aarch64-linux-gnu")
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+        set(ARCH_LIB_DIR "/usr/lib/x86_64-linux-gnu")
+    else()
+        message(FATAL_ERROR "Arquitectura no soportada: ${CMAKE_SYSTEM_PROCESSOR}")
+    endif()
+
+    set(OPENSSL_CRYPTO_LIBRARY "${ARCH_LIB_DIR}/libcrypto.a")
+    set(OPENSSL_SSL_LIBRARY "${ARCH_LIB_DIR}/libssl.a")
+endif ()
+
+
+message(STATUS "Using ENABLE_STATIC_LINKING = ${ENABLE_STATIC_LINKING}")
+message(STATUS "Using ENABLE_NATIVE_OPTIMIZATION = ${ENABLE_NATIVE_OPTIMIZATION}")
 
 set(CMAKE_CXX_STANDARD 23)
 
@@ -12,6 +37,26 @@ endif ()
 
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g --coverage -fprofile-arcs -ftest-coverage")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
+if (ENABLE_STATIC_LINKING)
+    set(OpenSSL_USE_STATIC_LIBS TRUE)
+
+    if (ENABLE_NATIVE_OPTIMIZATION)
+        set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto -march=native -mtune=native -g0 -static -static-libgcc -DNDEBUG")
+        set(CMAKE_C_FLAGS_RELEASE "-O3 -flto -march=native -mtune=native -g0 -static -static-libgcc -DNDEBUG")
+    else ()
+        set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto -g0 -static -static-libgcc -DNDEBUG")
+        set(CMAKE_C_FLAGS_RELEASE "-O3 -flto -g0 -static -static-libgcc -DNDEBUG")
+    endif ()
+else ()
+    if (ENABLE_NATIVE_OPTIMIZATION)
+        set(CMAKE_CXX_FLAGS_RELEASE "-O3 -flto -march=native -mtune=native -g0 -DNDEBUG")
+        set(CMAKE_C_FLAGS_RELEASE "-O3 -flto -march=native -mtune=native -g0 -DNDEBUG")
+    else ()
+        set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+        set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
+    endif ()
+endif ()
 
 find_package(Boost REQUIRED COMPONENTS
         program_options
@@ -54,6 +99,11 @@ if (ENABLE_TESTS)
             deps/mysql.cxx
             ${TESTS})
 
+    if(ENABLE_STATIC_LINKING)
+        target_compile_options(tests PRIVATE -static -static-libgcc -static-libstdc++)
+        target_link_options(tests PRIVATE -static -static-libgcc -static-libstdc++)
+    endif ()
+
     target_link_libraries(tests GTest::gtest_main queue_core ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY})
 
     include(GoogleTest)
@@ -61,4 +111,8 @@ if (ENABLE_TESTS)
 endif ()
 
 add_executable(queue deps/asio.cxx deps/beast.cxx deps/redis.cxx deps/mysql.cxx main.cpp)
+if (ENABLE_STATIC_LINKING)
+    target_compile_options(queue PRIVATE -static -static-libgcc -static-libstdc++)
+    target_link_options(queue PRIVATE -static -static-libgcc -static-libstdc++)
+endif ()
 target_link_libraries(queue queue_core ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY})
