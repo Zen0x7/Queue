@@ -24,12 +24,12 @@
 using namespace engine;
 
 TEST(test_route, can_be_instanced) {
-  auto _controller = std::make_shared<controller>(
-      [](const shared_state &state, const request_type &request, const params_type &params, const shared_auth &auth) -> async_of<response_type> {
-        response_empty_type _response{http_status::ok, request.version()};
-        _response.prepare_payload();
-        co_return _response;
-      });
+  auto _controller = std::make_shared<controller>([](const shared_state &state, const request_type &request, const params_type &params,
+                                                     const shared_auth &auth) -> async_of<response_type> {
+    response_empty_type _response{http_status::ok, request.version()};
+    _response.prepare_payload();
+    co_return _response;
+  });
 
   route _route(
       {
@@ -37,24 +37,24 @@ TEST(test_route, can_be_instanced) {
           http_verb::post,
       },
       "/hello-world",
-      std::make_shared<controller>(
-          [](const shared_state &state, const request_type &request, const params_type &params, const shared_auth &auth) -> async_of<response_type> {
-            response_empty_type _response{http_status::ok, request.version()};
-            _response.prepare_payload();
-            co_return _response;
-          }));
+      std::make_shared<controller>([](const shared_state &state, const request_type &request, const params_type &params,
+                                      const shared_auth &auth) -> async_of<response_type> {
+        response_empty_type _response{http_status::ok, request.version()};
+        _response.prepare_payload();
+        co_return _response;
+      }));
 
   ASSERT_EQ(_route.get_parameters().size(), 0);
   ASSERT_EQ(_route.get_verbs().size(), 2);
 }
 
 TEST(test_route, can_be_compiled) {
-  auto _controller = std::make_shared<controller>(
-      [](const shared_state &state, const request_type &request, const params_type &params, const shared_auth &auth) -> async_of<response_type> {
-        response_empty_type _response{http_status::ok, request.version()};
-        _response.prepare_payload();
-        co_return _response;
-      });
+  auto _controller = std::make_shared<controller>([](const shared_state &state, const request_type &request, const params_type &params,
+                                                     const shared_auth &auth) -> async_of<response_type> {
+    response_empty_type _response{http_status::ok, request.version()};
+    _response.prepare_payload();
+    co_return _response;
+  });
 
   route _route(
       {
@@ -62,12 +62,12 @@ TEST(test_route, can_be_compiled) {
           http_verb::post,
       },
       "/api/users/{user_id}/configurations",
-      std::make_shared<controller>(
-          [](const shared_state &state, const request_type &request, const params_type &params, const shared_auth &auth) -> async_of<response_type> {
-            response_empty_type _response{http_status::ok, request.version()};
-            _response.prepare_payload();
-            co_return _response;
-          }));
+      std::make_shared<controller>([](const shared_state &state, const request_type &request, const params_type &params,
+                                      const shared_auth &auth) -> async_of<response_type> {
+        response_empty_type _response{http_status::ok, request.version()};
+        _response.prepare_payload();
+        co_return _response;
+      }));
 
   ASSERT_EQ(_route.get_parameters().size(), 1);
   ASSERT_EQ(_route.get_verbs().size(), 2);
@@ -76,12 +76,12 @@ TEST(test_route, can_be_compiled) {
 TEST(test_route, can_be_invoked) {
   boost::asio::io_context _ioc;
 
-  auto _controller = std::make_shared<controller>(
-      [](const shared_state &state, const request_type &request, const params_type &params, const shared_auth &auth) -> async_of<response_type> {
-        response_empty_type _response{http_status::ok, request.version()};
-        _response.prepare_payload();
-        co_return _response;
-      });
+  auto _controller = std::make_shared<controller>([](const shared_state &state, const request_type &request, const params_type &params,
+                                                     const shared_auth &auth) -> async_of<response_type> {
+    response_empty_type _response{http_status::ok, request.version()};
+    _response.prepare_payload();
+    co_return _response;
+  });
 
   auto _executed = std::make_shared<atomic_of<bool>>(false);
 
@@ -116,12 +116,12 @@ TEST(test_route, can_be_invoked) {
 }
 
 TEST(test_route, can_be_matched) {
-  auto _controller = std::make_shared<controller>(
-      [](const shared_state &state, const request_type &request, const params_type &params, const shared_auth &auth) -> async_of<response_type> {
-        response_empty_type _response{http_status::ok, request.version()};
-        _response.prepare_payload();
-        co_return _response;
-      });
+  auto _controller = std::make_shared<controller>([](const shared_state &state, const request_type &request, const params_type &params,
+                                                     const shared_auth &auth) -> async_of<response_type> {
+    response_empty_type _response{http_status::ok, request.version()};
+    _response.prepare_payload();
+    co_return _response;
+  });
 
   auto _executed = std::make_shared<atomic_of<bool>>(false);
 
@@ -157,12 +157,12 @@ TEST(test_route, can_be_matched) {
 }
 
 TEST(test_route, throw_error_on_duplicated_parameters) {
-  auto _controller = std::make_shared<controller>(
-      [](const shared_state &state, const request_type &request, const params_type &params, const shared_auth &auth) -> async_of<response_type> {
-        response_empty_type _response{http_status::ok, request.version()};
-        _response.prepare_payload();
-        co_return _response;
-      });
+  auto _controller = std::make_shared<controller>([](const shared_state &state, const request_type &request, const params_type &params,
+                                                     const shared_auth &auth) -> async_of<response_type> {
+    response_empty_type _response{http_status::ok, request.version()};
+    _response.prepare_payload();
+    co_return _response;
+  });
 
   auto _executed = std::make_shared<atomic_of<bool>>(false);
 

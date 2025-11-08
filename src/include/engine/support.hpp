@@ -67,7 +67,6 @@ using shared_queue = std::shared_ptr<queue>;
 
 class jwt;
 using shared_jwt = std::shared_ptr<jwt>;
-using unique_jwt = std::unique_ptr<jwt>;
 
 class validator;
 using shared_validator = std::shared_ptr<validator>;
@@ -130,9 +129,10 @@ using uuid = boost::uuids::uuid;
 using object = boost::json::object;
 using value = boost::json::value;
 
-using controller_callback_type = std::function<async_of<response_type>(const shared_state&, const request_type&, const params_type&, const shared_auth &)>;
+using controller_callback_type =
+    std::function<async_of<response_type>(const shared_state &, const request_type &, const params_type &, const shared_auth &)>;
 
-using handler_signature_type = async_of<void>(atomic_of<bool>&, object const&);
+using handler_signature_type = async_of<void>(atomic_of<bool> &, object const &);
 
 using handler_type = std::function<handler_signature_type>;
 
