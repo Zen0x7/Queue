@@ -35,7 +35,7 @@ object jwt::get_payload() const { return payload_; }
 
 std::string jwt::get_signature() const { return signature_; }
 
-unique_jwt jwt::make(uuid id, const std::string &key) {
+shared_jwt jwt::make(uuid id, const std::string &key) {
   const std::string _header = R"({"alg":"HS256","typ":"JWT"})";
   const auto _jti = boost::uuids::random_generator()();
   const object _payload = {
@@ -45,10 +45,10 @@ unique_jwt jwt::make(uuid id, const std::string &key) {
   };
   const std::string _payload_string = serialize(_payload);
   std::string _signature = base64url_encode(hmac(base64url_encode(_header) + "." + base64url_encode(_payload_string), key), false);
-  return std::make_unique<jwt>(_jti, id, _header, _payload, _signature);
+  return std::make_shared<jwt>(_jti, id, _header, _payload, _signature);
 }
 
-unique_jwt jwt::from(const std::string_view &bearer, const std::string &key) {
+shared_jwt jwt::from(const std::string_view &bearer, const std::string &key) {
   std::string _bearer{bearer.begin(), bearer.end()};
   static constexpr std::string_view _prefix = "Bearer ";
   const std::string _header = R"({"alg":"HS256","typ":"JWT"})";
@@ -84,6 +84,6 @@ unique_jwt jwt::from(const std::string_view &bearer, const std::string &key) {
 
   std::string _jti{_payload.as_object().at("jti").as_string()};
   std::string _sub{_payload.as_object().at("sub").as_string()};
-  return std::make_unique<jwt>(boost::lexical_cast<uuid>(_jti), boost::lexical_cast<uuid>(_sub), _header, _payload.as_object(), _signature);
+  return std::make_shared<jwt>(boost::lexical_cast<uuid>(_jti), boost::lexical_cast<uuid>(_sub), _header, _payload.as_object(), _signature);
 }
 }  // namespace engine

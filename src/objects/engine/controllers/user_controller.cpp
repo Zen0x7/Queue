@@ -28,7 +28,7 @@ shared_controller user_controller::make() {
   return std::make_shared<controller>(
       [](const shared_state &state, const request_type request, route_params_type params, shared_auth auth) -> async_of<response_type> {
         response_type _response{http_status::ok, request.version()};
-        const object _data = {{"data", {{"id", to_string(auth->jwt_.value()->get_sub())}}}};
+        const object _data = {{"data", {{"id", to_string(auth->get_jwt().value()->get_sub())}}}};
         _response.body() = serialize(_data);
         _response.prepare_payload();
         co_return _response;

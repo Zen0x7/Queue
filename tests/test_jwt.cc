@@ -42,6 +42,7 @@ TEST(test_jwt, can_be_encoded_and_decoded) {
     const uuid _id = boost::uuids::random_generator()();
     const auto _jwt = jwt::make(_id, _key);
     auto _result = jwt::from(_jwt->as_string(), _key);
+    ASSERT_EQ(_result->get_signature(), _jwt->get_signature());
   } catch (...) {
     throws = true;
   }

@@ -12,34 +12,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
-#ifndef ENGINE_JWT_HPP
-#define ENGINE_JWT_HPP
-
-#include <engine/support.hpp>
+#include <engine/auth.hpp>
+#include <engine/jwt.hpp>
 
 namespace engine {
-class jwt : public std::enable_shared_from_this<jwt> {
-  uuid id_;
-  uuid sub_;
-  std::string header_;
-  object payload_;
-  std::string signature_;
+void auth::set_jwt(shared_jwt jwt) { jwt_.emplace(std::move(jwt)); }
 
- public:
-  jwt(uuid id, uuid sub, std::string header, object payload, std::string signature);
+optional_of<shared_jwt> auth::get_jwt() { return jwt_; }
 
-  std::string as_string() const;
-
-  uuid get_id() const;
-  uuid get_sub() const;
-  object get_payload() const;
-  std::string get_signature() const;
-
-  static shared_jwt make(uuid id, const std::string &key);
-  static shared_jwt from(const std::string_view &bearer, const std::string &key);
-};
 }  // namespace engine
-
-#endif  // ENGINE_JWT_HPP

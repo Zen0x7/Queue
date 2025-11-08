@@ -50,7 +50,7 @@ async_of<message> kernel(shared_state state, request_type request) {
       }
       try {
         std::string _bearer{request[authorization]};
-        _auth->jwt_ = jwt::from(_bearer, state->get_key());
+        _auth->set_jwt(jwt::from(_bearer, state->get_key()));
       } catch (...) {
         response_empty_type _response{http_status::unauthorized, request.version()};
         _response.set(access_control_allow_origin, "*");
