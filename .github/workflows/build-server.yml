@@ -16,7 +16,7 @@ jobs:
         link: [shared, static]
 
     container:
-      image: ghcr.io/zen0x7/compiler:${{ matrix.version }}.0-${{ matrix.link }}-${{ matrix.type }}
+      image: ghcr.io/zen0x7/compiler:${{ matrix.version }}.0-${{ matrix.type }}-${{ matrix.link }}
 
     steps:
       - uses: actions/checkout@v4
