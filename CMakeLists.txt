@@ -5,6 +5,7 @@ option(ENABLE_TESTS "Enable testing" ON)
 option(ENABLE_DEBUG "Enable debugging" ON)
 option(ENABLE_STATIC_LINKING "Enable static linking feature" OFF)
 option(ENABLE_NATIVE_OPTIMIZATION "Enable native CPU optimization feature" OFF)
+option(ENABLE_CI "Enable CI settings" OFF)
 
 if (ENABLE_STATIC_LINKING)
     set(Boost_USE_STATIC_LIBS ON)
@@ -12,17 +13,14 @@ if (ENABLE_STATIC_LINKING)
     set(BOOST_ALL_NO_LIB ON)
     set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
     set(OPENSSL_USE_STATIC_LIBS TRUE)
-
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-        set(ARCH_LIB_DIR "/usr/lib/aarch64-linux-gnu")
-    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
-        set(ARCH_LIB_DIR "/usr/lib/x86_64-linux-gnu")
-    else()
-        message(FATAL_ERROR "Arquitectura no soportada: ${CMAKE_SYSTEM_PROCESSOR}")
-    endif()
-
-    set(OPENSSL_CRYPTO_LIBRARY "${ARCH_LIB_DIR}/libcrypto.a")
-    set(OPENSSL_SSL_LIBRARY "${ARCH_LIB_DIR}/libssl.a")
+#
+    if (ENABLE_CI)
+        set(OPENSSL_CRYPTO_LIBRARY "/usr/lib/libcrypto.a")
+        set(OPENSSL_SSL_LIBRARY "/usr/lib/libssl.a")
+    else ()
+        set(OPENSSL_CRYPTO_LIBRARY "/usr/lib/aarch64-linux-gnu/libcrypto.a")
+        set(OPENSSL_SSL_LIBRARY "/usr/lib/aarch64-linux-gnu/libssl.a")
+    endif ()
 endif ()
 
 
