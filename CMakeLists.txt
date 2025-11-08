@@ -59,7 +59,7 @@ else ()
     endif ()
 endif ()
 
-find_package(Boost 1.89.0 REQUIRED COMPONENTS
+find_package(Boost REQUIRED COMPONENTS
         program_options
         json
         charconv
