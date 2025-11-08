@@ -64,6 +64,13 @@ bool state::queue_exists(const std::string& name) noexcept {
 }
 
 void state::run() noexcept {
+  boost::asio::signal_set _signals(this->ioc_, SIGINT, SIGTERM);
+  _signals.async_wait(
+      [&](boost::system::error_code const&, int)
+      {
+          this->ioc_.stop();
+      });
+
   vector_of<std::jthread> _threads_container;
   const auto _threads = std::thread::hardware_concurrency();
   _threads_container.reserve(_threads);
