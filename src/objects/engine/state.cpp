@@ -12,12 +12,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <dotenv.h>
+
+#include <engine/encoding.hpp>
 #include <engine/queue.hpp>
 #include <engine/router.hpp>
 #include <engine/state.hpp>
 
 namespace engine {
-state::state() : router_(std::make_shared<router>()) {}
+state::state() : router_(std::make_shared<router>()) {
+  key_ = base64url_decode(dotenv::getenv("APP_KEY", "-66WcolkZd8-oHejFFj1EUhxg3-8UWErNkgMqCwLDEI"));
+}
 
 state::~state() {
   std::scoped_lock _lock(queues_mutex_);
@@ -25,6 +30,8 @@ state::~state() {
 }
 
 bool state::get_running() const { return running_.load(std::memory_order_acquire); }
+
+std::string state::get_key() const { return key_; }
 
 unsigned short int state::get_port() const { return port_.load(std::memory_order_acquire); }
 

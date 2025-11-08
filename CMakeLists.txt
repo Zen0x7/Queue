@@ -19,8 +19,10 @@ find_package(Boost REQUIRED COMPONENTS
         charconv
 )
 
+find_package(laserpants_dotenv)
+
 include_directories(src/include)
-list(APPEND USED_LIBRARIES ${Boost_LIBRARIES} bcrypt)
+list(APPEND USED_LIBRARIES ${Boost_LIBRARIES} bcrypt laserpants::dotenv)
 
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/objects/*.cpp")
 

@@ -28,6 +28,7 @@ class controller : public std::enable_shared_from_this<controller> {
  public:
   explicit controller(controller_callback_type callback, controller_config config = {});
   controller_callback_type& callback() noexcept;
+  controller_config& config() noexcept;
 };
 }  // namespace engine
 

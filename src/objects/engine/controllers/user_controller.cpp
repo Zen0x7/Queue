@@ -12,22 +12,29 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <engine/auth.hpp>
 #include <engine/controller.hpp>
-#include <engine/controllers/status_controller.hpp>
+#include <engine/controllers/user_controller.hpp>
+#include <engine/jwt.hpp>
 
 namespace engine::controllers {
-vector_of<http_verb> status_controller::verbs() {
+vector_of<http_verb> user_controller::verbs() {
   return vector_of{
       http_verb::get,
   };
 }
 
-shared_controller status_controller::make() {
+shared_controller user_controller::make() {
   return std::make_shared<controller>(
       [](const shared_state &state, const request_type request, route_params_type params, shared_auth auth) -> async_of<response_type> {
-        response_empty_type _response{http_status::ok, request.version()};
+        response_type _response{http_status::ok, request.version()};
+        const object _data = {{"data", {{"id", to_string(auth->jwt_.value()->get_sub())}}}};
+        _response.body() = serialize(_data);
         _response.prepare_payload();
         co_return _response;
+      },
+      controller_config{
+          .authenticated_ = true,
       });
 }
 }  // namespace engine::controllers

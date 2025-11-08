@@ -12,7 +12,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <engine/controller_config.hpp>
 #include <engine/controllers/status_controller.hpp>
+#include <engine/controllers/user_controller.hpp>
 #include <engine/listener.hpp>
 #include <engine/route.hpp>
 #include <engine/router.hpp>
@@ -28,7 +30,8 @@ void server::start(const unsigned short int port) const {
 
   const auto _router = state_->get_router();
 
-  _router->add(std::make_shared<route>(controllers::status_controller::verbs(), "/status", controllers::status_controller::make()));
+  _router->add(std::make_shared<route>(controllers::status_controller::verbs(), "/api/status", controllers::status_controller::make()))
+      ->add(std::make_shared<route>(controllers::user_controller::verbs(), "/api/user", controllers::user_controller::make()));
 
   co_spawn(state_->ioc(), listener(state_, endpoint{_address, port}), boost::asio::detached);
 
