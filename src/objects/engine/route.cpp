@@ -57,8 +57,8 @@ vector_of<http_verb> &route::get_verbs() { return verbs_; }
 
 vector_of<std::string> &route::get_parameters() { return parameters_; }
 
-pair_of<bool, route_params_type> route::match(const std::string &input) {
-  route_params_type _bindings;
+pair_of<bool, params_type> route::match(const std::string &input) {
+  params_type _bindings;
   bool _matches = false;
   if (std::smatch _match; std::regex_match(input, _match, *get_expression())) {
     _matches = true;

@@ -25,7 +25,7 @@ using namespace engine;
 
 TEST(test_route, can_be_instanced) {
   auto _controller = std::make_shared<controller>(
-      [](const shared_state &state, const request_type request, route_params_type params, shared_auth auth) -> async_of<response_type> {
+      [](const shared_state &state, const request_type request, params_type params, shared_auth auth) -> async_of<response_type> {
         response_empty_type _response{http_status::ok, request.version()};
         _response.prepare_payload();
         co_return _response;
@@ -38,7 +38,7 @@ TEST(test_route, can_be_instanced) {
       },
       "/hello-world",
       std::make_shared<controller>(
-          [](const shared_state &state, const request_type request, route_params_type params, shared_auth auth) -> async_of<response_type> {
+          [](const shared_state &state, const request_type request, params_type params, shared_auth auth) -> async_of<response_type> {
             response_empty_type _response{http_status::ok, request.version()};
             _response.prepare_payload();
             co_return _response;
@@ -50,7 +50,7 @@ TEST(test_route, can_be_instanced) {
 
 TEST(test_route, can_be_compiled) {
   auto _controller = std::make_shared<controller>(
-      [](const shared_state &state, const request_type request, route_params_type params, shared_auth auth) -> async_of<response_type> {
+      [](const shared_state &state, const request_type request, params_type params, shared_auth auth) -> async_of<response_type> {
         response_empty_type _response{http_status::ok, request.version()};
         _response.prepare_payload();
         co_return _response;
@@ -63,7 +63,7 @@ TEST(test_route, can_be_compiled) {
       },
       "/api/users/{user_id}/configurations",
       std::make_shared<controller>(
-          [](const shared_state &state, const request_type request, route_params_type params, shared_auth auth) -> async_of<response_type> {
+          [](const shared_state &state, const request_type request, params_type params, shared_auth auth) -> async_of<response_type> {
             response_empty_type _response{http_status::ok, request.version()};
             _response.prepare_payload();
             co_return _response;
@@ -77,7 +77,7 @@ TEST(test_route, can_be_invoked) {
   boost::asio::io_context _ioc;
 
   auto _controller = std::make_shared<controller>(
-      [](const shared_state &state, const request_type request, route_params_type params, shared_auth auth) -> async_of<response_type> {
+      [](const shared_state &state, const request_type request, params_type params, shared_auth auth) -> async_of<response_type> {
         response_empty_type _response{http_status::ok, request.version()};
         _response.prepare_payload();
         co_return _response;
@@ -91,7 +91,7 @@ TEST(test_route, can_be_invoked) {
           http_verb::post,
       },
       "/endpoint",
-      std::make_shared<controller>([&_executed](const shared_state &state, const request_type request, route_params_type params,
+      std::make_shared<controller>([&_executed](const shared_state &state, const request_type request, params_type params,
                                                 shared_auth auth) -> async_of<response_type> {
         response_empty_type _response{http_status::ok, request.version()};
         std::cout << "Inside of controller ..." << std::endl;
@@ -109,7 +109,7 @@ TEST(test_route, can_be_invoked) {
 
   const auto _state = std::make_shared<state>();
   const auto _auth = std::make_shared<auth>();
-  route_params_type _params;
+  params_type _params;
   co_spawn(_ioc, (_callback)(_state, _request, _params, _auth), boost::asio::detached);
   _ioc.run();
   ASSERT_TRUE(_executed->load(std::memory_order_acquire));
@@ -117,7 +117,7 @@ TEST(test_route, can_be_invoked) {
 
 TEST(test_route, can_be_matched) {
   auto _controller = std::make_shared<controller>(
-      [](const shared_state &state, const request_type request, route_params_type params, shared_auth auth) -> async_of<response_type> {
+      [](const shared_state &state, const request_type request, params_type params, shared_auth auth) -> async_of<response_type> {
         response_empty_type _response{http_status::ok, request.version()};
         _response.prepare_payload();
         co_return _response;
@@ -131,7 +131,7 @@ TEST(test_route, can_be_matched) {
           http_verb::post,
       },
       "/parameters/{1}/{2}/{3}",
-      std::make_shared<controller>([&_executed](const shared_state &state, const request_type request, route_params_type,
+      std::make_shared<controller>([&_executed](const shared_state &state, const request_type request, params_type,
                                                 shared_auth auth) -> async_of<response_type> {
         response_empty_type _response{http_status::ok, request.version()};
         std::cout << "Inside of controller ..." << std::endl;
@@ -158,7 +158,7 @@ TEST(test_route, can_be_matched) {
 
 TEST(test_route, throw_error_on_duplicated_parameters) {
   auto _controller = std::make_shared<controller>(
-      [](const shared_state &state, const request_type request, route_params_type params, shared_auth auth) -> async_of<response_type> {
+      [](const shared_state &state, const request_type request, params_type params, shared_auth auth) -> async_of<response_type> {
         response_empty_type _response{http_status::ok, request.version()};
         _response.prepare_payload();
         co_return _response;
@@ -175,7 +175,7 @@ TEST(test_route, throw_error_on_duplicated_parameters) {
             http_verb::post,
         },
         "/parameters/{1}/{1}/{1}",
-        std::make_shared<controller>([&_executed](const shared_state &state, const request_type request, route_params_type params,
+        std::make_shared<controller>([&_executed](const shared_state &state, const request_type request, params_type params,
                                                   shared_auth auth) -> async_of<response_type> {
           response_type _response{http_status::ok, request.version()};
           std::cout << "Inside of controller ..." << std::endl;

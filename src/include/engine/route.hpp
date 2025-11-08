@@ -34,7 +34,7 @@ class route : public std::enable_shared_from_this<route> {
   shared_controller &get_controller();
   vector_of<http_verb> &get_verbs();
   vector_of<std::string> &get_parameters();
-  pair_of<bool, route_params_type> match(const std::string &input);
+  pair_of<bool, params_type> match(const std::string &input);
 };
 }  // namespace engine
 

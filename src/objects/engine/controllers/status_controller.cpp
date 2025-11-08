@@ -24,7 +24,7 @@ vector_of<http_verb> status_controller::verbs() {
 
 shared_controller status_controller::make() {
   return std::make_shared<controller>(
-      [](const shared_state &state, const request_type request, route_params_type params, shared_auth auth) -> async_of<response_type> {
+      [](const shared_state &state, const request_type request, params_type params, shared_auth auth) -> async_of<response_type> {
         response_empty_type _response{http_status::ok, request.version()};
         _response.prepare_payload();
         co_return _response;

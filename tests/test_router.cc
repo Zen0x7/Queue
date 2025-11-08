@@ -31,7 +31,7 @@ TEST(test_router, can_resolve_requests) {
               http_verb::post,
           },
           "/transactions/{id}",
-          std::make_shared<controller>([](const shared_state &state, const request_type request, route_params_type params,
+          std::make_shared<controller>([](const shared_state &state, const request_type request, params_type params,
                                           shared_auth auth) -> async_of<response_type> {
             response_empty_type _response{http_status::ok, request.version()};
             _response.prepare_payload();
@@ -42,7 +42,7 @@ TEST(test_router, can_resolve_requests) {
               http_verb::delete_,
           },
           "/users/{id}",
-          std::make_shared<controller>([](const shared_state &state, const request_type request, route_params_type params,
+          std::make_shared<controller>([](const shared_state &state, const request_type request, params_type params,
                                           shared_auth auth) -> async_of<response_type> {
             response_empty_type _response{http_status::ok, request.version()};
             _response.prepare_payload();

@@ -85,7 +85,7 @@ using response_type = boost::beast::http::response<boost::beast::http::string_bo
 using response_empty_type = boost::beast::http::response<boost::beast::http::empty_body>;
 
 using request_type = boost::beast::http::request<boost::beast::http::string_body>;
-using route_params_type = std::unordered_map<std::string, std::string, string_hasher, std::equal_to<>>;
+using params_type = std::unordered_map<std::string, std::string, string_hasher, std::equal_to<>>;
 
 template <typename T>
 using shared_of = std::shared_ptr<T>;
@@ -126,7 +126,7 @@ using uuid = boost::uuids::uuid;
 
 using object = boost::json::object;
 
-using controller_callback_type = std::function<async_of<response_type>(const shared_state&, request_type, route_params_type, shared_auth)>;
+using controller_callback_type = std::function<async_of<response_type>(const shared_state&, request_type, params_type, shared_auth)>;
 
 using handler_signature_type = async_of<void>(atomic_of<bool>&, object const&);
 
