@@ -41,7 +41,7 @@ async_of<message> kernel(shared_state state, request_type request) {
   try {
     auto [_params, _route] = state->get_router()->find(request.method(), request.target());
     auto _controller = _route->get_controller();
-    auto _auth = std::make_unique<auth>();
+    auto _auth = std::make_shared<auth>();
     if (_controller->config().authenticated_) {
       if (request[authorization].empty()) {
         response_empty_type _response{http_status::unauthorized, request.version()};
@@ -59,7 +59,7 @@ async_of<message> kernel(shared_state state, request_type request) {
         co_return _response;
       }
     }
-    auto _response = co_await _controller->callback()(state, std::move(request), std::move(_params), std::move(_auth));
+    auto _response = co_await _controller->callback()(state, request, _params, _auth);
     _response.set(access_control_allow_origin, "*");
     co_return _response;
   } catch (const errors::not_found_error &) {
