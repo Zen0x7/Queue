@@ -56,14 +56,14 @@ class test_server : public testing::Test {
     thread_->detach();
 
     while (server_->get_state()->get_running() == false) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      std::this_thread::sleep_for(std::chrono::seconds(1));
     }
   }
 
   void TearDown() override {
     server_->get_state()->ioc().stop();
     while (server_->get_state()->get_running() == true) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      std::this_thread::sleep_for(std::chrono::seconds(1));
     }
   }
 };
