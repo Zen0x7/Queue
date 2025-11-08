@@ -1,6 +1,6 @@
 #!/bin/bash
 BUILD_TYPE=${1:-debug}
-LINK_TYPE=${1:-static}
+LINK_TYPE=${2:-static}
 
 mkdir -p build
 cd build
