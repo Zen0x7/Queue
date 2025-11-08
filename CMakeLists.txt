@@ -12,17 +12,6 @@ if (ENABLE_STATIC_LINKING)
     set(BOOST_ALL_NO_LIB ON)
     set(BUILD_SHARED_LIBS OFF)
     set(OPENSSL_USE_STATIC_LIBS TRUE)
-
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
-        set(ARCH_LIB_DIR "/usr/lib/aarch64-linux-gnu")
-    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
-        set(ARCH_LIB_DIR "/usr/lib/x86_64-linux-gnu")
-    else()
-        message(FATAL_ERROR "Arquitectura no soportada: ${CMAKE_SYSTEM_PROCESSOR}")
-    endif()
-
-    set(OPENSSL_CRYPTO_LIBRARY "${ARCH_LIB_DIR}/libcrypto.a")
-    set(OPENSSL_SSL_LIBRARY "${ARCH_LIB_DIR}/libssl.a")
 endif ()
 
 
