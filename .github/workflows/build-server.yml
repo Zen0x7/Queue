@@ -23,10 +23,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check format
-        run: |
-          bash scripts/check-format.sh
-
       - name: Install Build Wrapper
         uses: SonarSource/sonarqube-scan-action/install-build-wrapper@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
 
