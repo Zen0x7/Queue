@@ -11,7 +11,7 @@ if (ENABLE_STATIC_LINKING)
     set(Boost_USE_STATIC_LIBS ON)
     set(Boost_USE_STATIC_RUNTIME ON)
     set(BOOST_ALL_NO_LIB ON)
-    set(BUILD_SHARED_LIBS OFF)
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
     set(OPENSSL_USE_STATIC_LIBS TRUE)
 
     if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
@@ -74,6 +74,10 @@ file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/objects/*.cpp")
 
 add_library(queue_core ${SOURCES})
 target_link_libraries(queue_core ${USED_LIBRARIES})
+if(ENABLE_STATIC_LINKING)
+    target_compile_options(queue_core PRIVATE -static -static-libgcc -static-libstdc++)
+    target_link_options(queue_core PRIVATE -static -static-libgcc -static-libstdc++)
+endif()
 
 include(FetchContent)
 
