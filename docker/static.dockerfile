@@ -8,3 +8,9 @@ WORKDIR /srv/engine
 
 COPY . .
 RUN sh scripts/build.sh $BOOST_VARIANT $LINK
+
+FROM alpine:latest as runtime
+WORKDIR /srv
+COPY --from=builder /srv/engine/build/server /usr/local/bin/server
+
+ENTRYPOINT ["/usr/local/bin/server"]
