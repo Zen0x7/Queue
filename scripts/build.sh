@@ -5,14 +5,14 @@ LINK_TYPE=${2:-static}
 mkdir -p build
 cd build
 
-if [ "$LINK" == "static" ]; then
+if [ "$LINK_TYPE" == "static" ]; then
 ENABLE_STATIC="ON"
 else
 ENABLE_STATIC="OFF"
 fi
 cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_TESTS=ON -DENABLE_STATIC_LINKING=$ENABLE_STATIC
 
-make -j4
+make -j24
 ctest --output-on-failure --verbose
 
 cd ..
