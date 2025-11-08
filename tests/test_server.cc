@@ -48,16 +48,24 @@ class test_server : public testing::Test {
           co_return _response;
         })));
 
-    thread_ = std::make_shared<std::jthread>([this]() { server_->start(); });
+    thread_ = std::make_shared<std::jthread>([this]() {
+      server_->start();
+      server_->get_state()->set_running(false);
+    });
 
     thread_->detach();
 
     while (server_->get_state()->get_running() == false) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
   }
 
-  void TearDown() override { server_->get_state()->ioc().stop(); }
+  void TearDown() override {
+    server_->get_state()->ioc().stop();
+    while (server_->get_state()->get_running() == true) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+  }
 };
 
 TEST_F(test_server, can_handle_http_request) {

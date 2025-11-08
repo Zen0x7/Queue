@@ -26,6 +26,9 @@ state::state() : router_(std::make_shared<router>()) {
 
 state::~state() {
   std::scoped_lock _lock(queues_mutex_);
+  for (const auto &_queue: queues_ | std::views::values) {
+    _queue->cancel();
+  }
   queues_.clear();
 }
 
