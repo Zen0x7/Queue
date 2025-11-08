@@ -12,7 +12,7 @@ ENABLE_STATIC="OFF"
 fi
 cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_TESTS=ON -DENABLE_STATIC_LINKING=$ENABLE_STATIC
 
-make -j24
+make -j4
 ctest --output-on-failure --verbose
 
 cd ..
