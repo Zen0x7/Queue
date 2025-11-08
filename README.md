@@ -3,7 +3,6 @@
 <p align="center">
 <a href="https://github.com/zen0x7/queue/actions/workflows/build-server.yml"><img src="https://github.com/zen0x7/queue/actions/workflows/build-server.yml/badge.svg" alt="Build"></a>
 <a href="https://github.com/zen0x7/queue/actions/workflows/build-frontend.yml"><img src="https://github.com/zen0x7/queue/actions/workflows/build-frontend.yml/badge.svg" alt="Build"></a>
-<a href="https://codecov.io/gh/Zen0x7/Queue"><img src="https://codecov.io/gh/Zen0x7/Queue/graph/badge.svg?token=P04C4196KX" alt="Coverage"></a>
 </p>
 
 <p align="center">
