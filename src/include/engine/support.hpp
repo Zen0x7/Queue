@@ -24,7 +24,7 @@
 #include <array>
 #include <atomic>
 #include <bcrypt/BCrypt.hpp>
-#include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <boost/core/ignore_unused.hpp>
@@ -68,6 +68,9 @@ using shared_queue = std::shared_ptr<queue>;
 class jwt;
 using shared_jwt = std::shared_ptr<jwt>;
 using unique_jwt = std::unique_ptr<jwt>;
+
+class validator;
+using shared_validator = std::shared_ptr<validator>;
 
 class auth;
 using shared_auth = std::shared_ptr<auth>;
@@ -125,6 +128,7 @@ using time_point = std::chrono::system_clock::time_point;
 using uuid = boost::uuids::uuid;
 
 using object = boost::json::object;
+using value = boost::json::value;
 
 using controller_callback_type = std::function<async_of<response_type>(const shared_state&, request_type, params_type, shared_auth)>;
 

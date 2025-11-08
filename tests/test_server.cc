@@ -40,13 +40,13 @@ class test_server : public testing::Test {
             http_verb::get,
         },
         "/system_error",
-        std::make_shared<controller>([](const shared_state &state, const request_type request, params_type params,
-                                        shared_auth auth) -> async_of<response_type> {
-          response_empty_type _response{http_status::ok, request.version()};
-          _response.prepare_payload();
-          throw std::system_error();
-          co_return _response;
-        })));
+        std::make_shared<controller>(
+            [](const shared_state &state, const request_type request, params_type params, shared_auth auth) -> async_of<response_type> {
+              response_empty_type _response{http_status::ok, request.version()};
+              _response.prepare_payload();
+              throw std::system_error();
+              co_return _response;
+            })));
 
     thread_ = std::make_shared<std::jthread>([this]() { server_->start(); });
 

@@ -31,23 +31,23 @@ TEST(test_router, can_resolve_requests) {
               http_verb::post,
           },
           "/transactions/{id}",
-          std::make_shared<controller>([](const shared_state &state, const request_type request, params_type params,
-                                          shared_auth auth) -> async_of<response_type> {
-            response_empty_type _response{http_status::ok, request.version()};
-            _response.prepare_payload();
-            co_return _response;
-          })))
+          std::make_shared<controller>(
+              [](const shared_state &state, const request_type request, params_type params, shared_auth auth) -> async_of<response_type> {
+                response_empty_type _response{http_status::ok, request.version()};
+                _response.prepare_payload();
+                co_return _response;
+              })))
       ->add(std::make_shared<route>(
           vector_of{
               http_verb::delete_,
           },
           "/users/{id}",
-          std::make_shared<controller>([](const shared_state &state, const request_type request, params_type params,
-                                          shared_auth auth) -> async_of<response_type> {
-            response_empty_type _response{http_status::ok, request.version()};
-            _response.prepare_payload();
-            co_return _response;
-          })));
+          std::make_shared<controller>(
+              [](const shared_state &state, const request_type request, params_type params, shared_auth auth) -> async_of<response_type> {
+                response_empty_type _response{http_status::ok, request.version()};
+                _response.prepare_payload();
+                co_return _response;
+              })));
 
   {
     auto [_params, _route] = _router->find(http_verb::delete_, "/users/5");

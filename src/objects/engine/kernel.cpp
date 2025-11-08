@@ -22,6 +22,7 @@
 #include <engine/route.hpp>
 #include <engine/router.hpp>
 #include <engine/state.hpp>
+#include <engine/validator.hpp>
 
 namespace engine {
 async_of<message> kernel(shared_state state, request_type request) {
