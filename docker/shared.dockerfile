@@ -8,11 +8,9 @@ ARG BOOST_VARIANT
 ARG LINK
 ARG BOOST_VERSION="1.89.0"
 
-WORKDIR /srv/engine
-
-RUN echo $LINK;
-RUN echo $BOOST_VARIANT;
-RUN echo $BOOST_VERSION;
+WORKDIR /srv
 
 COPY . .
 RUN sh scripts/build.sh ${BOOST_VARIANT} ${LINK}
+
+ENTRYPOINT ["/srv/build/server"]
