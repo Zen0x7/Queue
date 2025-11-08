@@ -38,7 +38,6 @@ class jwt : public std::enable_shared_from_this<jwt> {
   std::string get_signature() const;
 
   static shared_jwt make(uuid id, const std::string &key);
-
   static shared_jwt from(const std::string_view &bearer, const std::string &key);
 };
 }  // namespace engine

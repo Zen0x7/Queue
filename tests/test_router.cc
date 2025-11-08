@@ -22,7 +22,7 @@
 
 using namespace engine;
 
-TEST(router, can_resolve_requests) {
+TEST(test_router, can_resolve_requests) {
   const auto _router = std::make_shared<router>();
 
   _router
@@ -31,23 +31,23 @@ TEST(router, can_resolve_requests) {
               http_verb::post,
           },
           "/transactions/{id}",
-          std::make_shared<controller>(
-              [](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
-                response_empty_type _response{http_status::ok, request.version()};
-                _response.prepare_payload();
-                co_return _response;
-              })))
+          std::make_shared<controller>([](const shared_state &state, const request_type &request, const params_type &params,
+                                          const shared_auth &auth) -> async_of<response_type> {
+            response_empty_type _response{http_status::ok, request.version()};
+            _response.prepare_payload();
+            co_return _response;
+          })))
       ->add(std::make_shared<route>(
           vector_of{
               http_verb::delete_,
           },
           "/users/{id}",
-          std::make_shared<controller>(
-              [](const shared_state &state, const request_type request, route_params_type params) -> async_of<response_type> {
-                response_empty_type _response{http_status::ok, request.version()};
-                _response.prepare_payload();
-                co_return _response;
-              })));
+          std::make_shared<controller>([](const shared_state &state, const request_type &request, const params_type &params,
+                                          const shared_auth &auth) -> async_of<response_type> {
+            response_empty_type _response{http_status::ok, request.version()};
+            _response.prepare_payload();
+            co_return _response;
+          })));
 
   {
     auto [_params, _route] = _router->find(http_verb::delete_, "/users/5");

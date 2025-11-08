@@ -23,7 +23,7 @@
 
 using namespace engine;
 
-TEST(jwt, can_be_generated) {
+TEST(test_jwt, can_be_generated) {
   bool throws = false;
   try {
     const std::string _key = base64_decode(generate_sha_256());
@@ -35,7 +35,21 @@ TEST(jwt, can_be_generated) {
   ASSERT_FALSE(throws);
 }
 
-TEST(jwt, throws_error_on_invalid_token) {
+TEST(test_jwt, can_be_encoded_and_decoded) {
+  bool throws = false;
+  try {
+    const std::string _key = base64_decode(generate_sha_256());
+    const uuid _id = boost::uuids::random_generator()();
+    const auto _jwt = jwt::make(_id, _key);
+    auto _result = jwt::from(_jwt->as_string(), _key);
+    ASSERT_EQ(_result->get_signature(), _jwt->get_signature());
+  } catch (...) {
+    throws = true;
+  }
+  ASSERT_FALSE(throws);
+}
+
+TEST(test_jwt, throws_error_on_invalid_token) {
   const std::string _key = base64_decode(generate_sha_256());
   const std::string _bearer = "Bearer a.b.c";
 
@@ -49,7 +63,7 @@ TEST(jwt, throws_error_on_invalid_token) {
   ASSERT_TRUE(throws);
 }
 
-TEST(jwt, can_parse_tokens) {
+TEST(test_jwt, can_parse_tokens) {
   const std::string _key = base64url_decode("-66WcolkZd8-oHejFFj1EUhxg3-8UWErNkgMqCwLDEI");
   const std::string _bearer =
       "Bearer "

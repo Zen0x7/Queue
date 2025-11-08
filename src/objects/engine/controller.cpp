@@ -18,4 +18,6 @@ namespace engine {
 controller::controller(controller_callback_type callback, controller_config config) : callback_(std::move(callback)), config_(config) {}
 
 controller_callback_type& controller::callback() noexcept { return callback_; }
+
+controller_config& controller::config() noexcept { return config_; }
 }  // namespace engine

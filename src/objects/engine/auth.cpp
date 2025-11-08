@@ -12,15 +12,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
-#ifndef ENGINE_SESSION_HPP
-#define ENGINE_SESSION_HPP
-
-#include <engine/support.hpp>
+#include <engine/auth.hpp>
+#include <engine/jwt.hpp>
 
 namespace engine {
-async_of<void> session(const shared_state& state, tcp_stream stream);
-}  // namespace engine
+void auth::set_jwt(const shared_jwt& jwt) { jwt_.emplace(jwt); }
 
-#endif  // ENGINE_SESSION_HPP
+optional_of<shared_jwt> auth::get_jwt() { return jwt_; }
+
+}  // namespace engine

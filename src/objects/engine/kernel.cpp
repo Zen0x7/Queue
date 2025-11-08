@@ -12,15 +12,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <dotenv.h>
+
+#include <engine/auth.hpp>
 #include <engine/controller.hpp>
 #include <engine/errors/not_found_error.hpp>
+#include <engine/jwt.hpp>
 #include <engine/kernel.hpp>
 #include <engine/route.hpp>
 #include <engine/router.hpp>
 #include <engine/state.hpp>
+#include <engine/validator.hpp>
 
 namespace engine {
-async_of<message> kernel(shared_state state, request_type request) {
+async_of<message> kernel(const shared_state &state, const request_type &request) {
   using enum http_field;
 
   if (request.method() == http_verb::options) {
@@ -36,7 +41,25 @@ async_of<message> kernel(shared_state state, request_type request) {
   try {
     auto [_params, _route] = state->get_router()->find(request.method(), request.target());
     auto _controller = _route->get_controller();
-    auto _response = co_await _controller->callback()(state, std::move(request), std::move(_params));
+    auto _auth = std::make_shared<auth>();
+    if (_controller->config().authenticated_) {
+      if (request[authorization].empty()) {
+        response_empty_type _response{http_status::unauthorized, request.version()};
+        _response.set(access_control_allow_origin, "*");
+        _response.prepare_payload();
+        co_return _response;
+      }
+      try {
+        std::string _bearer{request[authorization]};
+        _auth->set_jwt(jwt::from(_bearer, state->get_key()));
+      } catch (...) {
+        response_empty_type _response{http_status::unauthorized, request.version()};
+        _response.set(access_control_allow_origin, "*");
+        _response.prepare_payload();
+        co_return _response;
+      }
+    }
+    auto _response = co_await _controller->callback()(state, request, _params, _auth);
     _response.set(access_control_allow_origin, "*");
     co_return _response;
   } catch (const errors::not_found_error &) {

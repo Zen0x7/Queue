@@ -20,7 +20,7 @@
 
 using namespace engine;
 
-TEST(job, can_run) {
+TEST(test_job, can_run) {
   boost::asio::io_context _ioc;
   atomic_of _executed{false};
   const auto _task = std::make_shared<task>([&_executed](auto& cancelled, auto& data) -> async_of<void> {
@@ -35,7 +35,7 @@ TEST(job, can_run) {
   ASSERT_TRUE(_executed.load(std::memory_order_acquire));
 }
 
-TEST(job, run_is_promise) {
+TEST(test_job, run_is_promise) {
   boost::asio::io_context _ioc;
   atomic_of _executed{false};
   const auto _task = std::make_shared<task>([&_executed](auto& cancelled, auto& data) -> async_of<void> {

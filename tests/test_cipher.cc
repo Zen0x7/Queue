@@ -19,13 +19,13 @@
 
 using namespace engine;
 
-TEST(cipher, generate_sha256_returns_base64_string) {
+TEST(test_cipher, generate_sha256_returns_base64_string) {
   const auto _token = generate_sha_256();
   EXPECT_EQ(_token.size(), 44);  // 32 bytes → base64 → 44 chars
   EXPECT_TRUE(_token.find('=') == std::string::npos || _token.back() == '=');
 }
 
-TEST(cipher, hmac_same_input_and_key_produce_same_output) {
+TEST(test_cipher, hmac_same_input_and_key_produce_same_output) {
   const std::string _key = "12345678901234567890123456789012";  // 32 bytes
   const std::string _input = "some message";
 
@@ -35,7 +35,7 @@ TEST(cipher, hmac_same_input_and_key_produce_same_output) {
   EXPECT_EQ(_digest1, _digest2);
 }
 
-TEST(cipher, hmac_different_keys_produce_different_output) {
+TEST(test_cipher, hmac_different_keys_produce_different_output) {
   const std::string _input = "sensitive data";
 
   const auto _digest1 = hmac(_input, "key-one-123456789012345678901234");
@@ -44,14 +44,14 @@ TEST(cipher, hmac_different_keys_produce_different_output) {
   EXPECT_NE(_digest1, _digest2);
 }
 
-TEST(cipher, generate_aes_key_iv_produces_correct_lengths) {
+TEST(test_cipher, generate_aes_key_iv_produces_correct_lengths) {
   const auto [_key, _iv] = generate_aes_key_iv();
 
   EXPECT_EQ(_key.size(), 32);  // AES-256
   EXPECT_EQ(_iv.size(), 16);   // GCM IV
 }
 
-TEST(cipher, aes_encrypt_decrypt_cycle_returns_original) {
+TEST(test_cipher, aes_encrypt_decrypt_cycle_returns_original) {
   const std::string _plaintext = "secret payload: 42";
   const auto [_key, _iv] = generate_aes_key_iv();
 
@@ -61,7 +61,7 @@ TEST(cipher, aes_encrypt_decrypt_cycle_returns_original) {
   EXPECT_EQ(_decrypted, _plaintext);
 }
 
-TEST(cipher, aes_decrypt_fails_with_wrong_key) {
+TEST(test_cipher, aes_decrypt_fails_with_wrong_key) {
   const std::string _plaintext = "attack at dawn";
   const auto [_key1, _iv] = generate_aes_key_iv();
   const auto [_key2, _] = generate_aes_key_iv();
@@ -71,7 +71,7 @@ TEST(cipher, aes_decrypt_fails_with_wrong_key) {
   EXPECT_THROW({ decrypt(_encrypted, _key2, _iv); }, errors::cipher_error);
 }
 
-TEST(cipher, aes_decrypt_fails_with_wrong_tag) {
+TEST(test_cipher, aes_decrypt_fails_with_wrong_tag) {
   const std::string _plaintext = "sensitive info";
   const auto [_key, _iv] = generate_aes_key_iv();
 

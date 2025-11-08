@@ -12,30 +12,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
-#ifndef ENGINE_ROUTE_HPP
-#define ENGINE_ROUTE_HPP
+#ifndef ENGINE_CONTROLLERS_USER_CONTROLLER_HPP
+#define ENGINE_CONTROLLERS_USER_CONTROLLER_HPP
 
 #include <engine/support.hpp>
 
-namespace engine {
-class route : public std::enable_shared_from_this<route> {
-  std::string signature_;
-  shared_of<std::regex> expression_;
-  shared_controller controller_;
-  vector_of<http_verb> verbs_;
-  vector_of<std::string> parameters_;
-
+namespace engine::controllers {
+class user_controller {
  public:
-  explicit route(vector_of<http_verb> verbs, std::string signature, const shared_controller &controller);
-  void compile();
-  shared_of<std::regex> &get_expression();
-  shared_controller &get_controller();
-  vector_of<http_verb> &get_verbs();
-  vector_of<std::string> &get_parameters();
-  pair_of<bool, params_type> match(const std::string &input);
+  static vector_of<http_verb> verbs();
+  static shared_controller make();
 };
-}  // namespace engine
 
-#endif  // ENGINE_ROUTE_HPP
+}  // namespace engine::controllers
+
+#endif  // ENGINE_CONTROLLERS_USER_CONTROLLER_HPP

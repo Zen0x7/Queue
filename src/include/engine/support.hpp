@@ -24,7 +24,7 @@
 #include <array>
 #include <atomic>
 #include <bcrypt/BCrypt.hpp>
-#include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <boost/core/ignore_unused.hpp>
@@ -68,6 +68,12 @@ using shared_queue = std::shared_ptr<queue>;
 class jwt;
 using shared_jwt = std::shared_ptr<jwt>;
 
+class validator;
+using shared_validator = std::shared_ptr<validator>;
+
+class auth;
+using shared_auth = std::shared_ptr<auth>;
+
 struct controller_config;
 
 class controller;
@@ -81,7 +87,7 @@ using response_type = boost::beast::http::response<boost::beast::http::string_bo
 using response_empty_type = boost::beast::http::response<boost::beast::http::empty_body>;
 
 using request_type = boost::beast::http::request<boost::beast::http::string_body>;
-using route_params_type = std::unordered_map<std::string, std::string, string_hasher, std::equal_to<>>;
+using params_type = std::unordered_map<std::string, std::string, string_hasher, std::equal_to<>>;
 
 template <typename T>
 using shared_of = std::shared_ptr<T>;
@@ -121,10 +127,12 @@ using time_point = std::chrono::system_clock::time_point;
 using uuid = boost::uuids::uuid;
 
 using object = boost::json::object;
+using value = boost::json::value;
 
-using controller_callback_type = std::function<async_of<response_type>(const shared_state&, const request_type&, route_params_type)>;
+using controller_callback_type =
+    std::function<async_of<response_type>(const shared_state &, const request_type &, const params_type &, const shared_auth &)>;
 
-using handler_signature_type = async_of<void>(atomic_of<bool>&, object const&);
+using handler_signature_type = async_of<void>(atomic_of<bool> &, object const &);
 
 using handler_type = std::function<handler_signature_type>;
 

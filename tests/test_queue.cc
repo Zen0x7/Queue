@@ -22,7 +22,7 @@
 
 using namespace engine;
 
-TEST(queue, can_handle_jobs) {
+TEST(test_queue, can_handle_jobs) {
   const auto _state = std::make_shared<state>();
   const auto _queue = _state->get_queue("notifications");
 
@@ -54,7 +54,7 @@ TEST(queue, can_handle_jobs) {
   ASSERT_GE(_duration.count(), 0);
 }
 
-TEST(queue, can_handle_multiple_jobs) {
+TEST(test_queue, can_handle_multiple_jobs) {
   const auto _state = std::make_shared<state>();
   const auto _queue = _state->get_queue("notifications");
 
@@ -97,7 +97,7 @@ TEST(queue, can_handle_multiple_jobs) {
   ASSERT_TRUE(_second_job->finished_at() <= _third_job->finished_at());
 }
 
-TEST(queue, can_handle_multiple_jobs_on_multiple_workers) {
+TEST(test_queue, can_handle_multiple_jobs_on_multiple_workers) {
   const auto _state = std::make_shared<state>();
   const auto _queue = _state->get_queue("notifications");
   _queue->set_workers_to(16);
@@ -118,7 +118,7 @@ TEST(queue, can_handle_multiple_jobs_on_multiple_workers) {
   ASSERT_EQ(_tasks_executed.load(), 2048);
 }
 
-TEST(queue, can_upscale_and_downscale_workers) {
+TEST(test_queue, can_upscale_and_downscale_workers) {
   const auto _state = std::make_shared<state>();
   const auto _queue = _state->get_queue("notifications");
   _queue->set_workers_to(16);
@@ -141,7 +141,7 @@ TEST(queue, can_upscale_and_downscale_workers) {
   ASSERT_EQ(16, _queue->number_of_workers());
 }
 //
-TEST(queue, can_be_cancelled) {
+TEST(test_queue, can_be_cancelled) {
   const auto _state = std::make_shared<state>();
   const auto _queue = _state->get_queue("notifications");
   _queue->set_workers_to(4);
@@ -176,7 +176,7 @@ TEST(queue, can_be_cancelled) {
 
 class custom_exception final : public std::exception {};
 
-TEST(queue, can_handle_exceptions) {
+TEST(test_queue, can_handle_exceptions) {
   const auto _state = std::make_shared<state>();
   const auto _queue = _state->get_queue("notifications");
   _queue->set_workers_to(4);
@@ -201,7 +201,7 @@ TEST(queue, can_handle_exceptions) {
   ASSERT_TRUE(_logic_error);
 }
 
-TEST(queue, can_handle_cancellations) {
+TEST(test_queue, can_handle_cancellations) {
   const auto _state = std::make_shared<state>();
   const auto _queue = _state->get_queue("notifications");
   _queue->set_workers_to(4);
@@ -220,7 +220,7 @@ TEST(queue, can_handle_cancellations) {
   ASSERT_TRUE(_job->cancelled());
 }
 
-TEST(queue, throw_error_on_undefined_task) {
+TEST(test_queue, throw_error_on_undefined_task) {
   const auto _state = std::make_shared<state>();
   const auto _queue = _state->get_queue("notifications");
   _queue->set_workers_to(4);
@@ -236,7 +236,7 @@ TEST(queue, throw_error_on_undefined_task) {
   ASSERT_TRUE(_throws);
 }
 
-TEST(queue, can_handle_cancellations_on_empty) {
+TEST(test_queue, can_handle_cancellations_on_empty) {
   const auto _state = std::make_shared<state>();
   const auto _queue = _state->get_queue("notifications");
   _queue->cancel();

@@ -22,6 +22,10 @@
 namespace engine {
 class auth : public std::enable_shared_from_this<auth> {
   optional_of<shared_jwt> jwt_;
+
+ public:
+  void set_jwt(const shared_jwt &jwt);
+  optional_of<shared_jwt> get_jwt();
 };
 }  // namespace engine
 

@@ -19,12 +19,12 @@
 
 using namespace engine;
 
-TEST(state, can_create_shared_instance) {
+TEST(test_state, can_create_shared_instance) {
   const auto _state = std::make_shared<state>();
   ASSERT_NE(_state.get(), nullptr);
 }
 
-TEST(state, can_manage_queues) {
+TEST(test_state, can_manage_queues) {
   const auto _state = std::make_shared<state>();
   std::string _channel = "notifications";
 

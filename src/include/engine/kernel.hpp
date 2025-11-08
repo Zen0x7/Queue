@@ -20,7 +20,7 @@
 #include <engine/support.hpp>
 
 namespace engine {
-async_of<message> kernel(shared_state state, request_type request);
+async_of<message> kernel(const shared_state& state, const request_type& request);
 }  // namespace engine
 
 #endif  // ENGINE_KERNEL_HPP

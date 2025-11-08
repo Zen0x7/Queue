@@ -19,7 +19,7 @@
 #include <engine/state.hpp>
 
 namespace engine {
-async_of<void> listener(shared_state state, endpoint endpoint) {
+async_of<void> listener(const shared_state &state, endpoint endpoint) {
   const auto _executor = co_await boost::asio::this_coro::executor;
   auto _acceptor = acceptor{_executor, endpoint};
 
