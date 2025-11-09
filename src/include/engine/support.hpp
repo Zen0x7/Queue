@@ -30,6 +30,7 @@
 #include <boost/core/ignore_unused.hpp>
 #include <boost/json.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/mysql.hpp>
 #include <boost/uuid.hpp>
 #include <chrono>
 #include <engine/string_hasher.hpp>

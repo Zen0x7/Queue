@@ -22,12 +22,21 @@
 namespace engine {
 state::state() : router_(std::make_shared<router>()) {
   key_ = base64url_decode(dotenv::getenv("APP_KEY", "-66WcolkZd8-oHejFFj1EUhxg3-8UWErNkgMqCwLDEI"));
+  boost::mysql::pool_params _params;
+  _params.server_address.emplace_host_and_port(dotenv::getenv("DB_HOST", "127.0.0.1"));
+  _params.username = dotenv::getenv("DB_USER", "root");
+  _params.password = dotenv::getenv("DB_PASSWORD", "secret_password");
+  _params.database = dotenv::getenv("DB_NAME", "engine");
+  _params.thread_safe = true;
+  connection_pool_ = std::make_shared<boost::mysql::connection_pool>(ioc_, std::move(_params));
 }
 
 state::~state() {
   std::scoped_lock _lock(queues_mutex_);
   queues_.clear();
 }
+
+shared_of<boost::mysql::connection_pool> state::get_connection_pool() { return connection_pool_; }
 
 bool state::get_running() const { return running_.load(std::memory_order_acquire); }
 
