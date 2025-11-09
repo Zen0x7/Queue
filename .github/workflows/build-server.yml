@@ -49,6 +49,7 @@ jobs:
 
       - name: Prepares databases
         env:
+          DB_HOST: mysql
           DB_PORT: 3306
         run: |
           cd backend
