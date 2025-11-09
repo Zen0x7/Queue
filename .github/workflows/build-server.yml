@@ -29,6 +29,19 @@ jobs:
     container:
       image: ghcr.io/zen0x7/compiler:${{ matrix.version }}.0-${{ matrix.type }}-${{ matrix.link }}
 
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: false
+          MYSQL_ROOT_PASSWORD: engine_password
+          MYSQL_USER: user
+          MYSQL_PASSWORD: engine_password
+          MYSQL_DATABASE: engine
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,6 +52,11 @@ jobs:
           bash scripts/check-format.sh
 
       - name: Run build and test
+        env:
+          DB_USER: user
+          DB_PASSWORD: engine_password
+          DB_NAME: engine
+          DB_PORT: ${{ job.services.mysql.ports[3306] }}
         run: |
           sh scripts/build-and-test.sh ${{ matrix.type }} ${{ matrix.link }}
 

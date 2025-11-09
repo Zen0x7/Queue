@@ -23,11 +23,14 @@ namespace engine {
 state::state() : router_(std::make_shared<router>()) {
   key_ = base64url_decode(dotenv::getenv("APP_KEY", "-66WcolkZd8-oHejFFj1EUhxg3-8UWErNkgMqCwLDEI"));
   boost::mysql::pool_params _params;
-  _params.server_address.emplace_host_and_port(dotenv::getenv("DB_HOST", "127.0.0.1"));
+  _params.server_address.emplace_host_and_port(dotenv::getenv("DB_HOST", "127.0.0.1"),
+                                               static_cast<unsigned short>(std::stoi(dotenv::getenv("DB_PORT", "3306"))));
   _params.username = dotenv::getenv("DB_USER", "root");
   _params.password = dotenv::getenv("DB_PASSWORD", "secret_password");
   _params.database = dotenv::getenv("DB_NAME", "engine");
   _params.thread_safe = true;
+  _params.initial_size = std::stoi(dotenv::getenv("DB_POOL_INITIAL_SIZE", "1"));
+  _params.max_size = std::stoi(dotenv::getenv("DB_POOL_MAX_SIZE", "32"));
   connection_pool_ = std::make_shared<boost::mysql::connection_pool>(ioc_, std::move(_params));
 }
 
