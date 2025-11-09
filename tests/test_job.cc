@@ -20,20 +20,20 @@
 
 using namespace engine;
 
-// TEST(test_job, can_run) {
-//   boost::asio::io_context _ioc;
-//   atomic_of _executed{false};
-//   const auto _task = std::make_shared<task>([&_executed](auto& cancelled, auto& data) -> async_of<void> {
-//     boost::ignore_unused(cancelled, data);
-//     _executed.store(true, std::memory_order_release);
-//     co_return;
-//   });
-//   const auto _job = std::make_shared<job>(_task, object{});
-//   auto fut = co_spawn(_ioc, _job->run(), boost::asio::use_future);
-//   _ioc.run();
-//   fut.get();
-//   ASSERT_TRUE(_executed.load(std::memory_order_acquire));
-// }
+TEST(test_job, can_run) {
+  boost::asio::io_context _ioc;
+  atomic_of _executed{false};
+  const auto _task = std::make_shared<task>([&_executed](auto& cancelled, auto& data) -> async_of<void> {
+    boost::ignore_unused(cancelled, data);
+    _executed.store(true, std::memory_order_release);
+    co_return;
+  });
+  const auto _job = std::make_shared<job>(_task, object{});
+  auto fut = co_spawn(make_strand(_ioc), _job->run(), boost::asio::use_future);
+  _ioc.run();
+  fut.get();
+  ASSERT_TRUE(_executed.load(std::memory_order_acquire));
+}
 
 TEST(test_job, run_is_promise) {
   boost::asio::io_context _ioc;

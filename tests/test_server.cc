@@ -57,16 +57,17 @@ class test_server : public testing::Test {
     thread_->detach();
 
     while (server_->get_state()->get_running() == false) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
   }
 
   void TearDown() override {
     server_->get_task_group()->emit(boost::asio::cancellation_type::total);
     while (server_->get_state()->get_running() == true) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     server_->get_state()->ioc().stop();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 };
 

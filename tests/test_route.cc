@@ -110,9 +110,9 @@ TEST(test_route, can_be_invoked) {
   const auto _state = std::make_shared<state>();
   const auto _auth = std::make_shared<auth>();
   params_type _params;
-  // co_spawn(_ioc, (_callback)(_state, _request, _params, _auth), boost::asio::detached);
-  // _ioc.run();
-  // ASSERT_TRUE(_executed->load(std::memory_order_acquire));
+  co_spawn(make_strand(_ioc), (_callback)(_state, _request, _params, _auth), boost::asio::detached);
+  _ioc.run();
+  ASSERT_TRUE(_executed->load(std::memory_order_acquire));
 }
 
 TEST(test_route, can_be_matched) {
