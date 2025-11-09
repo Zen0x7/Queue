@@ -48,6 +48,8 @@ jobs:
           fetch-depth: 0
 
       - name: Prepares databases
+        env:
+          DB_PORT: ${{ job.services.mysql.ports[3306] }}
         run: |
           cd backend
           composer install
