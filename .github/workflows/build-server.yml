@@ -62,7 +62,7 @@ jobs:
 
       - name: Run build and test
         env:
-          DB_HOST: mysql
+          DB_HOST: localhost
           DB_USER: user
           DB_PASSWORD: engine_password
           DB_NAME: engine
