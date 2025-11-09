@@ -1,17 +1,6 @@
 name: Build Server
 
-on:
-  push:
-    paths:
-      - '.github/workflows/build-server.yml'
-      - 'src/**'
-      - 'scripts/**'
-      - 'docker/**'
-      - 'deps/**'
-      - 'tests/**'
-      - 'main.cpp'
-      - '.clang-format'
-      - 'CMakeLists.txt'
+on: [push]
 
 jobs:
   build:
@@ -63,7 +52,7 @@ jobs:
 
       - name: Run build and test
         env:
-          DB_HOST: localhost
+          DB_HOST: mysql
           DB_USER: user
           DB_PASSWORD: engine_password
           DB_NAME: engine

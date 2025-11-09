@@ -1,11 +1,6 @@
 name: Build Backend
 
-on:
-  push:
-    paths:
-      - '.github/workflows/build-backend.yml'
-      - 'backend/**'
-
+on: [push]
 
 jobs:
   tests:
