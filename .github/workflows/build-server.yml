@@ -1,17 +1,6 @@
 name: Build Server
 
-on:
-  push:
-    paths:
-      - '.github/workflows/build-server.yml'
-      - 'src/**'
-      - 'scripts/**'
-      - 'docker/**'
-      - 'deps/**'
-      - 'tests/**'
-      - 'main.cpp'
-      - '.clang-format'
-      - 'CMakeLists.txt'
+on: [push]
 
 jobs:
   build:
@@ -22,12 +11,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [1.87, 1.88, 1.89]
+        version: [1.87.0, 1.88.0, 1.89.0]
         type: [debug, release]
         link: [shared, static]
 
     container:
-      image: ghcr.io/zen0x7/compiler:${{ matrix.version }}.0-${{ matrix.type }}-${{ matrix.link }}
+      image: ghcr.io/zen0x7/compiler:${{ matrix.version }}-${{ matrix.type }}-${{ matrix.link }}
 
     services:
       mysql:
@@ -39,7 +28,7 @@ jobs:
           MYSQL_PASSWORD: engine_password
           MYSQL_DATABASE: engine
         ports:
-          - 3306
+          - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
@@ -48,6 +37,9 @@ jobs:
           fetch-depth: 0
 
       - name: Prepares databases
+        env:
+          DB_HOST: mysql
+          DB_PORT: 3306
         run: |
           cd backend
           composer install
@@ -60,10 +52,11 @@ jobs:
 
       - name: Run build and test
         env:
+          DB_HOST: mysql
           DB_USER: user
           DB_PASSWORD: engine_password
           DB_NAME: engine
-          DB_PORT: ${{ job.services.mysql.ports[3306] }}
+          DB_PORT: 3306
         run: |
           sh scripts/build-and-test.sh ${{ matrix.type }} ${{ matrix.link }}
 

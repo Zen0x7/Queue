@@ -1,11 +1,6 @@
 name: Build Backend
 
-on:
-  push:
-    paths:
-      - '.github/workflows/build-backend.yml'
-      - 'backend/**'
-
+on: [push]
 
 jobs:
   tests:
@@ -79,6 +74,7 @@ jobs:
 
       - name: Prepare Laravel Application
         env:
+          DB_HOST: 127.0.0.1
           DB_PORT: ${{ job.services.mysql.ports[3306] }}
         run: |
           cd backend
@@ -88,6 +84,7 @@ jobs:
 
       - name: Run tests
         env:
+          DB_HOST: 127.0.0.1
           DB_PORT: ${{ job.services.mysql.ports[3306] }}
         run: |
           cd backend

@@ -1,10 +1,6 @@
 name: Build Frontend
 
-on:
-  push:
-    paths:
-      - '.github/workflows/build-frontend.yml'
-      - 'frontend/**'
+on: [push]
 
 jobs:
   build:
