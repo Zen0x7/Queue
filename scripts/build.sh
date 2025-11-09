@@ -14,6 +14,7 @@ cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_TESTS=ON  -DENABLE_CI=ON -DENAB
 
 make -j4
 ctest --output-on-failure --verbose
+strip -s server
 
 cd ..
 gcovr --filter='src/' --print-summary --sort-percentage --gcov-ignore-parse-errors=negative_hits.warn
