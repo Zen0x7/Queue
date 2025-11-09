@@ -12,7 +12,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <engine/controller_config.hpp>
+#include <engine/controllers/auth/attempt_controller.hpp>
 #include <engine/controllers/status_controller.hpp>
 #include <engine/controllers/user_controller.hpp>
 #include <engine/listener.hpp>
@@ -33,7 +33,10 @@ void server::start(const unsigned short int port) const {
   const auto _router = state_->get_router();
 
   _router->add(std::make_shared<route>(controllers::status_controller::verbs(), "/api/status", controllers::status_controller::make()))
-      ->add(std::make_shared<route>(controllers::user_controller::verbs(), "/api/user", controllers::user_controller::make()));
+      ->add(std::make_shared<route>(controllers::user_controller::verbs(), "/api/user", controllers::user_controller::make()))
+      ->add(std::make_shared<route>(controllers::auth::attempt_controller::verbs(), "/api/auth/attempt",
+                                    controllers::auth::attempt_controller::make()));
+  ;
 
   co_spawn(make_strand(state_->ioc()), listener(*task_group_, state_, endpoint{_address, port}),
            task_group_->adapt([](const std::exception_ptr& throwable) {

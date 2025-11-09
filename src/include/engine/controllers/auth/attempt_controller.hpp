@@ -12,19 +12,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
-#ifndef ENGINE_CONTROLLER_CONFIG_HPP
-#define ENGINE_CONTROLLER_CONFIG_HPP
+#ifndef ENGINE_CONTROLLERS_AUTH_ATTEMPT_CONTROLLER_HPP
+#define ENGINE_CONTROLLERS_AUTH_ATTEMPT_CONTROLLER_HPP
 
 #include <engine/support.hpp>
 
-namespace engine {
-struct controller_config {
-  bool authenticated_{false};
-  bool validated_{false};
-  map_of<std::string, std::string> validation_rules_{};
+namespace engine::controllers::auth {
+class attempt_controller {
+ public:
+  static vector_of<http_verb> verbs();
+  static shared_controller make();
 };
-}  // namespace engine
 
-#endif  // ENGINE_CONTROLLER_CONFIG_HPP
+}  // namespace engine::controllers::auth
+
+#endif  // ENGINE_CONTROLLERS_AUTH_ATTEMPT_CONTROLLER_HPP

@@ -127,6 +127,49 @@ TEST_F(test_server, can_handle_unauthorized_requests) {
   ASSERT_EQ(_ec, boost::beast::errc::success);
 }
 
+TEST_F(test_server, can_handle_post_auth_attempt_request) {
+  boost::asio::io_context _client_ioc;
+  resolver _resolver(_client_ioc);
+  const std::string _host = "127.0.0.1";
+  const unsigned short int _port = server_->get_state()->get_port();
+  auto const _tcp_resolver_results = _resolver.resolve(_host, std::to_string(_port));
+  tcp_stream _stream(_client_ioc);
+  _stream.connect(_tcp_resolver_results);
+
+  request_type _request{http_verb::post, "/api/auth/attempt", 11};
+  _request.set(http_field::host, _host);
+  _request.set(http_field::user_agent, "Client");
+  _request.body() = serialize(boost::json::object({
+      {"email", "contact@zendev.cl"},
+      {"password", "super_secret_password"},
+  }));
+  _request.prepare_payload();
+
+  write(_stream, _request);
+  flat_buffer _buffer;
+
+  response_type _response;
+  read(_stream, _buffer, _response);
+
+  ASSERT_GT(_response.body().size(), 0);
+  ASSERT_EQ(_response.result_int(), 200);
+
+  boost::system::error_code _parse_ec;
+  auto _result = boost::json::parse(_response.body(), _parse_ec);
+
+  ASSERT_EQ(_parse_ec, boost::beast::errc::success);
+  ASSERT_TRUE(_result.is_object());
+  ASSERT_TRUE(_result.as_object().contains("data"));
+  ASSERT_TRUE(_result.as_object().at("data").is_object());
+  ASSERT_TRUE(_result.as_object().at("data").as_object().contains("token"));
+  ASSERT_TRUE(_result.as_object().at("data").as_object().at("token").is_string());
+  std::string _auth_id{_result.as_object().at("data").as_object().at("token").as_string()};
+
+  boost::beast::error_code _ec;
+  _stream.socket().shutdown(socket::shutdown_both, _ec);
+  ASSERT_EQ(_ec, boost::beast::errc::success);
+}
+
 TEST_F(test_server, can_handle_get_user_request) {
   boost::asio::io_context _client_ioc;
   resolver _resolver(_client_ioc);
@@ -164,6 +207,101 @@ TEST_F(test_server, can_handle_get_user_request) {
   ASSERT_TRUE(_result.as_object().at("data").as_object().at("id").is_string());
   std::string _auth_id{_result.as_object().at("data").as_object().at("id").as_string()};
   ASSERT_EQ(_auth_id, to_string(_id));
+
+  boost::beast::error_code _ec;
+  _stream.socket().shutdown(socket::shutdown_both, _ec);
+  ASSERT_EQ(_ec, boost::beast::errc::success);
+}
+
+TEST_F(test_server, can_throw_unprocessable_entity_on_invalid_body) {
+  boost::asio::io_context _client_ioc;
+  resolver _resolver(_client_ioc);
+  const std::string _host = "127.0.0.1";
+  const unsigned short int _port = server_->get_state()->get_port();
+  auto const _tcp_resolver_results = _resolver.resolve(_host, std::to_string(_port));
+  tcp_stream _stream(_client_ioc);
+  _stream.connect(_tcp_resolver_results);
+
+  request_type _request{http_verb::post, "/api/auth/attempt", 11};
+  _request.set(http_field::host, _host);
+  _request.set(http_field::user_agent, "Client");
+  _request.body() = "";
+  _request.prepare_payload();
+
+  write(_stream, _request);
+  flat_buffer _buffer;
+
+  response_type _response;
+  read(_stream, _buffer, _response);
+
+  ASSERT_GT(_response.body().size(), 0);
+  ASSERT_EQ(_response.result_int(), 422);
+
+  boost::system::error_code _parse_ec;
+  auto _result = boost::json::parse(_response.body(), _parse_ec);
+
+  ASSERT_EQ(_parse_ec, boost::beast::errc::success);
+  ASSERT_TRUE(_result.is_object());
+  ASSERT_TRUE(_result.as_object().contains("message"));
+  ASSERT_TRUE(_result.as_object().at("message").is_string());
+  ASSERT_EQ(_result.as_object().at("message").as_string(), "The given data was invalid.");
+  ASSERT_TRUE(_result.as_object().contains("errors"));
+  ASSERT_TRUE(_result.as_object().at("errors").is_object());
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().contains("*"));
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().at("*").is_array());
+  ASSERT_EQ(_result.as_object().at("errors").as_object().at("*").as_array().size(), 1);
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().at("*").as_array().at(0).is_string());
+  ASSERT_EQ(_result.as_object().at("errors").as_object().at("*").as_array().at(0).as_string(), "The payload must be a valid json value.");
+
+  boost::beast::error_code _ec;
+  _stream.socket().shutdown(socket::shutdown_both, _ec);
+  ASSERT_EQ(_ec, boost::beast::errc::success);
+}
+
+TEST_F(test_server, can_throw_unprocessable_entity_on_invalid_payload) {
+  boost::asio::io_context _client_ioc;
+  resolver _resolver(_client_ioc);
+  const std::string _host = "127.0.0.1";
+  const unsigned short int _port = server_->get_state()->get_port();
+  auto const _tcp_resolver_results = _resolver.resolve(_host, std::to_string(_port));
+  tcp_stream _stream(_client_ioc);
+  _stream.connect(_tcp_resolver_results);
+
+  request_type _request{http_verb::post, "/api/auth/attempt", 11};
+  _request.set(http_field::host, _host);
+  _request.set(http_field::user_agent, "Client");
+  _request.body() = "{}";
+  _request.prepare_payload();
+
+  write(_stream, _request);
+  flat_buffer _buffer;
+
+  response_type _response;
+  read(_stream, _buffer, _response);
+
+  ASSERT_GT(_response.body().size(), 0);
+  ASSERT_EQ(_response.result_int(), 422);
+
+  boost::system::error_code _parse_ec;
+  auto _result = boost::json::parse(_response.body(), _parse_ec);
+
+  ASSERT_EQ(_parse_ec, boost::beast::errc::success);
+  ASSERT_TRUE(_result.is_object());
+  ASSERT_TRUE(_result.as_object().contains("message"));
+  ASSERT_TRUE(_result.as_object().at("message").is_string());
+  ASSERT_EQ(_result.as_object().at("message").as_string(), "The given data was invalid.");
+  ASSERT_TRUE(_result.as_object().contains("errors"));
+  ASSERT_TRUE(_result.as_object().at("errors").is_object());
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().contains("email"));
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().at("email").is_array());
+  ASSERT_EQ(_result.as_object().at("errors").as_object().at("email").as_array().size(), 1);
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().at("email").as_array().at(0).is_string());
+  ASSERT_EQ(_result.as_object().at("errors").as_object().at("email").as_array().at(0).as_string(), "Attribute email is required.");
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().contains("password"));
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().at("password").is_array());
+  ASSERT_EQ(_result.as_object().at("errors").as_object().at("password").as_array().size(), 1);
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().at("password").as_array().at(0).is_string());
+  ASSERT_EQ(_result.as_object().at("errors").as_object().at("password").as_array().at(0).as_string(), "Attribute password is required.");
 
   boost::beast::error_code _ec;
   _stream.socket().shutdown(socket::shutdown_both, _ec);

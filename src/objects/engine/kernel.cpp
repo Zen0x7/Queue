@@ -41,6 +41,30 @@ async_of<message> kernel(const shared_state &state, const request_type &request)
   try {
     auto [_params, _route] = state->get_router()->find(request.method(), request.target());
     auto _controller = _route->get_controller();
+
+    if (_controller->config().validated_) {
+      boost::system::error_code _parse_ec;
+      auto _payload = boost::json::parse(request.body(), _parse_ec);
+      if (_parse_ec) {
+        response_type _response{http_status::unprocessable_entity, request.version()};
+        _response.set(access_control_allow_origin, "*");
+        _response.body() =
+            serialize(boost::json::object({{"message", "The given data was invalid."},
+                                           {"errors", {{"*", boost::json::array({"The payload must be a valid json value."})}}}}));
+        _response.prepare_payload();
+        co_return _response;
+      }
+
+      if (auto _validator = validator::make(_controller->config().validation_rules_, _payload); !_validator->get_success()) {
+        response_type _response{http_status::unprocessable_entity, request.version()};
+        _response.set(access_control_allow_origin, "*");
+        _response.body() =
+            serialize(boost::json::object({{"message", "The given data was invalid."}, {"errors", _validator->get_errors()}}));
+        _response.prepare_payload();
+        co_return _response;
+      }
+    }
+
     auto _auth = std::make_shared<auth>();
     if (_controller->config().authenticated_) {
       if (request[authorization].empty()) {
