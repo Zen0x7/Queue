@@ -18,22 +18,27 @@
 namespace engine {
 async_of<void> session(const shared_state &state, tcp_stream stream) {
   flat_buffer _buffer;
+  auto _cancellation_state = co_await boost::asio::this_coro::cancellation_state;
 
-  for (;;) {
+  while (!_cancellation_state.cancelled()) {
     stream.expires_after(std::chrono::seconds(5));
 
     request_type _request;
-    co_await async_read(stream, _buffer, _request);
-
+    auto [_read_ec, _] = co_await async_read(stream, _buffer, _request, boost::asio::as_tuple);
+    if (_read_ec == boost::beast::http::error::end_of_stream) {
+      co_return;
+    }
     message _message = co_await kernel(state, _request);
 
     const bool keep_alive = _message.keep_alive();
     co_await async_write(stream, std::move(_message));
 
     if (!keep_alive) {
-      break;
+      co_return;
     }
   }
+
+  if (!stream.socket().is_open()) co_return;
 
   stream.socket().shutdown(socket::shutdown_send);
 }

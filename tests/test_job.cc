@@ -29,7 +29,7 @@ TEST(test_job, can_run) {
     co_return;
   });
   const auto _job = std::make_shared<job>(_task, object{});
-  auto fut = co_spawn(_ioc, _job->run(), boost::asio::use_future);
+  auto fut = co_spawn(make_strand(_ioc), _job->run(), boost::asio::use_future);
   _ioc.run();
   fut.get();
   ASSERT_TRUE(_executed.load(std::memory_order_acquire));

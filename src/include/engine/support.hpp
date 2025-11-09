@@ -44,6 +44,8 @@
 #include <vector>
 
 namespace engine {
+class task_group;
+
 class state;
 using shared_state = std::shared_ptr<state>;
 
@@ -117,7 +119,10 @@ template <typename T, typename S>
 using map_of = std::map<T, S>;
 
 template <typename T>
-using async_of = boost::asio::awaitable<T>;
+using async_of = boost::asio::awaitable<T, boost::asio::strand<boost::asio::io_context::executor_type>>;
+
+template <typename T, typename S>
+using async_to = boost::asio::awaitable<T, S>;
 
 template <typename T>
 using strand_of = boost::asio::strand<T>;
