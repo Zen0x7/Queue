@@ -47,6 +47,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Prepares databases
+        run: |
+          cd backend
+          composer install
+          cp .env.ci .env
+          php artisan migrate
+
       - name: Check format
         run: |
           bash scripts/check-format.sh
