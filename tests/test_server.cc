@@ -21,6 +21,7 @@
 #include <engine/server.hpp>
 #include <engine/state.hpp>
 #include <engine/support.hpp>
+#include <engine/task_group.hpp>
 
 using namespace engine;
 
@@ -56,15 +57,16 @@ class test_server : public testing::Test {
     thread_->detach();
 
     while (server_->get_state()->get_running() == false) {
-      std::this_thread::sleep_for(std::chrono::seconds(1));
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
   }
 
   void TearDown() override {
-    server_->get_state()->ioc().stop();
+    server_->get_task_group()->emit(boost::asio::cancellation_type::total);
     while (server_->get_state()->get_running() == true) {
-      std::this_thread::sleep_for(std::chrono::seconds(1));
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+    server_->get_state()->ioc().stop();
   }
 };
 

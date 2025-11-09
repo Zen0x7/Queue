@@ -17,17 +17,31 @@
 #include <engine/listener.hpp>
 #include <engine/session.hpp>
 #include <engine/state.hpp>
+#include <engine/task_group.hpp>
 
 namespace engine {
-async_of<void> listener(const shared_state &state, endpoint endpoint) {
+async_of<void> listener(task_group &task_group, const shared_state &state, endpoint endpoint) {
+  auto _cancellation_state = co_await boost::asio::this_coro::cancellation_state;
   const auto _executor = co_await boost::asio::this_coro::executor;
   auto _acceptor = acceptor{_executor, endpoint};
+
+  co_await boost::asio::this_coro::reset_cancellation_state(boost::asio::enable_total_cancellation());
 
   state->set_port(_acceptor.local_endpoint().port());
   state->set_running(true);
 
-  for (;;) {
-    co_spawn(_executor, session(state, tcp_stream{co_await _acceptor.async_accept()}), [](const std::exception_ptr &throwable) {
+  while (!_cancellation_state.cancelled()) {
+    auto _socket_executor = make_strand(_executor.get_inner_executor());
+    auto [_ec, _socket] = co_await _acceptor.async_accept(_socket_executor, boost::asio::as_tuple);
+
+    if (_ec == boost::asio::error::operation_aborted) {
+      state->set_running(false);
+      co_return;
+    }
+
+    if (_ec) throw boost::system::system_error{_ec};
+
+    co_spawn(_socket_executor, session(state, tcp_stream{std::move(_socket)}), task_group.adapt([](const std::exception_ptr &throwable) {
       if (throwable) {
         try {
           std::rethrow_exception(throwable);
@@ -37,7 +51,9 @@ async_of<void> listener(const shared_state &state, endpoint endpoint) {
           std::cerr << "[Listener] Unknown exception thrown." << std::endl;
         }
       }
-    });
+    }));
   }
+
+  co_return;
 }
 }  // namespace engine

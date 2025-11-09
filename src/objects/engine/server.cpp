@@ -19,11 +19,13 @@
 #include <engine/route.hpp>
 #include <engine/router.hpp>
 #include <engine/server.hpp>
+#include <engine/signal_handler.hpp>
 #include <engine/state.hpp>
+#include <engine/task_group.hpp>
 
 namespace engine {
 
-server::server() : state_(std::make_shared<state>()) {}
+server::server() : state_(std::make_shared<state>()), task_group_(std::make_shared<task_group>(state_->ioc().get_executor())) {}
 
 void server::start(const unsigned short int port) const {
   auto const _address = boost::asio::ip::make_address("0.0.0.0");
@@ -33,10 +35,23 @@ void server::start(const unsigned short int port) const {
   _router->add(std::make_shared<route>(controllers::status_controller::verbs(), "/api/status", controllers::status_controller::make()))
       ->add(std::make_shared<route>(controllers::user_controller::verbs(), "/api/user", controllers::user_controller::make()));
 
-  co_spawn(state_->ioc(), listener(state_, endpoint{_address, port}), boost::asio::detached);
+  co_spawn(make_strand(state_->ioc()), listener(*task_group_, state_, endpoint{_address, port}),
+           task_group_->adapt([](const std::exception_ptr& throwable) {
+             if (throwable) {
+               try {
+                 std::rethrow_exception(throwable);
+               } catch (std::exception& exception) {
+                 std::cerr << "Error in listener: " << exception.what() << "\n";
+               }
+             }
+           }));
+
+  co_spawn(make_strand(state_->ioc()), signal_handler(state_->ioc(), *task_group_), boost::asio::detached);
 
   state_->run();
 }
 
 shared_state server::get_state() const { return state_; }
+
+shared_of<task_group> server::get_task_group() { return task_group_; }
 }  // namespace engine
