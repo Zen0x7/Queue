@@ -49,7 +49,7 @@ jobs:
 
       - name: Prepares databases
         env:
-          DB_PORT: ${{ job.services.mysql.ports[3306] }}
+          DB_PORT: 3306
         run: |
           cd backend
           composer install
@@ -65,7 +65,7 @@ jobs:
           DB_USER: user
           DB_PASSWORD: engine_password
           DB_NAME: engine
-          DB_PORT: ${{ job.services.mysql.ports[3306] }}
+          DB_PORT: 3306
         run: |
           sh scripts/build-and-test.sh ${{ matrix.type }} ${{ matrix.link }}
 
