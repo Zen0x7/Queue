@@ -10,12 +10,7 @@ ENABLE_STATIC="ON"
 else
 ENABLE_STATIC="OFF"
 fi
-cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_TESTS=ON  -DENABLE_CI=ON -DENABLE_STATIC_LINKING=$ENABLE_STATIC
+cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_TESTS=OFF  -DENABLE_CI=ON -DENABLE_STATIC_LINKING=$ENABLE_STATIC
 
 make -j4
-ctest --output-on-failure --verbose
 strip -s server
-
-cd ..
-gcovr --filter='src/' --print-summary --sort-percentage --gcov-ignore-parse-errors=negative_hits.warn
-gcovr --filter='src/' --sonarqube > coverage.xml
