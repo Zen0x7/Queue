@@ -12,7 +12,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <engine/auth.hpp>
+#include <engine/cipher.hpp>
 #include <engine/controller.hpp>
 #include <engine/controllers/auth/attempt_controller.hpp>
 #include <engine/jwt.hpp>
@@ -29,12 +29,38 @@ shared_controller attempt_controller::make() {
   return std::make_shared<controller>(
       [](const shared_state &state, const request_type &request, const params_type &params,
          const shared_auth &auth) -> async_of<response_type> {
-        const auto _id = boost::uuids::random_generator()();
+        auto _body = boost::json::parse(request.body());
+        std::string _email{_body.as_object().at("email").as_string()};
+        std::string _password{_body.as_object().at("password").as_string()};
+
+        boost::mysql::pooled_connection _connection =
+            co_await state->get_connection_pool()->async_get_connection(boost::asio::cancel_after(std::chrono::seconds(30)));
+
+        boost::mysql::results _result;
+
+        co_await _connection->async_execute(boost::mysql::with_params("SELECT id, password FROM users WHERE email = {}", _email), _result);
+
+        if (_result.rows().size() == 0) {
+          response_empty_type _response{http_status::unauthorized, request.version()};
+          _response.prepare_payload();
+          _connection.return_without_reset();
+          co_return _response;
+        }
+
+        if (std::string _hash{_result.rows().at(0).at(1).as_string()}; !password_validator(_password, _hash)) {
+          response_empty_type _response{http_status::unauthorized, request.version()};
+          _response.prepare_payload();
+          _connection.return_without_reset();
+          co_return _response;
+        }
+
+        auto _id = boost::lexical_cast<uuid>(_result.rows().at(0).at(0));
         const auto _jwt = jwt::make(_id, state->get_key());
         response_type _response{http_status::ok, request.version()};
         const object _data = {{"data", {{"token", _jwt->as_string()}}}};
         _response.body() = serialize(_data);
         _response.prepare_payload();
+        _connection.return_without_reset();
         co_return _response;
       },
       controller_config{.validated_ = true,

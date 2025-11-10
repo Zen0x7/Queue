@@ -57,17 +57,17 @@ class test_server : public testing::Test {
     thread_->detach();
 
     while (server_->get_state()->get_running() == false) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      std::this_thread::sleep_for(std::chrono::seconds(1));
     }
   }
 
   void TearDown() override {
     server_->get_task_group()->emit(boost::asio::cancellation_type::total);
     while (server_->get_state()->get_running() == true) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     server_->get_state()->ioc().stop();
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 };
 
@@ -140,8 +140,8 @@ TEST_F(test_server, can_handle_post_auth_attempt_request) {
   _request.set(http_field::host, _host);
   _request.set(http_field::user_agent, "Client");
   _request.body() = serialize(boost::json::object({
-      {"email", "contact@zendev.cl"},
-      {"password", "super_secret_password"},
+      {"email", "admin@zendev.cl"},
+      {"password", "password"},
   }));
   _request.prepare_payload();
 
@@ -164,6 +164,70 @@ TEST_F(test_server, can_handle_post_auth_attempt_request) {
   ASSERT_TRUE(_result.as_object().at("data").as_object().contains("token"));
   ASSERT_TRUE(_result.as_object().at("data").as_object().at("token").is_string());
   std::string _auth_id{_result.as_object().at("data").as_object().at("token").as_string()};
+
+  boost::beast::error_code _ec;
+  _stream.socket().shutdown(socket::shutdown_both, _ec);
+  ASSERT_EQ(_ec, boost::beast::errc::success);
+}
+
+TEST_F(test_server, can_handle_post_auth_attempt_request_on_wrong_email) {
+  boost::asio::io_context _client_ioc;
+  resolver _resolver(_client_ioc);
+  const std::string _host = "127.0.0.1";
+  const unsigned short int _port = server_->get_state()->get_port();
+  auto const _tcp_resolver_results = _resolver.resolve(_host, std::to_string(_port));
+  tcp_stream _stream(_client_ioc);
+  _stream.connect(_tcp_resolver_results);
+
+  request_type _request{http_verb::post, "/api/auth/attempt", 11};
+  _request.set(http_field::host, _host);
+  _request.set(http_field::user_agent, "Client");
+  _request.body() = serialize(boost::json::object({
+      {"email", "wrong@zendev.cl"},
+      {"password", "password"},
+  }));
+  _request.prepare_payload();
+
+  write(_stream, _request);
+  flat_buffer _buffer;
+
+  response_type _response;
+  read(_stream, _buffer, _response);
+
+  ASSERT_EQ(_response.body().size(), 0);
+  ASSERT_EQ(_response.result_int(), 401);
+
+  boost::beast::error_code _ec;
+  _stream.socket().shutdown(socket::shutdown_both, _ec);
+  ASSERT_EQ(_ec, boost::beast::errc::success);
+}
+
+TEST_F(test_server, can_handle_post_auth_attempt_request_on_wrong_password) {
+  boost::asio::io_context _client_ioc;
+  resolver _resolver(_client_ioc);
+  const std::string _host = "127.0.0.1";
+  const unsigned short int _port = server_->get_state()->get_port();
+  auto const _tcp_resolver_results = _resolver.resolve(_host, std::to_string(_port));
+  tcp_stream _stream(_client_ioc);
+  _stream.connect(_tcp_resolver_results);
+
+  request_type _request{http_verb::post, "/api/auth/attempt", 11};
+  _request.set(http_field::host, _host);
+  _request.set(http_field::user_agent, "Client");
+  _request.body() = serialize(boost::json::object({
+      {"email", "admin@zendev.cl"},
+      {"password", "wrong_password"},
+  }));
+  _request.prepare_payload();
+
+  write(_stream, _request);
+  flat_buffer _buffer;
+
+  response_type _response;
+  read(_stream, _buffer, _response);
+
+  ASSERT_EQ(_response.body().size(), 0);
+  ASSERT_EQ(_response.result_int(), 401);
 
   boost::beast::error_code _ec;
   _stream.socket().shutdown(socket::shutdown_both, _ec);

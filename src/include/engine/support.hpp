@@ -17,6 +17,7 @@
 #ifndef ENGINE_SUPPORT_HPP
 #define ENGINE_SUPPORT_HPP
 
+#include <dotenv.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>

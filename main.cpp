@@ -15,7 +15,7 @@
 #include <engine/server.hpp>
 
 int main() {
-  const engine::server server;
-  server.start(9000);
+  const auto _server = std::make_shared<engine::server>();
+  _server->start(9000);
   return 0;
 }
