@@ -20,7 +20,7 @@
 #include <engine/state.hpp>
 
 namespace engine {
-state::state() : router_(std::make_shared<router>()) {
+state::state() : router_(std::make_shared<router>()), ioc_(std::thread::hardware_concurrency()) {
   key_ = base64url_decode(dotenv::getenv("APP_KEY", "-66WcolkZd8-oHejFFj1EUhxg3-8UWErNkgMqCwLDEI"));
   boost::mysql::pool_params _params;
   _params.server_address.emplace_host_and_port(dotenv::getenv("DB_HOST", "127.0.0.1"),

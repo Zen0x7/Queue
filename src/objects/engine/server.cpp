@@ -24,10 +24,9 @@
 #include <engine/task_group.hpp>
 
 namespace engine {
-
 server::server() : state_(std::make_shared<state>()), task_group_(std::make_shared<task_group>(state_->ioc().get_executor())) {}
 
-void server::start(const unsigned short int port) const {
+void server::start(const unsigned short int port) {
   auto const _address = boost::asio::ip::make_address("0.0.0.0");
 
   const auto _router = state_->get_router();
