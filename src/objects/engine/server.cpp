@@ -24,11 +24,6 @@
 #include <engine/task_group.hpp>
 
 namespace engine {
-void server::on_connect(boost::system::error_code ec) {
-  std::cout << ec.what() << std::endl;
-  std::cout << "It's connected" << std::endl;
-}
-
 server::server() : state_(std::make_shared<state>()), task_group_(std::make_shared<task_group>(state_->ioc().get_executor())) {}
 
 void server::start(const unsigned short int port) {

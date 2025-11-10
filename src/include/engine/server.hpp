@@ -23,7 +23,6 @@ namespace engine {
 class server : public std::enable_shared_from_this<server> {
   shared_state state_;
   shared_of<task_group> task_group_;
-  void on_connect(boost::system::error_code ec);
 
  public:
   server();
