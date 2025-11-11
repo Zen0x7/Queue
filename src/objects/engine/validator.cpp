@@ -140,7 +140,7 @@ void validator::on_string_rule(const value &value, const std::string &attribute)
 }
 
 void validator::insert_or_push(const std::string &key, const std::string &message) {
-  if (!this->errors_.contains(key)) this->errors_[key] = boost::json::array({});
+  if (!this->errors_.contains(key)) this->errors_[key] = array({});
 
   this->errors_.at(key).as_array().emplace_back(message);
 }

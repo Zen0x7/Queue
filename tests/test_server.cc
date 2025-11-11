@@ -16,6 +16,7 @@
 
 #include <engine/controller.hpp>
 #include <engine/jwt.hpp>
+#include <engine/metrics.hpp>
 #include <engine/queue.hpp>
 #include <engine/route.hpp>
 #include <engine/router.hpp>
@@ -140,7 +141,7 @@ TEST_F(test_server, can_handle_post_auth_attempt_request) {
   request_type _request{http_verb::post, "/api/auth/attempt", 11};
   _request.set(http_field::host, _host);
   _request.set(http_field::user_agent, "Client");
-  _request.body() = serialize(boost::json::object({
+  _request.body() = serialize(object({
       {"email", "admin@zendev.cl"},
       {"password", "password"},
   }));
@@ -183,7 +184,7 @@ TEST_F(test_server, can_handle_post_auth_attempt_request_on_wrong_email) {
   request_type _request{http_verb::post, "/api/auth/attempt", 11};
   _request.set(http_field::host, _host);
   _request.set(http_field::user_agent, "Client");
-  _request.body() = serialize(boost::json::object({
+  _request.body() = serialize(object({
       {"email", "wrong@zendev.cl"},
       {"password", "password"},
   }));
@@ -215,7 +216,7 @@ TEST_F(test_server, can_handle_post_auth_attempt_request_on_wrong_password) {
   request_type _request{http_verb::post, "/api/auth/attempt", 11};
   _request.set(http_field::host, _host);
   _request.set(http_field::user_agent, "Client");
-  _request.body() = serialize(boost::json::object({
+  _request.body() = serialize(object({
       {"email", "admin@zendev.cl"},
       {"password", "wrong_password"},
   }));
@@ -413,6 +414,39 @@ TEST_F(test_server, can_handle_get_queue_jobs_request) {
   ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().at("id").is_string());
   ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().contains("task_id"));
   ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().at("task_id").is_string());
+
+  boost::beast::error_code _ec;
+  _stream.socket().shutdown(socket::shutdown_both, _ec);
+  ASSERT_EQ(_ec, boost::beast::errc::success);
+}
+
+TEST_F(test_server, can_handle_post_queue_dispatch_request) {
+  boost::asio::io_context _client_ioc;
+  resolver _resolver(_client_ioc);
+  const std::string _host = "127.0.0.1";
+  const unsigned short int _port = server_->get_state()->get_port();
+  auto const _tcp_resolver_results = _resolver.resolve(_host, std::to_string(_port));
+  tcp_stream _stream(_client_ioc);
+  _stream.connect(_tcp_resolver_results);
+
+  auto _id = boost::uuids::random_generator()();
+  auto _jwt = jwt::make(_id, server_->get_state()->get_key());
+  request_type _request{http_verb::post, "/api/queues/metrics/dispatch", 11};
+  _request.set(http_field::host, _host);
+  _request.set(http_field::user_agent, "Client");
+  _request.set(http_field::authorization, _jwt->as_string());
+  _request.body() = serialize(object{{"task", "increase_requests"}, {"data", object{}}});
+  _request.prepare_payload();
+
+  write(_stream, _request);
+  flat_buffer _buffer;
+
+  response_type _response;
+  read(_stream, _buffer, _response);
+
+  ASSERT_EQ(_response.result_int(), 200);
+
+  ASSERT_EQ(server_->get_state()->get_metrics()->_requests.load(), 1);
 
   boost::beast::error_code _ec;
   _stream.socket().shutdown(socket::shutdown_both, _ec);

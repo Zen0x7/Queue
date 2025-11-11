@@ -37,11 +37,11 @@ shared_controller tasks_controller::make() {
         }
 
         const auto _queue = state->get_queue(_queue_name);
-        boost::json::array _tasks;
+        array _tasks;
         _tasks.reserve(_queue->number_of_tasks());
 
         for (auto &[_name, _task] : _queue->get_tasks()) {
-          _tasks.push_back(boost::json::object({{"id", to_string(_task->get_id())}, {"name", _name}}));
+          _tasks.push_back(object({{"id", to_string(_task->get_id())}, {"name", _name}}));
         }
 
         response_type _response{http_status::ok, request.version()};

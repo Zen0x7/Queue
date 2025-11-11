@@ -30,11 +30,11 @@ shared_controller index_controller::make() {
   return std::make_shared<controller>(
       [](const shared_state &state, const request_type &request, const params_type &params,
          const shared_auth &auth) -> async_of<response_type> {
-        boost::json::array _queues;
+        array _queues;
         _queues.reserve(state->queues().size());
 
         for (auto &[_name, _queue] : state->queues()) {
-          _queues.push_back(boost::json::object({{"id", to_string(_queue->get_id())}, {"name", _name}}));
+          _queues.push_back(object({{"id", to_string(_queue->get_id())}, {"name", _name}}));
         }
 
         response_type _response{http_status::ok, request.version()};

@@ -48,9 +48,8 @@ async_of<message> kernel(const shared_state &state, const request_type &request)
       if (_parse_ec) {
         response_type _response{http_status::unprocessable_entity, request.version()};
         _response.set(access_control_allow_origin, "*");
-        _response.body() =
-            serialize(boost::json::object({{"message", "The given data was invalid."},
-                                           {"errors", {{"*", boost::json::array({"The payload must be a valid json value."})}}}}));
+        _response.body() = serialize(
+            object({{"message", "The given data was invalid."}, {"errors", {{"*", array({"The payload must be a valid json value."})}}}}));
         _response.prepare_payload();
         co_return _response;
       }
@@ -58,8 +57,7 @@ async_of<message> kernel(const shared_state &state, const request_type &request)
       if (auto _validator = validator::make(_controller->config().validation_rules_, _payload); !_validator->get_success()) {
         response_type _response{http_status::unprocessable_entity, request.version()};
         _response.set(access_control_allow_origin, "*");
-        _response.body() =
-            serialize(boost::json::object({{"message", "The given data was invalid."}, {"errors", _validator->get_errors()}}));
+        _response.body() = serialize(object({{"message", "The given data was invalid."}, {"errors", _validator->get_errors()}}));
         _response.prepare_payload();
         co_return _response;
       }

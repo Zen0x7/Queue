@@ -26,6 +26,7 @@ class state : public std::enable_shared_from_this<state> {
   std::mutex queues_mutex_;
   boost::asio::io_context ioc_;
   shared_of<boost::mysql::connection_pool> connection_pool_;
+  shared_of<metrics> metrics_;
 
   atomic_of<bool> running_{false};
   atomic_of<unsigned short int> port_{0};
@@ -36,6 +37,7 @@ class state : public std::enable_shared_from_this<state> {
   ~state();
   shared_of<boost::mysql::connection_pool> get_connection_pool();
   bool get_running() const;
+  shared_metrics get_metrics();
   std::string get_key() const;
   unsigned short int get_port() const;
   void set_port(unsigned short int port);

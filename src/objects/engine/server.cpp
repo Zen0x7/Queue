@@ -13,12 +13,14 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <engine/controllers/auth/attempt_controller.hpp>
+#include <engine/controllers/queues/dispatch_controller.hpp>
 #include <engine/controllers/queues/index_controller.hpp>
 #include <engine/controllers/queues/jobs_controller.hpp>
 #include <engine/controllers/queues/tasks_controller.hpp>
 #include <engine/controllers/status_controller.hpp>
 #include <engine/controllers/user_controller.hpp>
 #include <engine/listener.hpp>
+#include <engine/metrics.hpp>
 #include <engine/queue.hpp>
 #include <engine/route.hpp>
 #include <engine/router.hpp>
@@ -44,13 +46,14 @@ void server::start(const unsigned short int port) {
       ->add(std::make_shared<route>(controllers::queues::jobs_controller::verbs(), "/api/queues/{queue_name}/jobs",
                                     controllers::queues::jobs_controller::make()))
       ->add(std::make_shared<route>(controllers::queues::tasks_controller::verbs(), "/api/queues/{queue_name}/tasks",
-                                    controllers::queues::tasks_controller::make()));
+                                    controllers::queues::tasks_controller::make()))
+      ->add(std::make_shared<route>(controllers::queues::dispatch_controller::verbs(), "/api/queues/{queue_name}/dispatch",
+                                    controllers::queues::dispatch_controller::make()));
 
   const auto _queue = state_->get_queue("metrics");
-  std::atomic _requests{0};
-  _queue->add_task("increase_requests", [&_requests](auto& cancelled, auto& data) -> async_of<void> {
+  _queue->add_task("increase_requests", [this](auto& cancelled, auto& data) -> async_of<void> {
     boost::ignore_unused(cancelled, data);
-    ++_requests;
+    ++this->get_state()->get_metrics()->_requests;
     co_return;
   });
 

@@ -13,24 +13,25 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <engine/controller.hpp>
-#include <engine/controllers/queues/jobs_controller.hpp>
-#include <engine/job.hpp>
+#include <engine/controllers/queues/dispatch_controller.hpp>
+#include <engine/errors/task_not_found.hpp>
 #include <engine/queue.hpp>
 #include <engine/state.hpp>
-#include <engine/task.hpp>
 
 namespace engine::controllers::queues {
-vector_of<http_verb> jobs_controller::verbs() {
+vector_of<http_verb> dispatch_controller::verbs() {
   return vector_of{
-      http_verb::get,
+      http_verb::post,
   };
 }
 
-shared_controller jobs_controller::make() {
+shared_controller dispatch_controller::make() {
   return std::make_shared<controller>(
       [](const shared_state &state, const request_type &request, const params_type &params,
          const shared_auth &auth) -> async_of<response_type> {
         const auto _queue_name = params.at("queue_name");
+        auto _body = boost::json::parse(request.body());
+        std::string _task{_body.as_object().at("task").as_string()};
         if (!state->queue_exists(_queue_name)) {
           response_empty_type _response{http_status::not_found, request.version()};
           _response.prepare_payload();
@@ -38,22 +39,24 @@ shared_controller jobs_controller::make() {
         }
 
         const auto _queue = state->get_queue(_queue_name);
-        array _jobs;
-        _jobs.reserve(_queue->number_of_jobs());
 
-        for (auto &[_id, _job] : _queue->get_jobs()) {
-          _jobs.push_back(object({
-              {"id", to_string(_id)},
-              {"task_id", to_string(_job->get_task()->get_id())},
-          }));
+        try {
+          _queue->dispatch(_task, _body.at("data").as_object());
+          response_empty_type _response{http_status::ok, request.version()};
+          _response.prepare_payload();
+          co_return _response;
+        } catch (const errors::task_not_found &e) {
+          response_empty_type _response{http_status::not_found, request.version()};
+          _response.prepare_payload();
+          co_return _response;
         }
-
-        response_type _response{http_status::ok, request.version()};
-        const object _data = {{"data", _jobs}};
-        _response.body() = serialize(_data);
-        _response.prepare_payload();
-        co_return _response;
       },
-      controller_config{.authenticated_ = true});
+      controller_config{.authenticated_ = true,
+                        .validated_ = true,
+                        .validation_rules_ = {
+                            {"*", "is_object"},
+                            {"task", "is_string"},
+                            {"data", "is_object"},
+                        }});
 }
 }  // namespace engine::controllers::queues
