@@ -12,23 +12,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
-#ifndef ENGINE_TASK_HPP
-#define ENGINE_TASK_HPP
+#ifndef ENGINE_CONTROLLERS_QUEUES_TASKS_CONTROLLER_HPP
+#define ENGINE_CONTROLLERS_QUEUES_TASKS_CONTROLLER_HPP
 
 #include <engine/support.hpp>
 
-namespace engine {
-class task : public std::enable_shared_from_this<task> {
-  uuid id_ = boost::uuids::random_generator()();
-  shared_of<handler_type> callback_;
-
+namespace engine::controllers::queues {
+class tasks_controller {
  public:
-  explicit task(handler_type callback);
-  uuid get_id() const noexcept;
-  shared_of<handler_type> callback() const noexcept;
+  static vector_of<http_verb> verbs();
+  static shared_controller make();
 };
-}  // namespace engine
 
-#endif  // ENGINE_TASK_HPP
+}  // namespace engine::controllers::queues
+
+#endif  // ENGINE_CONTROLLERS_QUEUES_TASKS_CONTROLLER_HPP

@@ -14,21 +14,16 @@
 
 #pragma once
 
-#ifndef ENGINE_TASK_HPP
-#define ENGINE_TASK_HPP
+#ifndef ENGINE_METRICS_HPP
+#define ENGINE_METRICS_HPP
 
 #include <engine/support.hpp>
 
 namespace engine {
-class task : public std::enable_shared_from_this<task> {
-  uuid id_ = boost::uuids::random_generator()();
-  shared_of<handler_type> callback_;
-
+class metrics : public std::enable_shared_from_this<metrics> {
  public:
-  explicit task(handler_type callback);
-  uuid get_id() const noexcept;
-  shared_of<handler_type> callback() const noexcept;
+  std::atomic<std::size_t> _requests{0};
 };
 }  // namespace engine
 
-#endif  // ENGINE_TASK_HPP
+#endif  // ENGINE_METRICS_HPP

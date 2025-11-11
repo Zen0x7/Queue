@@ -15,12 +15,14 @@
 #include <dotenv.h>
 
 #include <engine/encoding.hpp>
+#include <engine/metrics.hpp>
 #include <engine/queue.hpp>
 #include <engine/router.hpp>
 #include <engine/state.hpp>
 
 namespace engine {
 state::state() : router_(std::make_shared<router>()), ioc_(std::thread::hardware_concurrency()) {
+  metrics_ = std::make_shared<metrics>();
   key_ = base64url_decode(dotenv::getenv("APP_KEY", "-66WcolkZd8-oHejFFj1EUhxg3-8UWErNkgMqCwLDEI"));
   boost::mysql::pool_params _params;
   _params.server_address.emplace_host_and_port(dotenv::getenv("DB_HOST", "127.0.0.1"),
@@ -42,6 +44,8 @@ state::~state() {
 shared_of<boost::mysql::connection_pool> state::get_connection_pool() { return connection_pool_; }
 
 bool state::get_running() const { return running_.load(std::memory_order_acquire); }
+
+shared_metrics state::get_metrics() { return metrics_; }
 
 std::string state::get_key() const { return key_; }
 

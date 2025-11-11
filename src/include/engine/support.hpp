@@ -48,6 +48,9 @@
 namespace engine {
 class task_group;
 
+class metrics;
+using shared_metrics = std::shared_ptr<metrics>;
+
 class state;
 using shared_state = std::shared_ptr<state>;
 
@@ -135,6 +138,7 @@ using uuid = boost::uuids::uuid;
 
 using object = boost::json::object;
 using value = boost::json::value;
+using array = boost::json::array;
 
 using controller_callback_type =
     std::function<async_of<response_type>(const shared_state &, const request_type &, const params_type &, const shared_auth &)>;
