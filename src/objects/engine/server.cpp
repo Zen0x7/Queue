@@ -13,9 +13,13 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <engine/controllers/auth/attempt_controller.hpp>
+#include <engine/controllers/queues/index_controller.hpp>
+#include <engine/controllers/queues/jobs_controller.hpp>
+#include <engine/controllers/queues/tasks_controller.hpp>
 #include <engine/controllers/status_controller.hpp>
 #include <engine/controllers/user_controller.hpp>
 #include <engine/listener.hpp>
+#include <engine/queue.hpp>
 #include <engine/route.hpp>
 #include <engine/router.hpp>
 #include <engine/server.hpp>
@@ -34,8 +38,21 @@ void server::start(const unsigned short int port) {
   _router->add(std::make_shared<route>(controllers::status_controller::verbs(), "/api/status", controllers::status_controller::make()))
       ->add(std::make_shared<route>(controllers::user_controller::verbs(), "/api/user", controllers::user_controller::make()))
       ->add(std::make_shared<route>(controllers::auth::attempt_controller::verbs(), "/api/auth/attempt",
-                                    controllers::auth::attempt_controller::make()));
-  ;
+                                    controllers::auth::attempt_controller::make()))
+      ->add(std::make_shared<route>(controllers::queues::index_controller::verbs(), "/api/queues",
+                                    controllers::queues::index_controller::make()))
+      ->add(std::make_shared<route>(controllers::queues::jobs_controller::verbs(), "/api/queues/{queue_name}/jobs",
+                                    controllers::queues::jobs_controller::make()))
+      ->add(std::make_shared<route>(controllers::queues::tasks_controller::verbs(), "/api/queues/{queue_name}/tasks",
+                                    controllers::queues::tasks_controller::make()));
+
+  const auto _queue = state_->get_queue("metrics");
+  std::atomic _requests{0};
+  _queue->add_task("increase_requests", [&_requests](auto& cancelled, auto& data) -> async_of<void> {
+    boost::ignore_unused(cancelled, data);
+    ++_requests;
+    co_return;
+  });
 
   co_spawn(make_strand(state_->ioc()), listener(*task_group_, state_, endpoint{_address, port}),
            task_group_->adapt([](const std::exception_ptr& throwable) {

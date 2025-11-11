@@ -19,7 +19,9 @@
 namespace engine {
 job::job(const shared_task& task, object data) : task_(task), data_(std::move(data)) {}
 
-const uuid& job::id() const noexcept { return id_; }
+uuid job::id() const noexcept { return id_; }
+
+shared_task job::get_task() const noexcept { return task_; }
 
 bool job::started() const noexcept { return started_.load(std::memory_order_acquire); }
 

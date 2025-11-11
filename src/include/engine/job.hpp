@@ -35,7 +35,8 @@ class job : public std::enable_shared_from_this<job> {
 
  public:
   explicit job(const shared_task& task, object data);
-  const uuid& id() const noexcept;
+  uuid id() const noexcept;
+  shared_task get_task() const noexcept;
   bool started() const noexcept;
   bool failed() const noexcept;
   bool finished() const noexcept;

@@ -21,9 +21,19 @@
 namespace engine {
 queue::queue(strand_of<boost::asio::io_context::executor_type> strand) : strand_(std::move(strand)) { prepare(); }
 
+uuid queue::get_id() const noexcept { return id_; }
+
 std::size_t queue::number_of_workers() const { return workers_.size(); }
 
+map_of<uuid, shared_worker> queue::get_workers() { return workers_; }
+
+map_of<uuid, shared_job> queue::get_jobs() { return jobs_; }
+
+map_hash_of<std::string, shared_task, std::less<>> queue::get_tasks() { return tasks_; }
+
 std::size_t queue::number_of_jobs() const { return jobs_.size(); }
+
+std::size_t queue::number_of_tasks() const { return jobs_.size(); }
 
 shared_job queue::dispatch(std::string const& name, object data) {
   auto _job = get_worker()->dispatch(get_task(name), std::move(data));

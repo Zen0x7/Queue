@@ -21,6 +21,7 @@
 
 namespace engine {
 class queue : public std::enable_shared_from_this<queue> {
+  uuid id_ = boost::uuids::random_generator()();
   strand_of<boost::asio::io_context::executor_type> strand_;
 
   map_of<uuid, shared_worker> workers_;
@@ -34,8 +35,13 @@ class queue : public std::enable_shared_from_this<queue> {
 
  public:
   explicit queue(strand_of<boost::asio::io_context::executor_type> strand);
+  uuid get_id() const noexcept;
   std::size_t number_of_workers() const;
+  map_of<uuid, shared_worker> get_workers();
+  map_of<uuid, shared_job> get_jobs();
+  map_hash_of<std::string, shared_task, std::less<>> get_tasks();
   std::size_t number_of_jobs() const;
+  std::size_t number_of_tasks() const;
   shared_job dispatch(std::string const& name, object data = {});
   void add_task(std::string name, handler_type handler);
   void set_workers_to(std::size_t no_of_workers);

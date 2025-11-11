@@ -16,6 +16,7 @@
 
 #include <engine/controller.hpp>
 #include <engine/jwt.hpp>
+#include <engine/queue.hpp>
 #include <engine/route.hpp>
 #include <engine/router.hpp>
 #include <engine/server.hpp>
@@ -271,6 +272,147 @@ TEST_F(test_server, can_handle_get_user_request) {
   ASSERT_TRUE(_result.as_object().at("data").as_object().at("id").is_string());
   std::string _auth_id{_result.as_object().at("data").as_object().at("id").as_string()};
   ASSERT_EQ(_auth_id, to_string(_id));
+
+  boost::beast::error_code _ec;
+  _stream.socket().shutdown(socket::shutdown_both, _ec);
+  ASSERT_EQ(_ec, boost::beast::errc::success);
+}
+
+TEST_F(test_server, can_handle_get_queues_request) {
+  boost::asio::io_context _client_ioc;
+  resolver _resolver(_client_ioc);
+  const std::string _host = "127.0.0.1";
+  const unsigned short int _port = server_->get_state()->get_port();
+  auto const _tcp_resolver_results = _resolver.resolve(_host, std::to_string(_port));
+  tcp_stream _stream(_client_ioc);
+  _stream.connect(_tcp_resolver_results);
+
+  auto _id = boost::uuids::random_generator()();
+  auto _jwt = jwt::make(_id, server_->get_state()->get_key());
+  request_type _request{http_verb::get, "/api/queues", 11};
+  _request.set(http_field::host, _host);
+  _request.set(http_field::user_agent, "Client");
+  _request.set(http_field::authorization, _jwt->as_string());
+  _request.prepare_payload();
+
+  write(_stream, _request);
+  flat_buffer _buffer;
+
+  response_type _response;
+  read(_stream, _buffer, _response);
+
+  ASSERT_GT(_response.body().size(), 0);
+  ASSERT_EQ(_response.result_int(), 200);
+
+  boost::system::error_code _parse_ec;
+  auto _result = boost::json::parse(_response.body(), _parse_ec);
+
+  ASSERT_EQ(_parse_ec, boost::beast::errc::success);
+  ASSERT_TRUE(_result.is_object());
+  ASSERT_TRUE(_result.as_object().contains("data"));
+  ASSERT_TRUE(_result.as_object().at("data").is_array());
+  ASSERT_TRUE(_result.as_object().at("data").as_array().size() == 1);
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).is_object());
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().contains("id"));
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().at("id").is_string());
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().contains("name"));
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().at("name").is_string());
+  std::string _name{_result.as_object().at("data").as_array().at(0).as_object().at("name").as_string()};
+  ASSERT_EQ(_name, "metrics");
+
+  boost::beast::error_code _ec;
+  _stream.socket().shutdown(socket::shutdown_both, _ec);
+  ASSERT_EQ(_ec, boost::beast::errc::success);
+}
+
+TEST_F(test_server, can_handle_get_queue_tasks_request) {
+  boost::asio::io_context _client_ioc;
+  resolver _resolver(_client_ioc);
+  const std::string _host = "127.0.0.1";
+  const unsigned short int _port = server_->get_state()->get_port();
+  auto const _tcp_resolver_results = _resolver.resolve(_host, std::to_string(_port));
+  tcp_stream _stream(_client_ioc);
+  _stream.connect(_tcp_resolver_results);
+
+  auto _id = boost::uuids::random_generator()();
+  auto _jwt = jwt::make(_id, server_->get_state()->get_key());
+  request_type _request{http_verb::get, "/api/queues/metrics/tasks", 11};
+  _request.set(http_field::host, _host);
+  _request.set(http_field::user_agent, "Client");
+  _request.set(http_field::authorization, _jwt->as_string());
+  _request.prepare_payload();
+
+  write(_stream, _request);
+  flat_buffer _buffer;
+
+  response_type _response;
+  read(_stream, _buffer, _response);
+
+  ASSERT_GT(_response.body().size(), 0);
+  ASSERT_EQ(_response.result_int(), 200);
+
+  boost::system::error_code _parse_ec;
+  auto _result = boost::json::parse(_response.body(), _parse_ec);
+
+  ASSERT_EQ(_parse_ec, boost::beast::errc::success);
+  ASSERT_TRUE(_result.is_object());
+  ASSERT_TRUE(_result.as_object().contains("data"));
+  ASSERT_TRUE(_result.as_object().at("data").is_array());
+  ASSERT_TRUE(_result.as_object().at("data").as_array().size() == 1);
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).is_object());
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().contains("id"));
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().at("id").is_string());
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().contains("name"));
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().at("name").is_string());
+  std::string _name{_result.as_object().at("data").as_array().at(0).as_object().at("name").as_string()};
+  ASSERT_EQ(_name, "increase_requests");
+
+  boost::beast::error_code _ec;
+  _stream.socket().shutdown(socket::shutdown_both, _ec);
+  ASSERT_EQ(_ec, boost::beast::errc::success);
+}
+
+TEST_F(test_server, can_handle_get_queue_jobs_request) {
+  boost::asio::io_context _client_ioc;
+  resolver _resolver(_client_ioc);
+  const std::string _host = "127.0.0.1";
+  const unsigned short int _port = server_->get_state()->get_port();
+  auto const _tcp_resolver_results = _resolver.resolve(_host, std::to_string(_port));
+  tcp_stream _stream(_client_ioc);
+  _stream.connect(_tcp_resolver_results);
+
+  server_->get_state()->get_queue("metrics")->dispatch("increase_requests");
+
+  auto _id = boost::uuids::random_generator()();
+  auto _jwt = jwt::make(_id, server_->get_state()->get_key());
+  request_type _request{http_verb::get, "/api/queues/metrics/jobs", 11};
+  _request.set(http_field::host, _host);
+  _request.set(http_field::user_agent, "Client");
+  _request.set(http_field::authorization, _jwt->as_string());
+  _request.prepare_payload();
+
+  write(_stream, _request);
+  flat_buffer _buffer;
+
+  response_type _response;
+  read(_stream, _buffer, _response);
+
+  ASSERT_GT(_response.body().size(), 0);
+  ASSERT_EQ(_response.result_int(), 200);
+
+  boost::system::error_code _parse_ec;
+  auto _result = boost::json::parse(_response.body(), _parse_ec);
+
+  ASSERT_EQ(_parse_ec, boost::beast::errc::success);
+  ASSERT_TRUE(_result.is_object());
+  ASSERT_TRUE(_result.as_object().contains("data"));
+  ASSERT_TRUE(_result.as_object().at("data").is_array());
+  ASSERT_TRUE(_result.as_object().at("data").as_array().size() == 1);
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).is_object());
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().contains("id"));
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().at("id").is_string());
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().contains("task_id"));
+  ASSERT_TRUE(_result.as_object().at("data").as_array().at(0).as_object().at("task_id").is_string());
 
   boost::beast::error_code _ec;
   _stream.socket().shutdown(socket::shutdown_both, _ec);
