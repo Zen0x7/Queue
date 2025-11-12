@@ -41,14 +41,18 @@ shared_controller attempt_controller::make() {
         co_await _connection->async_execute(boost::mysql::with_params("SELECT id, password FROM users WHERE email = {}", _email), _result);
 
         if (_result.rows().size() == 0) {
-          response_empty_type _response{http_status::unauthorized, request.version()};
+          response_type _response{http_status::unprocessable_entity, request.version()};
+          _response.body() = serialize(
+              object({{"message", "The given data was invalid."}, {"errors", {{"email", array{"The email isn't registered."}}}}}));
           _response.prepare_payload();
           _connection.return_without_reset();
           co_return _response;
         }
 
         if (std::string _hash{_result.rows().at(0).at(1).as_string()}; !password_validator(_password, _hash)) {
-          response_empty_type _response{http_status::unauthorized, request.version()};
+          response_type _response{http_status::unprocessable_entity, request.version()};
+          _response.body() = serialize(
+              object({{"message", "The given data was invalid."}, {"errors", {{"password", array{"The password is incorrect."}}}}}));
           _response.prepare_payload();
           _connection.return_without_reset();
           co_return _response;

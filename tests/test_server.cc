@@ -196,8 +196,22 @@ TEST_F(test_server, can_handle_post_auth_attempt_request_on_wrong_email) {
   response_type _response;
   read(_stream, _buffer, _response);
 
-  ASSERT_EQ(_response.body().size(), 0);
-  ASSERT_EQ(_response.result_int(), 401);
+  ASSERT_GT(_response.body().size(), 0);
+  ASSERT_EQ(_response.result_int(), 422);
+
+  boost::system::error_code _parse_ec;
+  auto _result = boost::json::parse(_response.body(), _parse_ec);
+
+  ASSERT_EQ(_parse_ec, boost::beast::errc::success);
+  ASSERT_TRUE(_result.is_object());
+  ASSERT_TRUE(_result.as_object().contains("message"));
+  ASSERT_TRUE(_result.as_object().at("message").is_string());
+  ASSERT_TRUE(_result.as_object().at("errors").is_object());
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().contains("email"));
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().at("email").is_array());
+  ASSERT_EQ(_result.as_object().at("errors").as_object().at("email").as_array().size(), 1);
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().at("email").as_array().at(0).is_string());
+  ASSERT_EQ(_result.as_object().at("errors").as_object().at("email").as_array().at(0).as_string(), "The email isn't registered.");
 
   boost::beast::error_code _ec;
   _stream.socket().shutdown(socket::shutdown_both, _ec);
@@ -228,8 +242,22 @@ TEST_F(test_server, can_handle_post_auth_attempt_request_on_wrong_password) {
   response_type _response;
   read(_stream, _buffer, _response);
 
-  ASSERT_EQ(_response.body().size(), 0);
-  ASSERT_EQ(_response.result_int(), 401);
+  ASSERT_GT(_response.body().size(), 0);
+  ASSERT_EQ(_response.result_int(), 422);
+
+  boost::system::error_code _parse_ec;
+  auto _result = boost::json::parse(_response.body(), _parse_ec);
+
+  ASSERT_EQ(_parse_ec, boost::beast::errc::success);
+  ASSERT_TRUE(_result.is_object());
+  ASSERT_TRUE(_result.as_object().contains("message"));
+  ASSERT_TRUE(_result.as_object().at("message").is_string());
+  ASSERT_TRUE(_result.as_object().at("errors").is_object());
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().contains("password"));
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().at("password").is_array());
+  ASSERT_EQ(_result.as_object().at("errors").as_object().at("password").as_array().size(), 1);
+  ASSERT_TRUE(_result.as_object().at("errors").as_object().at("password").as_array().at(0).is_string());
+  ASSERT_EQ(_result.as_object().at("errors").as_object().at("password").as_array().at(0).as_string(), "The password is incorrect.");
 
   boost::beast::error_code _ec;
   _stream.socket().shutdown(socket::shutdown_both, _ec);
