@@ -17,6 +17,7 @@
 #include <engine/controllers/queues/index_controller.hpp>
 #include <engine/controllers/queues/jobs_controller.hpp>
 #include <engine/controllers/queues/tasks_controller.hpp>
+#include <engine/controllers/queues/workers_controller.hpp>
 #include <engine/controllers/status_controller.hpp>
 #include <engine/controllers/user_controller.hpp>
 #include <engine/listener.hpp>
@@ -47,6 +48,8 @@ void server::start(const unsigned short int port) {
                                     controllers::queues::jobs_controller::make()))
       ->add(std::make_shared<route>(controllers::queues::tasks_controller::verbs(), "/api/queues/{queue_name}/tasks",
                                     controllers::queues::tasks_controller::make()))
+      ->add(std::make_shared<route>(controllers::queues::workers_controller::verbs(), "/api/queues/{queue_name}/workers",
+                                    controllers::queues::workers_controller::make()))
       ->add(std::make_shared<route>(controllers::queues::dispatch_controller::verbs(), "/api/queues/{queue_name}/dispatch",
                                     controllers::queues::dispatch_controller::make()));
 
